@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2026 Dominik Kluge
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Zuordnung Datei → Lizenz nach der REUSE-Spezifikation (https://reuse.software/spec/).
+# Die Quelldateien der geführten Fassung tragen ihre zwei SPDX-Zeilen zusätzlich
+# selbst; diese Datei deckt ab, was keine Kopfzeile tragen kann (JSON, PNG,
+# plist, Markdown). Maßgeblich ist diese Zuordnung.
+
+version = 1
+SPDX-PackageName = "Unterrichtsplanung"
+SPDX-PackageSupplier = "Dominik Kluge"
+
+[[annotations]]
+path = [
+  "macOS-App/**",
+  "*.md",
+]
+SPDX-FileCopyrightText = "2026 Dominik Kluge"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "Web-App/**"
+SPDX-FileCopyrightText = "2026 Dominik Kluge"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
