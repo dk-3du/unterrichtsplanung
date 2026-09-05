@@ -1,0 +1,4987 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<!-- SPDX-FileCopyrightText: 2026 Dominik Kluge -->
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Nach jeder Änderung an den Inline-Blöcken: python3 csp_hashes.py --schreiben
+     — sonst führt der Browser sie stillschweigend nicht mehr aus. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-zizAgXh0fDQs3+uRMTqvr+Ca7FeDRuhnqN90Q8oJfxY='; style-src 'sha256-o20z9bqvF6ZXZuY3bO4tmGAg157Du3ZazWBrrDrhKqo='; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; frame-src 'none'; object-src 'none'; manifest-src 'self'">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<title>Unterrichtsplanung — Ansicht</title>
+
+<link rel="apple-touch-icon" sizes="180x180" href="symbol/touch-180.png">
+<link rel="apple-touch-icon" sizes="167x167" href="symbol/touch-167.png">
+<link rel="apple-touch-icon" sizes="152x152" href="symbol/touch-152.png">
+<link rel="icon" type="image/png" sizes="32x32" href="symbol/symbol-32.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Unterrichtsplanung">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
+<style>
+
+:root {
+  color-scheme: light;
+
+  --grund: #f2f2f7;
+  --flaeche: #ffffff;
+  --flaeche-2: #f7f7fa;
+  --schleier-1: rgba(120, 145, 210, .09);
+  --schleier-2: rgba(180, 140, 210, .06);
+
+  /* ── Glas ──────────────────────────────────────────────────────────────
+     Fläche, Unschärfe, Glanzkante und Schatten wirken nur zusammen. */
+  --glas: rgba(255, 255, 255, .6);
+  --glas-rand: rgba(0, 0, 0, .09);
+  --glas-glanz: rgba(255, 255, 255, .65);
+  --glas-schatten: 0 1px 2px rgba(0, 0, 0, .05), 0 10px 30px rgba(0, 0, 0, .07);
+  --glas-unschaerfe: saturate(180%) blur(22px);
+  /* Ohne eigene Unschärfe: Glas auf Glas trübt beides ein. */
+  --kapsel: rgba(255, 255, 255, .5);
+  --kapsel-rand: rgba(0, 0, 0, .06);
+  --kapsel-druck: rgba(0, 0, 0, .07);
+
+  --text: #000000;
+  --text-2: rgba(60, 60, 67, .62);
+  --text-3: rgba(60, 60, 67, .34);
+
+  --trennlinie: rgba(60, 60, 67, .2);
+  --trennlinie-zart: rgba(60, 60, 67, .12);
+  --akzent: #007aff;
+  /* Kräftig genug, dass Weiß darauf sicher lesbar bleibt. */
+  --akzent-glas: rgba(0, 122, 255, .86);
+  --warnung: #c93400;
+  --erledigt: #248a3d;
+  --pruefung: #d70015;
+  --pruefung-flaeche: rgba(215, 0, 21, .12);
+  /* Systemgelb käme auf hellem Grund auf Kontrast 1,4, dieser Ton auf 4,5. */
+  --dringend: #a06c03;
+  --gedaempft: rgba(120, 120, 128, .14);
+
+  /* Grundwerte der Fachfarben; beim Themawechsel ändern sich nur diese zwei. */
+  --s-basis: 50;
+  --l-basis: 50;
+
+  /* Maße */
+  --spalte-klasse: 240px;
+  --spalte-woche: 280px;
+  --kopf-hoehe: 74px;
+  --r-kachel: 10px;
+  --schatten: 0 1px 3px rgba(0, 0, 0, .08), 0 8px 24px rgba(0, 0, 0, .06);
+}
+
+[data-thema="dunkel"] {
+  color-scheme: dark;
+  --grund: #000000;
+  --flaeche: #1c1c1e;
+  --flaeche-2: #262629;
+  --schleier-1: rgba(90, 110, 180, .22);
+  --schleier-2: rgba(140, 100, 180, .16);
+  --glas: rgba(58, 58, 62, .58);
+  --glas-rand: rgba(255, 255, 255, .1);
+  --glas-glanz: rgba(255, 255, 255, .14);
+  --glas-schatten: 0 1px 2px rgba(0, 0, 0, .5), 0 10px 30px rgba(0, 0, 0, .45);
+  --kapsel: rgba(255, 255, 255, .08);
+  --kapsel-rand: rgba(255, 255, 255, .07);
+  --kapsel-druck: rgba(255, 255, 255, .16);
+  --text: #ffffff;
+  --text-2: rgba(235, 235, 245, .62);
+  --text-3: rgba(235, 235, 245, .34);
+  --trennlinie: rgba(235, 235, 245, .22);
+  --trennlinie-zart: rgba(235, 235, 245, .13);
+  --akzent: #0a84ff;
+  --akzent-glas: rgba(10, 132, 255, .86);
+  --warnung: #ff9f0a;
+  --erledigt: #30d158;
+  --pruefung: #ff453a;
+  --pruefung-flaeche: rgba(255, 69, 58, .18);
+  --dringend: #f7cb3b;
+  --gedaempft: rgba(120, 120, 128, .26);
+  --s-basis: 48;
+  --l-basis: 64;
+  --schatten: 0 1px 3px rgba(0, 0, 0, .5), 0 8px 24px rgba(0, 0, 0, .4);
+}
+
+/* ── Fachfarben ─────────────────────────────────────────────────────────
+   Als Regelwerk statt im Skript gerechnet: ein per Skript gesetzter Stil wäre
+   ein Inline-Stil, den die Policy nicht zulässt. */
+
+.farbig {
+  --kurs-s: calc((var(--s-basis) + var(--kurs-ds)) * 1%);
+  --kurs-l: calc((var(--l-basis) + var(--kurs-dl)) * 1%);
+  --kurs-voll:    hsl(var(--kurs-h) var(--kurs-s) var(--kurs-l));
+  --kurs-kante:   hsl(var(--kurs-h) var(--kurs-s) var(--kurs-l) / .35);
+  --kurs-flaeche: hsl(var(--kurs-h) var(--kurs-s) var(--kurs-l) / .16);
+  --kurs-zeile:   hsl(var(--kurs-h) var(--kurs-s) var(--kurs-l) / .08);
+  --kurs-kopf:    hsl(var(--kurs-h) var(--kurs-s) var(--kurs-l) / .12);
+}
+
+.f-rot-mittel      { --kurs-h: 355; --kurs-dl:   0; --kurs-ds:   0; }
+.f-orange-mittel   { --kurs-h:  40; --kurs-dl:  -3; --kurs-ds:   8; }
+.f-limette-mittel  { --kurs-h:  85; --kurs-dl:  -6; --kurs-ds:   5; }
+.f-gruen-mittel    { --kurs-h: 130; --kurs-dl:  -3; --kurs-ds:   0; }
+.f-tuerkis-mittel  { --kurs-h: 175; --kurs-dl:  -3; --kurs-ds:   8; }
+.f-blau-mittel     { --kurs-h: 220; --kurs-dl:   2; --kurs-ds:   0; }
+.f-violett-mittel  { --kurs-h: 265; --kurs-dl:   5; --kurs-ds:   0; }
+.f-magenta-mittel  { --kurs-h: 310; --kurs-dl:   2; --kurs-ds:   0; }
+
+.f-rot-hell        { --kurs-h: 355; --kurs-dl:  12; --kurs-ds:   0; }
+.f-orange-hell     { --kurs-h:  40; --kurs-dl:   9; --kurs-ds:   8; }
+.f-limette-hell    { --kurs-h:  85; --kurs-dl:   6; --kurs-ds:   5; }
+.f-gruen-hell      { --kurs-h: 130; --kurs-dl:   9; --kurs-ds:   0; }
+.f-tuerkis-hell    { --kurs-h: 175; --kurs-dl:   9; --kurs-ds:   8; }
+.f-blau-hell       { --kurs-h: 220; --kurs-dl:  14; --kurs-ds:   0; }
+.f-violett-hell    { --kurs-h: 265; --kurs-dl:  17; --kurs-ds:   0; }
+.f-magenta-hell    { --kurs-h: 310; --kurs-dl:  14; --kurs-ds:   0; }
+
+.f-rot-dunkel      { --kurs-h: 355; --kurs-dl: -15; --kurs-ds:   0; }
+.f-orange-dunkel   { --kurs-h:  40; --kurs-dl: -18; --kurs-ds:   8; }
+.f-limette-dunkel  { --kurs-h:  85; --kurs-dl: -21; --kurs-ds:   5; }
+.f-gruen-dunkel    { --kurs-h: 130; --kurs-dl: -18; --kurs-ds:   0; }
+.f-tuerkis-dunkel  { --kurs-h: 175; --kurs-dl: -18; --kurs-ds:   8; }
+.f-blau-dunkel     { --kurs-h: 220; --kurs-dl: -13; --kurs-ds:   0; }
+.f-violett-dunkel  { --kurs-h: 265; --kurs-dl: -10; --kurs-ds:   0; }
+.f-magenta-dunkel  { --kurs-h: 310; --kurs-dl: -13; --kurs-ds:   0; }
+
+[data-breite="210"] { --spalte-woche: 210px; }
+[data-breite="280"] { --spalte-woche: 280px; }
+[data-breite="350"] { --spalte-woche: 350px; }
+
+.sprite { position: absolute; width: 0; height: 0; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  /* Sonst schiebt iOS beim Wischen die Seite mit und die klebenden Köpfe wandern. */
+  overscroll-behavior: none;
+}
+
+html {
+  /* Ohne dies vergrößert iOS Textblöcke ungleichmäßig („text autosizing“). */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  /* Verankert statt nur „overflow: hidden“ — sonst verschiebt das iPad das Dokument. */
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--grund);
+  color: var(--text);
+  font: 400 17px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+           env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(1100px 760px at 12% -12%, var(--schleier-1), transparent 62%),
+    radial-gradient(900px 700px at 88% 4%, var(--schleier-2), transparent 60%);
+}
+
+/* Im Raster wäre jede Berührung sonst eine Markierung. */
+.raster-huelle, .kopfleiste { -webkit-user-select: none; user-select: none; }
+.blatt { -webkit-user-select: text; user-select: text; }
+
+/* ── Glas ─────────────────────────────────────────────────────────────── */
+
+.glas {
+  background: var(--glas);
+  -webkit-backdrop-filter: var(--glas-unschaerfe);
+  backdrop-filter: var(--glas-unschaerfe);
+  box-shadow: inset 0 1px 0 var(--glas-glanz), var(--glas-schatten);
+}
+
+.kapsel {
+  background: var(--kapsel);
+  border: 1px solid var(--kapsel-rand);
+  border-radius: 999px;
+}
+
+/* ── Kopfleiste ───────────────────────────────────────────────────────── */
+
+.kopfleiste {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--glas-rand);
+  z-index: 20;
+}
+
+.titelblock { min-width: 0; flex: 1 1 300px; }
+
+.plan-titel {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -.4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plan-unter {
+  font-size: 13px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leiste-gruppe { display: flex; align-items: center; gap: 2px; padding: 3px; }
+
+@media (max-width: 1200px) {
+  .titelblock { flex: 1 1 100%; }
+  .kopfleiste > #dateigruppe { margin-left: auto; }
+}
+
+/* ── Knöpfe ─────────────────────────────────────────────────────────────
+   Mindestens 44 × 44 Punkt für den Finger. */
+
+.knopf {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.knopf:active { background: var(--kapsel-druck); transform: scale(.96); }
+.knopf.stumm { color: var(--text-2); }
+.knopf.nur-symbol { padding: 0; }
+
+.knopf.betont {
+  background: var(--akzent-glas);
+  -webkit-backdrop-filter: var(--glas-unschaerfe);
+  backdrop-filter: var(--glas-unschaerfe);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), var(--glas-schatten);
+}
+
+.knopf.betont:active { filter: brightness(.93); }
+
+.knopf.frei {
+  background: var(--glas);
+  -webkit-backdrop-filter: var(--glas-unschaerfe);
+  backdrop-filter: var(--glas-unschaerfe);
+  box-shadow: inset 0 1px 0 var(--glas-glanz), var(--glas-schatten);
+}
+
+.knopf:focus-visible, .feld:focus-visible, .kachel:focus-visible {
+  outline: 3px solid var(--akzent);
+  outline-offset: 2px;
+}
+
+.ikon {
+  width: 20px; height: 20px; flex: none;
+  fill: none; stroke: currentColor;
+  stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ── Status: Haken und Kommentar ────────────────────────────────────── */
+
+#btn-status { position: relative; }
+#btn-status.offen::after {
+  content: ""; position: absolute; top: 5px; right: 5px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--warnung); box-shadow: 0 0 0 2px var(--flaeche);
+}
+#btn-status.laeuft { opacity: .55; }
+
+.statusschalter {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 0 16px; margin-bottom: 12px;
+  border-radius: 12px; border: 1px solid var(--trennlinie-zart);
+  background: var(--flaeche-2); color: var(--text);
+  font: inherit; font-weight: 590; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.statusschalter .ikon { color: var(--text-2); }
+.statusschalter[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--erledigt) 16%, var(--flaeche-2));
+  border-color: color-mix(in srgb, var(--erledigt) 55%, var(--trennlinie-zart));
+  color: var(--erledigt);
+}
+.statusschalter[aria-pressed="true"] .ikon { color: var(--erledigt); }
+
+.kommentarfeld {
+  display: block; width: 100%; box-sizing: border-box;
+  min-height: 96px; padding: 10px 12px;
+  border-radius: 12px; border: 1px solid var(--trennlinie-zart);
+  background: var(--flaeche-2); color: var(--text);
+  font: inherit; line-height: 1.45; resize: vertical;
+}
+.kommentarfeld:focus-visible { outline: 2px solid var(--akzent); outline-offset: 1px; }
+
+.statushinweis { margin: 8px 0 0; color: var(--text-2); font-size: 14px; line-height: 1.4; }
+
+/* ── Tagesliste ─────────────────────────────────────────────────────── */
+
+/* Zwei getrennte Knöpfe nebeneinander, keine ineinander. */
+.tagesposten { padding: 0; gap: 0; overflow: hidden; }
+
+.hakenknopf {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 46px; min-height: 46px; flex: none;
+  border: 0; background: none; color: var(--text-2); cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.hakenknopf[aria-pressed="true"] { color: var(--erledigt); }
+.hakenknopf:active { background: var(--gedaempft); }
+.hakenknopf:focus-visible { outline: 2px solid var(--akzent); outline-offset: -3px; }
+
+.tagesziel {
+  display: flex; align-items: center; gap: 10px;
+  flex: 1; min-width: 0; min-height: 46px;
+  padding: 8px 12px 8px 0;
+  border: 0; background: none; color: inherit; font: inherit;
+  text-align: left; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.tagesziel:active { background: var(--gedaempft); }
+.tagesziel:focus-visible { outline: 2px solid var(--akzent); outline-offset: -3px; }
+
+/* Festes Maß, damit die Titel untereinander stehen. */
+.tagesziel .kursspalte {
+  display: flex; align-items: center; gap: 6px;
+  width: 150px; flex: none; min-width: 0;
+}
+/* Nur der Name wird abgeschnitten, nicht der Farbpunkt davor. */
+.tagesziel .kursspalte span:last-child {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* Auf dem Telefon rückt der Kurs in die kleine Zeile; umgeschaltet allein per
+   CSS, damit Drehen des Geräts nichts neu bauen muss. */
+.tagesziel .kursklein { display: none; }
+@media (max-width: 700px) {
+  .tagesziel .kursspalte { display: none; }
+  .tagesziel .kursklein { display: inline; }
+}
+
+.tagesziel .zwei b,
+.tagesziel .zwei small {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tagesposten.erledigt .zwei b { text-decoration: line-through; color: var(--text-2); }
+/* Nur für Vorlesegeräte, ohne Platz zu belegen. */
+.nur-vorlesen {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+
+.tagesziel .dringlich { color: var(--dringend); }
+.tagesziel > .ikon { flex: none; color: var(--text-2); }
+.tagesziel > .ikon.pruefungszeichen { color: var(--pruefung); }
+
+.kachel .kommentar {
+  margin-top: 6px; padding-left: 8px;
+  border-left: 2px solid var(--erledigt);
+  color: var(--text-2); font-size: 14px; font-style: italic; line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Suchfeld ───────────────────────────────────────────────────────── */
+
+/* Genauso hoch wie die Knopfkapseln: 52 = 44 Punkt Bediengröße plus Polster. */
+.suchfeld {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 14px;
+  flex: 0 1 280px;
+}
+
+.suchfeld .ikon { color: var(--text-2); width: 18px; height: 18px; }
+
+.feld {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  /* Nicht kleiner: Unter 16 px zoomt WebKit beim Fokussieren von sich aus in
+     die Seite, und der verankerte Körper rollt nicht zurück. */
+  font-size: 16px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.feld:focus:not(:focus-visible) { outline: none; }
+.feld::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+/* ── Breitenregler ──────────────────────────────────────────────────────
+   Selbst gezeichnet, weil sich Safaris Systemregler nicht ans Glas anpassen
+   lässt; darunter liegt ein `input[type=range]`. */
+
+.reglerfeld {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 158px;
+  height: 44px;
+  padding: 0 4px;
+}
+
+/* Einzug = halbe Knopfbreite (13) plus Polster (4). */
+.reglerspur {
+  position: absolute;
+  left: 17px;
+  right: 17px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--kapsel-druck);
+  pointer-events: none;
+}
+
+.reglerfuellung {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  background: var(--akzent);
+}
+
+[data-breite="210"] .reglerfuellung { width: 0; }
+[data-breite="280"] .reglerfuellung { width: 50%; }
+[data-breite="350"] .reglerfuellung { width: 100%; }
+
+/* Die Rasten sitzen unter der Schiene — darauf verschwänden sie unter der Füllung. */
+.rasten {
+  position: absolute;
+  left: 17px;
+  right: 17px;
+  top: 50%;
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.rasten i {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+
+.regler {
+  position: relative;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  background: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.regler:focus { outline: none; }
+
+.regler::-webkit-slider-runnable-track { height: 44px; background: none; }
+.regler::-moz-range-track { height: 44px; background: none; }
+
+.regler::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  margin-top: 9px;
+  border-radius: 50%;
+  background: var(--flaeche);
+  border: .5px solid var(--glas-rand);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 1px 3px rgba(0, 0, 0, .28);
+}
+
+.regler::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--flaeche);
+  border: .5px solid var(--glas-rand);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 1px 3px rgba(0, 0, 0, .28);
+}
+
+.regler:focus-visible::-webkit-slider-thumb { outline: 3px solid var(--akzent); outline-offset: 2px; }
+
+/* ── Raster ───────────────────────────────────────────────────────────── */
+
+.raster-huelle {
+  flex: 1;
+  overflow: auto;
+  /* `none`, nicht `contain`: sonst federn Wochenzeile und Klassenspalte mit. */
+  overscroll-behavior: none;
+  /* Kein `-webkit-overflow-scrolling: touch`: auf dessen Pfad klebt `sticky`
+   * beim Federrollen nicht zuverlässig. */
+  /* `pinch-zoom` bleibt offen: Das Raster nimmt fast den ganzen Schirm ein,
+     ohne es gäbe es auf dem iPad keinen Seitenzoom mehr. Beim Hineinzoomen
+     wandern Wochenzeile und Kursspalte aus dem sichtbaren Ausschnitt. */
+  touch-action: pan-x pan-y pinch-zoom;
+}
+
+/* Flexkästen statt `grid`: Die Spaltenzahl steht erst beim Öffnen fest, und
+   `repeat()` nimmt keine CSS-Marke an. */
+.raster {
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  min-width: 100%;
+}
+
+.rasterzeile { display: flex; align-items: stretch; }
+
+/* `backdrop-filter` öffnet einen eigenen Stapelkontext: der z-index der Ecke
+ * gilt nur innerhalb der Kopfzeile (20); Klassenspalte 11, Zellen ohne. */
+.kopfzeile {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  -webkit-backdrop-filter: var(--glas-unschaerfe);
+  backdrop-filter: var(--glas-unschaerfe);
+}
+.klassenkopf { position: sticky; left: 0; z-index: 11; }
+.ecke { position: sticky; left: 0; z-index: 2; }
+
+.ecke, .wochenkopf, .klassenkopf, .zelle {
+  flex: none;
+  width: var(--spalte-woche);
+    border-right: 1px solid var(--trennlinie-zart);
+  border-bottom: 1px solid var(--trennlinie-zart);
+}
+
+.ecke, .klassenkopf { width: var(--spalte-klasse); }
+
+/* Eine Glasscheibe auf der Zeile, nicht je Wochenkopf eine. */
+.kopfzeile { background: var(--glas); }
+
+.wochenkopf {
+  background: none;
+  border-bottom-color: var(--trennlinie);
+}
+
+/* Klebt in beide Richtungen und braucht eine eigene deckende Fläche, sonst
+   schiene der Wochenkopf darunter durch. */
+.ecke {
+  background: linear-gradient(var(--glas), var(--glas)), var(--flaeche);
+  border-bottom-color: var(--trennlinie);
+  box-shadow: inset 0 1px 0 var(--glas-glanz);
+}
+
+.ecke {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 16px;
+}
+
+.ecke b { font-size: 15px; font-weight: 600; }
+.ecke span { font-size: 12px; color: var(--text-2); }
+
+.wochenkopf {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 10px 14px;
+  min-height: var(--kopf-hoehe);
+}
+
+.wochenkopf .zeile-1 { display: flex; align-items: center; gap: 8px; }
+.wochenkopf .kw {
+  font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;
+  /* Die längere Schulwochen-Beschriftung darf in der schmalsten Spalte nicht
+     umbrechen. */
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.wochenkopf .spanne { font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.wochenkopf .lage {
+  font-size: 11px; color: var(--text-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.wochenkopf .lage.teil { color: var(--warnung); }
+.wochenkopf.frei .kw { color: var(--text-2); }
+.wochenkopf .schirm { width: 15px; height: 15px; color: var(--akzent); }
+
+.heute-marke {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--akzent);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.wochenkopf.heute { box-shadow: inset 0 -2px 0 var(--akzent); }
+
+/* ── Klassenspalte ──────────────────────────────────────────────────── */
+
+.klassenkopf {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px 12px 17px;
+  /* Deckend: Hier rollt der Inhalt darunter durch. */
+  background:
+    linear-gradient(var(--kurs-kopf), var(--kurs-kopf)),
+    var(--flaeche);
+  box-shadow: inset 3px 0 0 var(--kurs-voll);
+  border-right-color: var(--trennlinie);
+}
+
+.klassenkopf .name { font-size: 17px; font-weight: 600; line-height: 1.25; }
+.klassenkopf .fach { font-size: 14px; color: var(--text-2); }
+.klassenkopf .notiz { font-size: 12px; color: var(--text-3); }
+
+/* ── Zellen ─────────────────────────────────────────────────────────── */
+
+.zelle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  min-height: 84px;
+  background:
+    linear-gradient(var(--kurs-zeile), var(--kurs-zeile)),
+    var(--flaeche);
+}
+
+/* Feine Striche im 10-Punkt-Abstand (14,14 = 10 × √2 quer). */
+.zelle.frei {
+  background:
+    repeating-linear-gradient(45deg,
+      rgba(120, 120, 128, .45) 0 1px, transparent 1px 14.14px),
+    linear-gradient(var(--gedaempft), var(--gedaempft)),
+    var(--flaeche);
+}
+
+.zelle.teil {
+  background:
+    repeating-linear-gradient(45deg,
+      rgba(120, 120, 128, .22) 0 1px, transparent 1px 14.14px),
+    linear-gradient(var(--kurs-zeile), var(--kurs-zeile)),
+    var(--flaeche);
+}
+
+.freimarke {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.freimarke .ikon { width: 15px; height: 15px; }
+
+/* ── Kachel ─────────────────────────────────────────────────────────── */
+
+.kachel {
+  display: block;
+  width: 100%;
+  /* Meistbenutztes Tippziel: ohne dieses Maß bliebe eine Kachel mit bloßem
+     Titel bei 37,5 px. */
+  min-height: 44px;
+  text-align: left;
+  padding: 8px 8px 8px 11px;
+  border: 1px solid var(--kurs-kante);
+  border-radius: var(--r-kachel);
+  background:
+    linear-gradient(var(--kurs-flaeche), var(--kurs-flaeche)),
+    var(--flaeche);
+  box-shadow: inset 3px 0 0 var(--kurs-voll);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.kachel:active { transform: scale(.985); }
+.kachel.erledigt { opacity: .62; }
+.kachel.pruefung { border-color: color-mix(in srgb, var(--pruefung) 70%, transparent); }
+.kachel.pruefung:hover { border-color: color-mix(in srgb, var(--pruefung) 95%, transparent); }
+/* Dringlichkeit geht der Prüfung vor: sonst bliebe sie ohne Zeichen. */
+.kachel.dringend,
+.kachel.dringend.pruefung {
+  border-color: color-mix(in srgb, var(--dringend) 80%, transparent);
+  border-width: 2px;
+}
+.kachel.dringend:hover { border-color: var(--dringend); }
+.pruefungsmarke {
+  display: flex; align-items: center; gap: 5px;
+  margin-bottom: 4px; padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--pruefung-flaeche);
+  color: var(--pruefung);
+  font-size: 11px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pruefungsmarke .ikon { width: 12px; height: 12px; flex: none; }
+.marke.pruefung-marke { color: var(--pruefung); }
+.marke.dringend-marke { color: var(--dringend); }
+
+.datumsmarke {
+  margin-bottom: 4px;
+  font-size: 11px;
+  color: var(--text-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.kachel .kopf { display: flex; align-items: flex-start; gap: 6px; }
+
+.kachel .titel { flex: 1; font-size: 15px; font-weight: 500; line-height: 1.3; }
+.kachel.erledigt .titel { text-decoration: line-through; text-decoration-color: var(--text-2); }
+.kachel .haken { color: var(--erledigt); flex: none; margin-top: 2px; display: inline-flex; }
+.kachel .haken .ikon { width: 17px; height: 17px; }
+
+.kachel .text {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+.verweisliste { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; }
+
+.verweis {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: var(--gedaempft);
+  font-size: 12px;
+  color: var(--text-2);
+  min-width: 0;
+}
+
+.verweis span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.verweis .ikon { width: 14px; height: 14px; flex: none; }
+.verweis.mehr { background: none; color: var(--text-3); padding-left: 0; }
+
+/* ── Leerzustand ────────────────────────────────────────────────────── */
+
+.leer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 40px;
+  text-align: center;
+}
+
+.leer .ikon-gross {
+  width: 64px; height: 64px; color: var(--text-3);
+  fill: none; stroke: currentColor; stroke-width: 1.2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+.leer h2 { margin: 0; font-size: 26px; font-weight: 600; }
+.leer p { margin: 0; max-width: 54ch; color: var(--text-2); font-size: 16px; }
+.leer .knopf { min-height: 50px; font-size: 17px; }
+.leer .knopfreihe { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+/* ── Blätter ────────────────────────────────────────────────────────── */
+
+.blatt {
+  width: min(720px, 92vw);
+  max-height: 86vh;
+  padding: 0;
+  border: 0;
+  border-radius: 22px;
+  background: var(--flaeche);
+  color: var(--text);
+  box-shadow: inset 0 1px 0 var(--glas-glanz), 0 24px 70px rgba(0, 0, 0, .3);
+  overflow: hidden;
+}
+
+.blatt::backdrop {
+  background: rgba(0, 0, 0, .32);
+  -webkit-backdrop-filter: saturate(140%) blur(6px);
+  backdrop-filter: saturate(140%) blur(6px);
+}
+
+.blatt-innen { display: flex; flex-direction: column; max-height: 86vh; }
+
+.blatt-kopf {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid var(--trennlinie-zart);
+}
+
+.blatt-kopf h2 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.25; }
+.blatt-kopf p { margin: 2px 0 0; font-size: 14px; color: var(--text-2); }
+.blatt-kopf .kopftext { flex: 1; min-width: 0; }
+
+.blatt-inhalt {
+  padding: 16px 20px 24px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* `min-width: 0` hebt `min-width: auto` für Flex-Kinder auf; sonst sprengt
+   das längste Wort das Blatt. */
+.abschnitt { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+.abschnitt > h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.abschnitt > p { margin: 0; font-size: 15px; line-height: 1.5;
+                 overflow-wrap: break-word; }
+.abschnitt > p.hinweis { font-size: 13px; color: var(--text-2); }
+
+/* Das Passphrase-Blatt */
+.blatt-schmal { width: min(520px, 92vw); }
+.feldzeile { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--text-2); }
+.feld.eingabe {
+  flex: none; width: 100%; box-sizing: border-box; min-height: 44px; padding: 8px 12px;
+  border-radius: 12px; border: 1px solid var(--trennlinie-zart);
+  background: var(--flaeche-2); color: var(--text);
+}
+.feld.eingabe.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .04em; }
+.feld.eingabe:focus-visible { outline: 2px solid var(--akzent); outline-offset: 1px; }
+.unsichtbar { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+#passphrase-fehler:empty { display: none; }
+#passphrase-fehler { color: var(--warnung); }
+.abschnitt .knopfreihe { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.listenposten .zwei .tagreihe { margin-top: 6px; }
+.abschnitt a { color: var(--akzent); }
+
+/* Eigene Ziffern per Zähler: Der eingebaute Listenpunkt liegt außerhalb des
+   Kastens — in WebKit standen die Nummern halb im Nichts. */
+.schritte {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: schritt;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.schritte li {
+  position: relative;
+  padding-left: 2.1em;
+  overflow-wrap: break-word;
+}
+
+.schritte li + li { margin-top: 8px; }
+
+.schritte li::before {
+  counter-increment: schritt;
+  content: counter(schritt) ".";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1.6em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+}
+
+.werte { display: flex; flex-direction: column; margin: 0;
+         border-radius: 12px; background: var(--grund); }
+
+.wert {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 10px 14px;
+  font-size: 15px;
+  border-bottom: 1px solid var(--trennlinie-zart);
+}
+
+.wert:last-child { border-bottom: 0; }
+.wert dt { color: var(--text-2); flex: none; }
+.wert dd { margin: 0; text-align: right; min-width: 0; overflow-wrap: anywhere; }
+
+.beschreibung { white-space: pre-wrap; font-size: 16px; line-height: 1.5; }
+
+.liste { display: flex; flex-direction: column; gap: 6px; }
+
+.listenposten {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--grund);
+  font-size: 15px;
+  min-width: 0;
+}
+
+.listenposten > .ikon { color: var(--text-2); flex: none; }
+.listenposten .zwei { min-width: 0; flex: 1; }
+.listenposten .zwei b { display: block; font-weight: 500;
+                        overflow-wrap: break-word; }
+.listenposten .zwei small { display: block; font-size: 12px; color: var(--text-2);
+                            overflow-wrap: anywhere; }
+
+a.listenposten { color: inherit; text-decoration: none; min-height: 44px; }
+a.listenposten:active { background: var(--gedaempft); }
+
+/* Ohne `.farbig` steht kein Ton fest — dann ein neutraler Punkt. */
+.farbpunkt { width: 12px; height: 12px; border-radius: 50%; flex: none;
+             background: var(--kurs-voll, var(--text-3)); }
+
+.marke {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--gedaempft);
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.marke.erledigt-marke { color: var(--erledigt); }
+
+/* ── Wochentage ─────────────────────────────────────────────────────── */
+/* Die fünf Kästchen aus den Dialogen der App, nur lesend: Unterrichtstage
+   der Klasse bzw. des Kurses getönt und fett, der Tag des Vorhabens
+   angekreuzt. Immer alle fünf, wie dort. */
+.tagreihe { display: inline-flex; flex-wrap: wrap; gap: 4px; align-self: flex-start; }
+
+.tagreihe .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 7px;
+  border: 1px solid var(--trennlinie-zart);
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.tagreihe .tag.unterricht {
+  color: var(--text);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--akzent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--akzent) 30%, transparent);
+}
+
+.tagreihe .tag.gewaehlt {
+  color: #fff;
+  background: var(--akzent);
+  border-color: var(--akzent);
+}
+
+.tagreihe .tag.gewaehlt::before { content: "✓"; font-weight: 700; }
+
+/* ── Meldungen ──────────────────────────────────────────────────────── */
+
+.melder {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.meldung {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(620px, 90vw);
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-size: 15px;
+}
+
+.meldung .ikon { color: var(--erledigt); }
+.meldung.warnend .ikon { color: var(--warnung); }
+
+/* ── Fallenlassen ───────────────────────────────────────────────────── */
+
+body.zielt::after {
+  content: "";
+  position: fixed;
+  inset: 12px;
+  border: 3px dashed var(--akzent);
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 60;
+}
+
+/* ── Drucken ────────────────────────────────────────────────────────── */
+
+/* Steht am Schirm nie im Weg und ist außerhalb des Druckens auch leer; gefüllt
+   wird sie erst in `druckfassungBauen`. */
+.druckfassung { display: none; }
+
+@media print {
+  /* Auf diese Breite ist die Aufteilung in Wochenblöcke gerechnet
+     (`DRUCK_BLATTBREITE`): 297 mm − 2 × 10 mm = 277 mm ≈ 1047 px. */
+  @page { size: A4 landscape; margin: 10mm; }
+
+  .kopfleiste, .melder, .blatt, .leer { display: none !important; }
+  /* Das rollende Raster passt auf kein Blatt; gedruckt wird die Tafel. */
+  .raster-huelle { display: none !important; }
+  /* Papier ist weiß. Ohne diese Rückstellung behielten Zellen, Klassenköpfe
+     und Kacheln bei dunkler Darstellung ihre Flächenfarbe (#1c1c1e), während
+     die Schrift unten auf Schwarz gesetzt wird — schwarz auf schwarz, und die
+     Patrone leer. Die Farbwerte spiegeln die helle Palette. */
+  [data-thema="dunkel"] {
+    color-scheme: light;
+    --grund: #ffffff;
+    --flaeche: #ffffff;
+    --flaeche-2: #f7f7fa;
+    --schleier-1: transparent;
+    --schleier-2: transparent;
+    --glas: transparent;
+    --kapsel: transparent;
+    --text: #000000;
+    --text-2: rgba(60, 60, 67, .72);
+    --text-3: rgba(60, 60, 67, .5);
+    --trennlinie: rgba(60, 60, 67, .34);
+    --trennlinie-zart: rgba(60, 60, 67, .18);
+    --gedaempft: rgba(120, 120, 128, .12);
+    /* Auch die Signalfarben: Der Dringend-Rahmen käme auf Papier sonst auf
+       Kontrast 1,4 statt 3,2, die Ferienzeile einer angeschnittenen Woche auf
+       2,1 statt 5,3. */
+    --akzent: #007aff;
+    --warnung: #c93400;
+    --erledigt: #248a3d;
+    --pruefung: #d70015;
+    --pruefung-flaeche: rgba(215, 0, 21, .12);
+    --dringend: #a06c03;
+    --s-basis: 62;
+    --l-basis: 46;
+    --schatten: none;
+  }
+  /* Zurück in den Fluss: ein verankerter Körper trägt nichts zur Umbruchhöhe
+     bei — gedruckt käme nur ein Blatt. */
+  html, body { height: auto; }
+  body {
+    position: static;
+    inset: auto;
+    display: block;
+    background: #fff;
+    color: #000;
+    padding: 0;
+    overflow: visible;
+  }
+  .druckfassung { display: block; }
+
+  /* Zeilenfarbe und Schraffur freier Wochen sind Bedeutung, keine Zierde;
+     ohne diese Angabe ließe der Browser beim Drucken beides weg. */
+  .druckfassung, .druckfassung * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Jeder Wochenblock beginnt auf einem eigenen Blatt; der letzte hängt keine
+     leere Seite an. */
+  .druckblatt { break-after: page; }
+  .druckblatt:last-child { break-after: auto; }
+
+  .druckkopf { display: flex; align-items: baseline; gap: 12px; margin: 0 0 6px; }
+  .druckkopf .titel { font-size: 12px; font-weight: 600; }
+  .druckkopf .spanne { font-size: 10px; color: var(--text-2); }
+  .druckkopf .zaehler { margin-left: auto; font-size: 9px; color: var(--text-2); }
+
+  /* `fixed`: Die Spaltenbreiten stehen mit der ersten Zeile fest — ohne das
+     dehnte ein langes Wort seine Spalte über den Blattrand hinaus. */
+  .drucktafel { width: 100%; table-layout: fixed; border-collapse: collapse; }
+  /* Dasselbe Maß wie `DRUCK_SPALTE_KLASSE`, auf dem die Aufteilung beruht:
+     150 Punkt der App sind 200 CSS-Pixel. */
+  .drucktafel col.spalte-klasse { width: 200px; }
+  /* Läuft ein Block über mehr als ein Blatt, wiederholt sich die Wochenzeile;
+     das leistet kein `break-after`. */
+  .drucktafel thead { display: table-header-group; }
+  .drucktafel th, .drucktafel td {
+    padding: 5px;
+    border: 1px solid var(--trennlinie-zart);
+    font-weight: 400;
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+    break-inside: avoid;
+  }
+  .drucktafel tr { break-inside: avoid; }
+  .drucktafel .ecke b { font-size: 11px; font-weight: 600; }
+  .drucktafel .ecke span { display: block; font-size: 9px; color: var(--text-2); }
+  /* Am Schirm sind die Köpfe klebende Flexkästen fester Breite; in der Tafel
+     bestimmt die Spalte die Breite, und die Kinder stapeln sich als Blöcke.
+     `.ecke` gehört dazu — sonst behielte sie ihre 240 px und schöbe die
+     Wochenspalten über den Blattrand. */
+  .drucktafel .ecke, .drucktafel .wochenkopf, .drucktafel .klassenkopf,
+  .drucktafel .zelle {
+    position: static;
+    display: table-cell;
+    width: auto;
+    min-height: 0;
+  }
+  .drucktafel .ecke { background: none; }
+  .drucktafel .wochenkopf .kw { font-size: 11px; }
+  .drucktafel .wochenkopf .spanne { font-size: 9px; }
+  .drucktafel .wochenkopf .lage { font-size: 8px; }
+  .drucktafel .klassenkopf .name { font-size: 12px; }
+  .drucktafel .klassenkopf .fach { font-size: 10px; }
+  .drucktafel .klassenkopf .notiz { font-size: 9px; }
+  /* `gap` wirkt nur im Flexkasten; in der Tafel setzen die Kacheln den Abstand. */
+  .drucktafel .zelle > * + * { margin-top: 4px; }
+  .drucktafel .freimarke { font-size: 9px; }
+
+  /* Auf Papier wird nicht getippt; das Tippziel gäbe nur Höhe her. */
+  .kachel { box-shadow: none; min-height: 0; padding: 5px 5px 5px 7px; }
+  .kachel .titel { font-size: 11px; }
+  .kachel .kommentar, .verweis { font-size: 9px; }
+  .pruefungsmarke, .datumsmarke { font-size: 9px; }
+  /* Auf dem Blatt gibt es kein Antippen zum Nachlesen: Die Beschreibung steht
+     vollständig, ohne die drei Zeilen des Rasters. */
+  .kachel .text {
+    display: block;
+    font-size: 9px;
+    -webkit-line-clamp: none;
+    line-clamp: none;
+    overflow: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knopf:active, .kachel:active { transform: none; }
+}
+</style>
+</head>
+<body data-thema="hell" data-breite="280">
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-verweis" viewBox="0 0 24 24">
+      <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/>
+      <path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>
+    </symbol>
+    <symbol id="i-auswaerts" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></symbol>
+    <symbol id="i-ferien" viewBox="0 0 24 24">
+      <g transform="rotate(-14 12 12)">
+        <path d="M3.2 12.4a8.8 8.8 0 0 1 17.6 0q-2.93 2.3-5.87 0-2.93 2.3-5.87 0-2.93 2.3-5.87 0z"/>
+        <path d="M12 12.4V21"/>
+      </g>
+    </symbol>
+    <symbol id="i-haken" viewBox="0 0 24 24"><path d="m5 12.8 4.6 4.7L19.4 6.5"/></symbol>
+    <symbol id="i-haken-voll" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="currentColor" stroke="none"/>
+      <path d="m8.1 12.2 2.7 2.7 5.1-5.7" stroke="#fff" stroke-width="2.1"/>
+    </symbol>
+    <symbol id="i-suche" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/>
+    </symbol>
+    <symbol id="i-kalender" viewBox="0 0 24 24">
+      <rect x="3" y="5" width="18" height="16" rx="2"/>
+      <path d="M3 10h18M8 3v4M16 3v4"/>
+    </symbol>
+    <symbol id="i-kreis" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></symbol>
+    <!-- Muss vom Kalender daneben unterscheidbar bleiben. -->
+    <symbol id="i-tagesliste" viewBox="0 0 24 24">
+      <path d="m3 7.4 1.9 1.9L8.4 5.5"/>
+      <circle cx="5.4" cy="16.6" r="2.3"/>
+      <path d="M11.8 7.4h9M11.8 16.6h9"/>
+    </symbol>
+    <symbol id="i-klassen" viewBox="0 0 24 24">
+      <circle cx="9" cy="8" r="3.2"/>
+      <path d="M3 20a6 6 0 0 1 12 0"/>
+      <path d="M16.5 5.6a3.2 3.2 0 0 1 0 6.3M17 14.4a6 6 0 0 1 4 5.6"/>
+    </symbol>
+    <symbol id="i-info" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/>
+    </symbol>
+    <symbol id="i-thema" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-oeffnen" viewBox="0 0 24 24">
+      <path d="M12 3v11.5M16 10.5 12 14.5 8 10.5"/>
+      <!-- Oberkante nur in der Mitte offen, sonst ein anderes Zeichen. -->
+      <path d="M8.5 8H7a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-7a3 3 0 0 0-3-3h-1.5"/>
+    </symbol>
+    <symbol id="i-schliessen" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-stift" viewBox="0 0 24 24">
+      <path d="M4.5 19.5h4L20 8a2.83 2.83 0 0 0-4-4L4.5 15.5z"/>
+      <path d="M14.5 5.5 18.5 9.5"/>
+    </symbol>
+    <symbol id="i-warnung" viewBox="0 0 24 24">
+      <path d="M12 4 2.5 20h19z"/><path d="M12 10v4M12 17h.01"/>
+    </symbol>
+    <!-- Freistehende Quadrate, sonst nicht von „tablecells“ zu unterscheiden. -->
+    <symbol id="i-pruefung" viewBox="0 0 24 24">
+      <path d="M9 4h6v3H9zM9 5.5H6.5A1.5 1.5 0 0 0 5 7v12a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V7a1.5 1.5 0 0 0-1.5-1.5H15"/>
+      <path d="M8.5 12h7M8.5 16h4"/>
+    </symbol>
+    <symbol id="i-diskette" viewBox="0 0 24 24">
+      <path d="M5 4h10.5L20 8.5V20H5z"/>
+      <path d="M9 4v4.5h6V4"/>
+      <path d="M8 13.5h8V20H8z"/>
+    </symbol>
+    <symbol id="i-raster" viewBox="0 0 24 24">
+      <rect x="2.5" y="6" width="5.5" height="5.5" rx="1.5"/>
+      <rect x="9.25" y="6" width="5.5" height="5.5" rx="1.5"/>
+      <rect x="16" y="6" width="5.5" height="5.5" rx="1.5"/>
+      <rect x="2.5" y="12.5" width="5.5" height="5.5" rx="1.5"/>
+      <rect x="9.25" y="12.5" width="5.5" height="5.5" rx="1.5"/>
+      <rect x="16" y="12.5" width="5.5" height="5.5" rx="1.5"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="kopfleiste glas">
+  <div class="titelblock">
+    <h1 class="plan-titel" id="plan-titel">Unterrichtsplanung</h1>
+    <div class="plan-unter" id="plan-unter">Noch keine Datei geöffnet</div>
+  </div>
+
+  <div class="leiste-gruppe kapsel" id="dateigruppe">
+    <button class="knopf stumm nur-symbol" id="btn-oeffnen"
+            title="Planungsdatei öffnen (⌘O)" aria-label="Planungsdatei öffnen">
+      <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-oeffnen"></use></svg>
+    </button>
+  </div>
+
+  <div class="leiste-gruppe kapsel" id="statusgruppe" hidden>
+    <button class="knopf stumm nur-symbol" id="btn-status"
+            title="Status speichern" aria-label="Status speichern">
+      <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-diskette"></use></svg>
+    </button>
+  </div>
+
+  <div class="leiste-gruppe kapsel" id="werkzeuge" hidden>
+    <button class="knopf stumm nur-symbol" id="btn-heute"
+            title="Zur laufenden Woche (⌘J)" aria-label="Zur laufenden Woche">
+      <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-kalender"></use></svg>
+    </button>
+    <button class="knopf stumm nur-symbol" id="btn-tagesliste"
+            title="Heute anstehende Vorhaben — Liste zum Abhaken (⌘D)"
+            aria-label="Heute anstehende Vorhaben">
+      <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-tagesliste"></use></svg>
+    </button>
+    <button class="knopf stumm nur-symbol" id="btn-klassen" title="Klassen/Kurse und Fächer"
+            aria-label="Klassen/Kurse und Fächer">
+      <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-klassen"></use></svg>
+    </button>
+    <button class="knopf stumm nur-symbol" id="btn-ferien"
+            title="Ferien und unterrichtsfreie Zeiten"
+            aria-label="Ferien und unterrichtsfreie Zeiten">
+      <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-ferien"></use></svg>
+    </button>
+    <button class="knopf stumm nur-symbol" id="btn-pruefungen"
+            title="Übersicht aller Prüfungstermine"
+            aria-label="Übersicht aller Prüfungstermine">
+      <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-pruefung"></use></svg>
+    </button>
+  </div>
+
+  <div class="leiste-gruppe kapsel" id="reglergruppe" hidden>
+    <div class="reglerfeld">
+      <div class="reglerspur" aria-hidden="true"><div class="reglerfuellung"></div></div>
+      <div class="rasten" aria-hidden="true"><i></i><i></i><i></i></div>
+      <input type="range" class="regler" id="breite" min="210" max="350" step="70"
+             value="280" aria-label="Spaltenbreite der Wochen"
+             title="Spaltenbreite der Wochen — drei Stufen">
+    </div>
+  </div>
+
+  <div class="leiste-gruppe kapsel">
+    <button class="knopf stumm nur-symbol" id="btn-info" title="Über diese Ansicht"
+            aria-label="Über diese Ansicht">
+      <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-info"></use></svg>
+    </button>
+    <button class="knopf stumm nur-symbol" id="btn-thema" title="Hell oder dunkel"
+            aria-label="Darstellung wechseln">
+      <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-thema"></use></svg>
+    </button>
+  </div>
+
+  <div class="suchfeld kapsel" id="suchhuelle" hidden>
+    <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-suche"></use></svg>
+    <input class="feld" type="search" id="suche" placeholder="Vorhaben durchsuchen"
+           aria-label="Vorhaben durchsuchen" autocomplete="off" spellcheck="false"
+           enterkeyhint="search">
+  </div>
+</header>
+
+<div class="raster-huelle" id="raster-huelle" hidden>
+  <div class="raster" id="raster" role="grid"
+       aria-label="Wochenraster der Unterrichtsvorhaben"></div>
+</div>
+
+<!-- Nur für den Ausdruck; am Schirm `display: none` und immer leer. -->
+<div class="druckfassung" id="druckfassung"></div>
+
+<div class="leer" id="leer">
+  <svg class="ikon-gross" aria-hidden="true" focusable="false"><use href="#i-raster"></use></svg>
+  <h2>Unterrichtsplanung ansehen</h2>
+  <p>Öffne eine Planungsdatei, die die macOS-App gesichert hat — die Sicherungskopie
+     aus dem gewählten Zielordner oder einen Export über „Als JSON sichern“. Ist sie
+     verschlüsselt, fragt die Ansicht nach der Passphrase. Diese Ansicht zeigt die
+     Planung nur an; ändern kann sie nichts.</p>
+  <div class="knopfreihe">
+    <button class="knopf betont" id="leer-oeffnen">
+      <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-oeffnen"></use></svg>
+      <span>Planungsdatei öffnen</span>
+    </button>
+    <button class="knopf frei" id="leer-info">
+      <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-info"></use></svg>
+      <span>Wie kommt die Datei aufs iPad?</span>
+    </button>
+  </div>
+</div>
+
+<input type="file" id="dateiwahl" accept="application/json,.json" hidden>
+
+<div class="melder" id="melder" aria-live="polite"></div>
+
+<dialog class="blatt" id="blatt-vorhaben" aria-labelledby="vorhaben-titel">
+  <div class="blatt-innen">
+    <div class="blatt-kopf">
+      <div class="kopftext">
+        <h2 id="vorhaben-titel">Vorhaben</h2>
+        <p id="vorhaben-unter"></p>
+      </div>
+      <button class="knopf stumm nur-symbol kapsel schliessen" aria-label="Schließen">
+        <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-schliessen"></use></svg>
+      </button>
+    </div>
+    <div class="blatt-inhalt" id="vorhaben-inhalt"></div>
+  </div>
+</dialog>
+
+<dialog class="blatt" id="blatt-klassen" aria-labelledby="klassen-titel">
+  <div class="blatt-innen">
+    <div class="blatt-kopf">
+      <div class="kopftext">
+        <h2 id="klassen-titel">Klassen/Kurse</h2>
+        <p id="klassen-unter"></p>
+      </div>
+      <button class="knopf stumm nur-symbol kapsel schliessen" aria-label="Schließen">
+        <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-schliessen"></use></svg>
+      </button>
+    </div>
+    <div class="blatt-inhalt" id="klassen-inhalt"></div>
+  </div>
+</dialog>
+
+<dialog class="blatt" id="blatt-ferien" aria-labelledby="ferien-titel">
+  <div class="blatt-innen">
+    <div class="blatt-kopf">
+      <div class="kopftext">
+        <h2 id="ferien-titel">Unterrichtsfreie Zeiten</h2>
+        <p id="ferien-unter"></p>
+      </div>
+      <button class="knopf stumm nur-symbol kapsel schliessen" aria-label="Schließen">
+        <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-schliessen"></use></svg>
+      </button>
+    </div>
+    <div class="blatt-inhalt" id="ferien-inhalt"></div>
+  </div>
+</dialog>
+
+<dialog class="blatt" id="blatt-pruefungen" aria-labelledby="pruefungen-titel">
+  <div class="blatt-innen">
+    <div class="blatt-kopf">
+      <div class="kopftext">
+        <h2 id="pruefungen-titel">Prüfungen</h2>
+        <p id="pruefungen-unter"></p>
+      </div>
+      <button class="knopf stumm nur-symbol kapsel schliessen" aria-label="Schließen">
+        <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-schliessen"></use></svg>
+      </button>
+    </div>
+    <div class="blatt-inhalt" id="pruefungen-inhalt"></div>
+  </div>
+</dialog>
+
+<dialog class="blatt" id="blatt-tagesliste" aria-labelledby="tagesliste-titel">
+  <div class="blatt-innen">
+    <div class="blatt-kopf">
+      <div class="kopftext">
+        <h2 id="tagesliste-titel">Heute anstehende Vorhaben</h2>
+        <p id="tagesliste-unter"></p>
+      </div>
+      <button class="knopf stumm nur-symbol kapsel schliessen" aria-label="Schließen">
+        <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-schliessen"></use></svg>
+      </button>
+    </div>
+    <div class="blatt-inhalt" id="tagesliste-inhalt"></div>
+  </div>
+</dialog>
+
+<dialog class="blatt blatt-schmal" id="blatt-passphrase" aria-labelledby="passphrase-titel">
+  <div class="blatt-innen">
+    <div class="blatt-kopf">
+      <div class="kopftext">
+        <h2 id="passphrase-titel">Planung entsperren</h2>
+        <p id="passphrase-unter">Die Datei ist verschlüsselt</p>
+      </div>
+      <button class="knopf stumm nur-symbol kapsel schliessen" aria-label="Schließen">
+        <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-schliessen"></use></svg>
+      </button>
+    </div>
+    <div class="blatt-inhalt">
+      <!-- Ein echtes Formular mit Benutzername, damit Safari die Passphrase im
+           Schlüsselbund des Systems sichern darf; abgeschickt wird nie — die
+           Richtlinie erlaubt kein form-action, der Handler fängt ab. -->
+      <form id="passphrase-formular" class="abschnitt" autocomplete="on">
+        <input type="text" id="passphrase-nutzer" name="username" autocomplete="username"
+               class="unsichtbar" tabindex="-1" aria-hidden="true" readonly>
+        <label class="feldzeile" id="passphrase-zeile">
+          <span>Passphrase</span>
+          <input type="password" id="passphrase-feld" name="password" class="feld eingabe"
+                 autocomplete="current-password" autocapitalize="none" spellcheck="false"
+                 enterkeyhint="go">
+        </label>
+        <label class="feldzeile" id="wiederherstellung-zeile" hidden>
+          <span>Wiederherstellungsschlüssel</span>
+          <input type="text" id="wiederherstellung-feld" name="wiederherstellung"
+                 class="feld eingabe mono" autocomplete="off" autocapitalize="characters"
+                 spellcheck="false" enterkeyhint="go"
+                 placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX">
+        </label>
+        <p class="hinweis" id="passphrase-fehler" aria-live="polite"></p>
+        <p class="hinweis">Die Passphrase wird nur zum Öffnen gebraucht und nicht behalten.
+          Der daraus abgeleitete Datenschlüssel bleibt für diese Sitzung im Arbeitsspeicher
+          des Browsers; nach dem Neuladen wird neu gefragt. Der Stand dieses Geräts wird
+          unter demselben Schlüssel abgelegt.</p>
+        <div class="knopfreihe">
+          <button type="button" class="knopf frei" id="passphrase-umschalter">Stattdessen den
+            Wiederherstellungsschlüssel eingeben</button>
+          <button type="submit" class="knopf betont">Entsperren</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="blatt" id="blatt-info" aria-labelledby="info-titel">
+  <div class="blatt-innen">
+    <div class="blatt-kopf">
+      <div class="kopftext">
+        <h2 id="info-titel">Über diese Ansicht</h2>
+        <p>Ansicht der Unterrichtsplanung — mit Haken und Kommentar</p>
+      </div>
+      <button class="knopf stumm nur-symbol kapsel schliessen" aria-label="Schließen">
+        <svg class="ikon" aria-hidden="true" focusable="false"><use href="#i-schliessen"></use></svg>
+      </button>
+    </div>
+    <div class="blatt-inhalt" id="info-inhalt"></div>
+  </div>
+</dialog>
+
+<script>
+"use strict";
+/* ═══════════════════════════════════════════════════════════════════════
+   Ansichtsfassung — liest und zeigt; geschrieben werden nur Haken und
+   Kommentar, in `localStorage` und nach `current_status.json`.
+
+   Die Rechenregeln stammen aus der macOS-App; weichen sie ab, sieht dieselbe
+   Planung hier anders aus.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+// ── Farbwelt (Modell/Farbwelt.swift) ──────────────────────────────────
+// Gespeichert wird die Stelle in dieser Liste; sie darf sich nie ändern.
+
+const GRUNDFARBEN = [
+  { schluessel: "rot",     name: "Rot",     h: 355, dl:  0, ds: 0 },
+  { schluessel: "orange",  name: "Orange",  h:  40, dl: -3, ds: 8 },
+  { schluessel: "limette", name: "Limette", h:  85, dl: -6, ds: 5 },
+  { schluessel: "gruen",   name: "Grün",    h: 130, dl: -3, ds: 0 },
+  { schluessel: "tuerkis", name: "Türkis",  h: 175, dl: -3, ds: 8 },
+  { schluessel: "blau",    name: "Blau",    h: 220, dl:  2, ds: 0 },
+  { schluessel: "violett", name: "Violett", h: 265, dl:  5, ds: 0 },
+  { schluessel: "magenta", name: "Magenta", h: 310, dl:  2, ds: 0 },
+];
+
+const STUFEN = [
+  { schluessel: "mittel", name: "mittel", dl:   0 },
+  { schluessel: "hell",   name: "hell",   dl:  12 },
+  { schluessel: "dunkel", name: "dunkel", dl: -15 },
+];
+
+const TOENE = [];
+for (const stufe of STUFEN) {
+  for (const grund of GRUNDFARBEN) {
+    TOENE.push({
+      stelle: TOENE.length,
+      schluessel: grund.schluessel + "-" + stufe.schluessel,
+      grundfarbe: grund.schluessel,
+      stufe: stufe.schluessel,
+      h: grund.h,
+      dl: grund.dl + stufe.dl,
+      ds: grund.ds,
+      name: grund.name + " · " + stufe.name,
+    });
+  }
+}
+
+const TON_NACH_SCHLUESSEL = new Map(TOENE.map((t) => [t.schluessel, t]));
+const OHNE_FARBE = -1;
+
+function ton(index) {
+  return Number.isInteger(index) && TOENE[index] ? TOENE[index] : TOENE[0];
+}
+
+function istGueltigeFarbe(index) {
+  return Number.isInteger(index) && index >= 0 && index < TOENE.length;
+}
+
+function farbstelle(schluessel) {
+  const gefunden = TON_NACH_SCHLUESSEL.get(schluessel);
+  return gefunden ? gefunden.stelle : null;
+}
+
+/* Gestutzt wird mit den Zeichenmengen der App, nicht mit `String.trim()`:
+   Das JS-Leerzeichen kennt U+FEFF und kein U+0085, `CharacterSet` genau
+   umgekehrt. An einer Kennung entscheidet das darüber, ob ein Vorhaben zu
+   seiner Zeile findet — hier und dort verschieden wäre schlimmer als beides. */
+
+/** `CharacterSet.whitespaces`: Zeichenklasse Zs und der Tabulator. */
+const ZEICHEN_LEER = "\\t\\u0020\\u00a0\\u1680\\u2000-\\u200a\\u202f\\u205f\\u3000";
+/** `CharacterSet.newlines`: U+000A bis U+000D, U+0085, U+2028, U+2029. */
+const ZEICHEN_ZEILE = "\\u000a-\\u000d\\u0085\\u2028\\u2029";
+const STUTZ_LEER = new RegExp("^[" + ZEICHEN_LEER + "]+|[" + ZEICHEN_LEER + "]+$", "g");
+const STUTZ_BEIDE = new RegExp("^[" + ZEICHEN_LEER + ZEICHEN_ZEILE + "]+|["
+                               + ZEICHEN_LEER + ZEICHEN_ZEILE + "]+$", "g");
+
+/** Wie `trimmingCharacters(in: .whitespaces)` — für Kennungen. */
+function stutzen(text) {
+  return String(text).replace(STUTZ_LEER, "");
+}
+
+/** Wie `trimmingCharacters(in: .whitespacesAndNewlines)`. */
+function stutzenMitZeilen(text) {
+  return String(text).replace(STUTZ_BEIDE, "");
+}
+
+function fachSchluessel(fach) {
+  return stutzenMitZeilen(fach ?? "").toLowerCase();
+}
+
+/** Die erste Farbe, die niemand trägt; ist die Palette voll, die seltenste. */
+function naechsteFreieFarbe(nutzung) {
+  let beste = 0;
+  let wenigste = Infinity;
+  for (const eintrag of TOENE) {
+    const zahl = nutzung.get(eintrag.stelle) ?? 0;
+    if (zahl === 0) return eintrag.stelle;
+    if (zahl < wenigste) {
+      wenigste = zahl;
+      beste = eintrag.stelle;
+    }
+  }
+  return beste;
+}
+
+function farbnutzung(planung) {
+  const zaehler = new Map();
+  for (const wert of Object.values(planung.fachfarben)) {
+    const stelle = farbstelle(wert);
+    if (stelle !== null) zaehler.set(stelle, (zaehler.get(stelle) ?? 0) + 1);
+  }
+  for (const klasse of planung.klassen) {
+    if (istGueltigeFarbe(klasse.farbe)) {
+      zaehler.set(klasse.farbe, (zaehler.get(klasse.farbe) ?? 0) + 1);
+    }
+  }
+  return zaehler;
+}
+
+/** Wortgleich zu `Planung.fachfarbenWirksam()`: festgelegt vor hergeleitet.
+    Das `fachfarbe(_:)` der App fehlt hier — die Ansicht schlägt zweimal nach
+    und käme mit der Einzelabfrage je Fach auf denselben Aufbau. */
+function fachfarbenWirksam(planung) {
+  const karte = new Map();
+  for (const klasse of planung.klassen) {
+    if (klasse.farbeManuell || !istGueltigeFarbe(klasse.farbe)) continue;
+    const schluessel = fachSchluessel(klasse.fach);
+    if (schluessel === "" || karte.has(schluessel)) continue;
+    karte.set(schluessel, klasse.farbe);
+  }
+  for (const [schluessel, wert] of Object.entries(planung.fachfarben)) {
+    const stelle = farbstelle(wert);
+    if (stelle !== null) karte.set(schluessel, stelle);
+  }
+  return karte;
+}
+
+/** Wortgleich zu `Planung.farbenVervollstaendigen()`. */
+function farbenVervollstaendigen(planung) {
+  const karte = fachfarbenWirksam(planung);
+  const nutzung = farbnutzung(planung);
+  for (const klasse of planung.klassen) {
+    if (istGueltigeFarbe(klasse.farbe)) continue;
+    const schluessel = fachSchluessel(klasse.fach);
+    const farbe = karte.get(schluessel) ?? naechsteFreieFarbe(nutzung);
+    klasse.farbe = farbe;
+    nutzung.set(farbe, (nutzung.get(farbe) ?? 0) + 1);
+    if (schluessel !== "" && !klasse.farbeManuell && !karte.has(schluessel)) {
+      karte.set(schluessel, farbe);
+    }
+  }
+}
+
+// ── Übergang von der älteren Palette, Dateiversion 1 (Modell/Farbwelt.swift) ──
+// 35 Plätze in zehn „Familien“; Dateien mit `version` unter 2 werden übersetzt.
+
+const ALTE_PLAETZE = [
+  ["biologie", 4], ["chemie", 3], ["geographie", 3], ["informatik", 7],
+  ["ag", 3], ["rot", 3], ["tuerkis", 3], ["magenta", 3], ["limette", 3],
+  ["neutral", 3],
+];
+
+const ALTE_UEBERSETZUNG = new Map([
+  ["biologie", "gruen-mittel"],
+  ["chemie", "orange-mittel"],
+  ["geographie", "orange-dunkel"],
+  ["informatik", "blau-mittel"],
+  ["ag", "violett-mittel"],
+  ["rot", "rot-mittel"],
+  ["tuerkis", "tuerkis-mittel"],
+  ["magenta", "magenta-mittel"],
+  ["limette", "limette-mittel"],
+]);
+
+function alteFamilie(platz) {
+  if (!Number.isInteger(platz) || platz < 0) return null;
+  let laufend = 0;
+  for (const [familie, anzahl] of ALTE_PLAETZE) {
+    laufend += anzahl;
+    if (platz < laufend) return familie;
+  }
+  return null;
+}
+
+function alterTonZuPlatz(platz) {
+  const familie = alteFamilie(platz);
+  return familie === null ? null : (ALTE_UEBERSETZUNG.get(familie) ?? null);
+}
+
+function alterTonZuFamilie(familie) {
+  return ALTE_UEBERSETZUNG.get(familie) ?? null;
+}
+
+// ── Kursfarben (Gestaltung/Kursfarben.swift) ──────────────────────────
+
+function farbeAnlegen(element, farbindex) {
+  // Erst räumen: Das Blatt wird wiederverwendet.
+  for (const vorhanden of [...element.classList]) {
+    if (vorhanden.startsWith("f-")) element.classList.remove(vorhanden);
+  }
+  element.classList.add("farbig", "f-" + ton(farbindex).schluessel);
+  return element;
+}
+
+// ── Kalender (Modell/Tag.swift) ───────────────────────────────────────
+// Durchweg UTC und zwölf Uhr mittags, damit keine Zeitumstellung einen Tag
+// verschiebt; die ISO-Schreibweise ordnet sich zeichenweise wie zeitlich.
+
+const ISO_MUSTER = /^\d{4}-\d{2}-\d{2}$/;
+
+function tagAusISO(wert) {
+  const roh = String(wert ?? "");
+  if (!ISO_MUSTER.test(roh)) return null;
+  const [j, m, t] = roh.split("-").map(Number);
+  // Dieselbe Schranke wie `Tag(iso:)`: Vor 1900 deuten der Foundation-Kalender
+  // der App (Ären, die Lücke vom 5. bis 14.10.1582) und das `Date.UTC` hier
+  // dieselbe Zeichenkette verschieden.
+  if (j < 1900 || j > 2999) return null;
+  const datum = new Date(Date.UTC(j, m - 1, t, 12));
+  // Wie `Tag(iso:)`: Der Kalender rollt Unmögliches stillschweigend weiter
+  // (31.02. → 03.03.); nur was die Rückrechnung übersteht, gilt.
+  if (Number.isNaN(datum.getTime()) || datum.getUTCFullYear() !== j
+      || datum.getUTCMonth() !== m - 1 || datum.getUTCDate() !== t) return null;
+  return datum;
+}
+
+function zwei(n) { return String(n).padStart(2, "0"); }
+
+function isoVon(datum) {
+  // Vier Stellen wie `%04d`: Sonst sortierte sich „99-01-05“ vor „1900-01-01“,
+  // und die Zeichenkettenvergleiche der ganzen Datei gingen fehl.
+  const jahr = String(datum.getUTCFullYear()).padStart(4, "0");
+  return `${jahr}-${zwei(datum.getUTCMonth() + 1)}-${zwei(datum.getUTCDate())}`;
+}
+
+function plusTage(datum, tage) {
+  const neu = new Date(datum.getTime());
+  neu.setUTCDate(neu.getUTCDate() + tage);
+  return neu;
+}
+
+function montagDerWoche(datum) {
+  return plusTage(datum, -((datum.getUTCDay() + 6) % 7));
+}
+
+function kalenderwoche(datum) {
+  const donnerstag = plusTage(datum, 3 - ((datum.getUTCDay() + 6) % 7));
+  const jahr = donnerstag.getUTCFullYear();
+  const vierter = new Date(Date.UTC(jahr, 0, 4, 12));
+  const ersterDonnerstag = plusTage(vierter, 3 - ((vierter.getUTCDay() + 6) % 7));
+  return { kw: 1 + Math.round((donnerstag - ersterDonnerstag) / (7 * 86400000)), jahr };
+}
+
+function kurz(datum) {
+  return `${zwei(datum.getUTCDate())}.${zwei(datum.getUTCMonth() + 1)}.`;
+}
+
+function wochentagKurz(datum) {
+  return ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][datum.getUTCDay()] ?? "";
+}
+
+function mitWochentag(datum) {
+  return wochentagKurz(datum) + " " + kurz(datum);
+}
+
+function wochentagLang(datum) {
+  return ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag",
+          "Samstag"][datum.getUTCDay()] ?? "";
+}
+
+/** Montag bis Freitag nach ISO 8601 (1 = Montag) — `Wochentag` der App:
+ *  dieselben Zahlen in der Datei, dieselben Beschriftungen in den Blättern. */
+const WOCHENTAGE = [
+  { nummer: 1, kurz: "Mo.", lang: "Montag" },
+  { nummer: 2, kurz: "Di.", lang: "Dienstag" },
+  { nummer: 3, kurz: "Mi.", lang: "Mittwoch" },
+  { nummer: 4, kurz: "Do.", lang: "Donnerstag" },
+  { nummer: 5, kurz: "Fr.", lang: "Freitag" },
+];
+
+/** Wie `Tag.wochentag`: 1…5 für Montag bis Freitag, `null` am Wochenende.
+ *  `getUTCDay` zählt ab Sonntag (0), ISO ab Montag (1). */
+function wochentagISO(datum) {
+  const iso = (datum.getUTCDay() + 6) % 7 + 1;
+  return iso <= 5 ? iso : null;
+}
+
+/** „Mo., Mi., Fr.“ in Wochenreihenfolge — `Set<Wochentag>.beschriftung`. */
+function wochentageText(nummern) {
+  return nummern.map((n) => WOCHENTAGE[n - 1].kurz).join(", ");
+}
+
+function monatUndJahr(datum) {
+  const namen = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli",
+                 "August", "September", "Oktober", "November", "Dezember"];
+  return `${namen[datum.getUTCMonth()] ?? ""} ${datum.getUTCFullYear()}`;
+}
+
+function deutsch(datum) {
+  return `${zwei(datum.getUTCDate())}.${zwei(datum.getUTCMonth() + 1)}.${datum.getUTCFullYear()}`;
+}
+
+/** UTC-Mittag desselben Kalendertags, den die Uhr vor Ort zeigt. */
+function heute() {
+  const jetzt = new Date();
+  return new Date(Date.UTC(jetzt.getFullYear(), jetzt.getMonth(), jetzt.getDate(), 12));
+}
+
+function wochenListe(startISO, anzahl) {
+  const start = tagAusISO(startISO) ?? montagDerWoche(heute());
+  const ersterMontag = montagDerWoche(start);
+  const liste = [];
+  for (let i = 0; i < Math.max(0, anzahl); i += 1) {
+    const montag = plusTage(ersterMontag, i * 7);
+    const freitag = plusTage(montag, 4);
+    const { kw, jahr } = kalenderwoche(montag);
+    // `jahr` ist das ISO-Wochenjahr (Donnerstag) und wäre an der Mo–Fr-Spanne
+    // bei Jahreswechsel-Wochen falsch.
+    const spanneMitJahr = montag.getUTCFullYear() === freitag.getUTCFullYear()
+      ? kurz(montag) + "–" + kurz(freitag) + freitag.getUTCFullYear()
+      : kurz(montag) + montag.getUTCFullYear() + "–" + kurz(freitag) + freitag.getUTCFullYear();
+    liste.push({
+      nummer: i,
+      montagISO: isoVon(montag),
+      kw,
+      jahr,
+      spanne: kurz(montag) + "–" + kurz(freitag),
+      spanneMitJahr,
+      beschriftung: "KW " + kw,
+      tage: [0, 1, 2, 3, 4].map((v) => isoVon(plusTage(montag, v))),
+    });
+  }
+  return liste;
+}
+
+// ── Ferienlage (Modell/Wochenlage.swift) ──────────────────────────────
+// Gezählt wird die Vereinigung der Zeiträume, nicht deren Maximum: Zwei
+// Zeiträume dürfen sich überlappen und eine Woche gemeinsam ganz bedecken.
+// Benannt wird die Woche dagegen von dem Zeitraum, der die meisten ihrer
+// Unterrichtstage stellt; erst bei Gleichstand tritt die Anzahl an die Stelle
+// des Namens.
+
+/** Nachbau von `ungueltig`: Ein rückwärts laufender Zeitraum trifft nichts. */
+function zeitraumGueltig(zeitraum) {
+  return zeitraum.von <= zeitraum.bis;
+}
+
+/**
+ * Nachbau von `Ferienzeitraum.trifftPlanung`: Überschneidet sich der Zeitraum
+ * überhaupt mit der Planung? Deckt er sie ganz ab, liegt keiner seiner Ränder
+ * darin — dann entscheidet der erste Montag.
+ */
+function trifftPlanung(planung, zeitraum) {
+  const montag = planung.startISO;
+  const start = tagAusISO(montag);
+  if (!start) return false;
+  const ende = isoVon(plusTage(start, planung.wochen * 7 - 1));
+  const drin = (tag) => tag >= montag && tag <= ende;
+  return drin(zeitraum.von) || drin(zeitraum.bis)
+    || (zeitraum.von <= montag && montag <= zeitraum.bis);
+}
+
+/** Unterrichtstage der Woche, die in mindestens einen der Zeiträume fallen. */
+function tageIn(woche, zeitraeume) {
+  const liste = Array.isArray(zeitraeume) ? zeitraeume : [zeitraeume];
+  let anzahl = 0;
+  for (const tag of woche.tage) {
+    if (liste.some((z) => zeitraumGueltig(z) && tag >= z.von && tag <= z.bis)) {
+      anzahl += 1;
+    }
+  }
+  return anzahl;
+}
+
+function lage(planung, woche) {
+  if (planung.freiMenge.has(woche.montagISO)) {
+    return { frei: true, teilweise: false, name: "unterrichtsfrei", tage: 5 };
+  }
+  // Die Vereinigung, nicht das Maximum: Zwei Zeiträume, die eine Woche
+  // gemeinsam ganz bedecken, machen sie frei — so hält es auch die App.
+  const getroffen = tageIn(woche, planung.ferien);
+  if (getroffen === 0) return { frei: false, teilweise: false, name: "", tage: 0 };
+  // Benannt wird der Zeitraum, der die meisten Tage der Woche stellt; erst bei
+  // Gleichstand die Zahl. So hält es auch die App.
+  const treffer = planung.ferien
+    .map((z) => ({ name: z.name, tage: tageIn(woche, z) }))
+    .filter((t) => t.tage > 0);
+  const meiste = treffer.reduce((m, t) => Math.max(m, t.tage), 0);
+  const fuehrende = treffer.filter((t) => t.tage === meiste);
+  const name = fuehrende.length === 1
+    ? fuehrende[0].name
+    : `${treffer.length} Zeiträume`;
+  return getroffen >= 5
+    ? { frei: true, teilweise: false, name, tage: getroffen }
+    : { frei: false, teilweise: true, name, tage: getroffen };
+}
+
+// Fortlaufende Schulwochen (Modell/Wochenlage.swift), stellengleich zur
+// Wochenliste; null für volle Ferienwochen und für Wochen vor Schulbeginn.
+function schulwochen(planung, wochen, lagen) {
+  let beginn = -1;
+  if (planung.ersterSchultagISO) {
+    const tag = tagAusISO(planung.ersterSchultagISO);
+    if (tag) {
+      const montag = isoVon(montagDerWoche(tag));
+      beginn = wochen.findIndex((w) => w.montagISO === montag);
+    }
+  }
+  if (beginn === -1) {
+    const belegt = new Set(planung.eintraege.map((e) => e.woche));
+    beginn = wochen.findIndex((w, i) => !lagen[i].frei && belegt.has(w.nummer));
+    if (beginn === -1) beginn = lagen.findIndex((l) => !l.frei);
+  }
+  if (beginn === -1) return wochen.map(() => null);
+  let zaehler = 0;
+  return wochen.map((w, i) => {
+    if (i < beginn || lagen[i].frei) return null;
+    zaehler += 1;
+    return zaehler;
+  });
+}
+
+function wochenLabel(woche) {
+  const sw = zustand.schulwochen[woche.nummer];
+  return sw ? `${woche.beschriftung} / ${sw}. Schulwoche` : woche.beschriftung;
+}
+
+// ── Weblinks (Modell/Pfade.swift) ─────────────────────────────────────
+// Die Adresse landet in einem href: zugelassen sind nur http und https.
+// Nicht zeichengleich mit `Weblinks.pruefen`: Über 51 Eingaben gemessen weichen
+// sechs ab (WHATWG-URL gegen URLComponents). Von den Adressen, die die App
+// selbst schreibt, betrifft das zwei: „:99999“ nimmt sie an, hier scheitert
+// `new URL` — und ein unauflösbarer Link wäre schlechter als keiner —, und
+// „/a/../b“ kürzt die WHATWG-Rechnung auf dasselbe Ziel „/b“.
+
+function linkPruefen(roh) {
+  let adresse = stutzenMitZeilen(roh ?? "");
+  if (adresse.startsWith("<")) adresse = adresse.slice(1);
+  if (adresse.endsWith(">")) adresse = adresse.slice(0, -1);
+  // Tabulator und Zeilenumbrüche wirft der URL-Leser ohnehin weg; hier
+  // ausdrücklich, damit die Prüfungen darunter denselben Text sehen wie die App.
+  adresse = adresse.replace(/[\t\n\r]/g, "");
+  if (!adresse) return null;
+  // Beides weist die App ab, und der URL-Leser bügelt es stillschweigend glatt:
+  // ein Gegenschrägstrich wird zum Schrägstrich, „%zz“ bleibt stehen, während
+  // die App daraus „%25zz“ macht. Abgewiesen sind beide Fassungen einig.
+  if (adresse.includes("\\")) return null;
+  if (/%(?![0-9A-Fa-f]{2})/.test(adresse)) return null;
+
+  const schema = adresse.match(/^[a-z][a-z0-9+.-]*:/i);
+  // „example.org:8080/x“ trägt kein Schema, sondern einen Port.
+  const istPort = schema ? /^\d+([/?#]|$)/.test(adresse.slice(schema[0].length)) : false;
+  if (!schema || istPort) {
+    // Nur bei Rechnernamen ergänzen, sonst wird aus einem Vertipper eine Adresse.
+    const ersterTeil = adresse.split(/[/?#]/)[0].split(":")[0];
+    if (!ersterTeil.includes(".") && ersterTeil.toLowerCase() !== "localhost") return null;
+    adresse = "https://" + adresse;
+  } else {
+    // „https:a.de“ und „https:///a.de“ sind für den URL-Leser dasselbe wie
+    // „https://a.de“; `URLComponents` der App findet darin keinen Rechnernamen.
+    const nachSchema = adresse.slice(schema[0].length);
+    if (!nachSchema.startsWith("//") || nachSchema.startsWith("///")) return null;
+  }
+
+  let zerlegt;
+  try {
+    zerlegt = new URL(adresse);
+  } catch {
+    return null;
+  }
+  const protokoll = zerlegt.protocol.toLowerCase();
+  if (protokoll !== "http:" && protokoll !== "https:") return null;
+  if (!zerlegt.hostname) return null;
+  return zerlegt.href;
+}
+
+/** Rechnername ohne „www.“ — die Beschriftung ohne eigene. */
+function linkName(adresse) {
+  try {
+    const rechner = new URL(adresse).hostname;
+    return rechner.startsWith("www.") ? rechner.slice(4) : rechner;
+  } catch {
+    return adresse;
+  }
+}
+
+function dateiName(pfad) {
+  const teile = String(pfad ?? "").split("/").filter(Boolean);
+  return teile.length ? teile[teile.length - 1] : String(pfad ?? "");
+}
+
+function ohneEndschraegstrich(pfad) {
+  let p = String(pfad ?? "");
+  while (p.length > 1 && p.endsWith("/")) p = p.slice(0, -1);
+  return p === "/" ? "" : p;
+}
+
+/** Nachbau von `Pfade.zusammenfassen`: vollständig machen, `.` und `..`
+ *  auflösen, wieder relativ zum Basisordner. Ein eingelesenes `..` verlässt
+ *  den Basisordner sonst, ohne mit `/` zu beginnen. */
+function pfadZusammenfassen(gespeichert, basis) {
+  const ordner = ohneEndschraegstrich(basis);
+  const voll = gespeichert.startsWith("/") || ordner === ""
+    ? gespeichert
+    : ordner + "/" + gespeichert;
+  if (!voll.startsWith("/")) return gespeichert;
+  const teile = [];
+  for (const stueck of voll.split("/")) {
+    if (stueck === "" || stueck === ".") continue;
+    if (stueck === "..") { teile.pop(); continue; }
+    teile.push(stueck);
+  }
+  const eindeutig = "/" + teile.join("/");
+  if (ordner === "") return eindeutig;
+  if (eindeutig === ordner) return ".";
+  return eindeutig.startsWith(ordner + "/")
+    ? eindeutig.slice(ordner.length + 1)
+    : eindeutig;
+}
+
+// ── Dateiprüfung (Modell/Planungsdatei.swift) ─────────────────────────
+// Nachsichtig, aber geprüft: eine fremde Datei darf nur Weblinks öffnen.
+
+/** Fassung und Stufe wie `CFBundleShortVersionString`/`CFBundleVersion` der
+ *  App — „Version X (Build)“; `masse_pruefen.py` hält beide gegen die Info.plist. */
+const VERSION = "1.2.5";
+const VERSIONSSTUFE = "35";
+// Wo der Quelltext liegt — leer, bis das Repository veröffentlicht ist; dann
+// bleibt die Zeile im Info-Blatt weg. `masse_pruefen.py` hält den Wert gegen
+// den Schlüssel `UPQuelltext` in der Info.plist der App.
+const QUELLTEXT = "https://github.com/dk-3du/unterrichtsplanung";
+
+const DATEITYP = "unterrichtsplanung";
+const MAX_KLASSEN = 75;
+const WOCHEN_MAX = 52;
+const WOCHEN_STANDARD = 52;
+
+// Obergrenzen beim Lesen, Wert für Wert aus `Planungsdatei.swift`. Ohne sie
+// zeigte die Ansicht mehr, als die App aus derselben Datei übernimmt, und eine
+// verdorbene Datei hinge das Raster mit beliebig vielen Kacheln voll.
+const MAX_VORHABEN = 20000;
+const MAX_MATERIALIEN = 200;
+const MAX_LINKS = 200;
+const MAX_TEXTLAENGE = 20000;
+const MAX_NAMENSLAENGE = 500;
+const MAX_PFADLAENGE = 1024;
+const MAX_FACHFARBEN = 500;
+const MAX_FERIEN = 2000;
+const MAX_SPERRZEITEN = 2000;
+const MAX_FREIE_TAGE = 4000;
+const MAX_FREIE_ZELLEN = WOCHEN_MAX * MAX_KLASSEN;
+/** Gegenstück zu `Planungsspeicher.hoechstePlanungsgroesse`. */
+const MAX_DATEIGROESSE = 32 * 1024 * 1024;
+
+// ── Der Tresor: der verschlüsselte Behälter (Zwilling von Dienste/Tresor.swift) ──
+// Festwerte, die die App wortgleich führt; `masse_pruefen.py` hält sie gegeneinander.
+const TRESOR_TYP = "unterrichtsplanung-tresor";
+const TRESOR_VERSION = 1;
+const TRESOR_VERFAHREN = "AES-256-GCM";
+const TRESOR_KDF_PASSPHRASE = "PBKDF2-HMAC-SHA256";
+const TRESOR_KDF_WIEDERHERSTELLUNG = "HKDF-SHA256";
+const TRESOR_RUNDEN_MINDESTENS = 100000;
+const TRESOR_RUNDEN_HOECHSTENS = 10000000;
+const TRESOR_PASSPHRASE_MINDESTLAENGE = 12;
+const TRESOR_KENNUNG_LAENGE = 16;
+const TRESOR_WIEDERHERSTELLUNG_LAENGE = 20;
+const TRESOR_WIEDERHERSTELLUNG_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+function textwert(wert) {
+  if (typeof wert === "boolean") return wert ? "true" : "false";
+  // `JSONSerialization` der App verschluckt beim Lesen genau EIN führendes
+  // U+FEFF je Zeichenkette (nur am Anfang, nur eines) — ohne dasselbe hier
+  // trüge derselbe Fachname dort „mathe" und hier „\uFEFFmathe": zwei Fächer,
+  // zwei Farben, und die Suche fände das eine nicht.
+  if (typeof wert === "string") {
+    return wert.charCodeAt(0) === 0xFEFF ? wert.slice(1) : wert;
+  }
+  if (typeof wert === "number" && Number.isFinite(wert)) return String(wert);
+  return "";
+}
+
+/** Zerlegt wie Swifts `String`: nach Zeichen, nicht nach UTF-16-Einheiten —
+ *  sonst zählte ein Emoji zwei und ein gekürzter Text zerfiele mittendrin. */
+const ZEICHENTEILER = typeof Intl !== "undefined" && typeof Intl.Segmenter === "function"
+  ? new Intl.Segmenter("de", { granularity: "grapheme" })
+  : null;
+
+/** Auf `grenze` Zeichen kürzen — gibt denselben Text zurück, wenn er passt. */
+function aufLaenge(text, grenze) {
+  // Die UTF-16-Länge ist nie kleiner als die Zeichenzahl: Bleibt sie unter der
+  // Grenze, ist nichts zu kürzen, und das teure Zerlegen entfällt.
+  if (text.length <= grenze) return text;
+  const zeichen = ZEICHENTEILER
+    ? Array.from(ZEICHENTEILER.segment(text), (teil) => teil.segment)
+    : Array.from(text);
+  return zeichen.length <= grenze ? text : zeichen.slice(0, grenze).join("");
+}
+
+/** Wie `parseInt`: nimmt auch Zahlen in Zeichenkettenform an. */
+function ganzzahl(wert) {
+  if (typeof wert === "boolean") return null;
+  if (typeof wert === "number") {
+    const ganz = Math.trunc(wert);
+    // Dieselbe Grenze wie `abs(d) < 1e15` der App: Sonst gälte eine „version“
+    // von 1e15 hier als neue Farbpalette und dort als alte.
+    return Number.isFinite(ganz) && Math.abs(ganz) < 1e15 ? ganz : null;
+  }
+  if (typeof wert === "string") {
+    // Erst das eine führende U+FEFF weg, das `JSONSerialization` der App vor
+    // jedem Wert verschluckt — auch vor einer Zahl in Zeichenkettenform
+    // („\uFEFF3“ ist dort die 3, hier war es nichts; Abzugvergleich).
+    const roh = textwert(wert);
+    // `CharacterSet.whitespaces` der App kennt weder Zeilenumbrüche noch das
+    // BOM, JS-`\s` schon — daher die eingeengte Klasse.
+    const treffer = roh.match(/^[^\S\n\r\v\f\u2028\u2029\uFEFF]*[+-]?\d+/);
+    if (!treffer) return null;
+    // `Int(...)` der App läuft über der 64-Bit-Grenze über und liefert nil.
+    const gross = BigInt(treffer[0].trim());
+    if (gross < -(2n ** 63n) || gross > 2n ** 63n - 1n) return null;
+    return Number(gross);
+  }
+  return null;
+}
+
+function wahrheit(wert) {
+  if (typeof wert === "boolean") return wert;
+  if (typeof wert === "number") return wert !== 0;
+  // Über `textwert`: Ein bloßes U+FEFF ist in der App die leere Zeichenkette
+  // und damit falsch (Abzugvergleich).
+  if (typeof wert === "string") return textwert(wert) !== "";
+  return false;
+}
+
+/** Die Unterrichtstage einer Zeile, wie `Planungsdatei` sie liest: Was
+ *  keinen Tag Montag bis Freitag nennt, fällt still weg (wie `farbe`); eine
+ *  Menge kennt keine Dubletten. Gehalten als aufsteigende Liste. */
+function unterrichtstageLesen(roh) {
+  const tage = new Set();
+  for (const wert of (Array.isArray(roh) ? roh : [])) {
+    const zahl = ganzzahl(wert);
+    if (zahl !== null && zahl >= 1 && zahl <= 5) tage.add(zahl);
+  }
+  return [...tage].sort((a, b) => a - b);
+}
+
+/** Ordnet wie Swifts `String` — nach Unicode-Codepunkten. `Array.sort()`
+ *  ohne Vergleicher ordnet nach UTF-16-Einheiten und stellte ein Zeichen
+ *  jenseits der Grundebene vor U+FFFF. */
+function nachCodepunkten(a, b) {
+  const ca = Array.from(a, (z) => z.codePointAt(0));
+  const cb = Array.from(b, (z) => z.codePointAt(0));
+  const n = Math.min(ca.length, cb.length);
+  for (let i = 0; i < n; i += 1) {
+    if (ca[i] !== cb[i]) return ca[i] - cb[i];
+  }
+  return ca.length - cb.length;
+}
+
+function kennung(vorsatz) {
+  const zeit = Date.now().toString(36);
+  const zeichen = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let zufall = "";
+  for (let i = 0; i < 5; i += 1) {
+    zufall += zeichen[Math.floor(Math.random() * zeichen.length)];
+  }
+  return `${vorsatz}-${zeit}-${zufall}`;
+}
+
+class Planungsfehler extends Error {}
+
+function istObjekt(wert) {
+  return wert !== null && typeof wert === "object" && !Array.isArray(wert);
+}
+
+/**
+ * Was beim Lesen wegfiel, in Worten — leer, wenn nichts wegfiel.
+ *
+ * Gezählt wird dasselbe wie in `Planungsdatei.Verlustbilanz`, in derselben
+ * Reihenfolge und mit denselben Wörtern: Dieselbe Datei soll hier und dort
+ * dieselbe Auskunft ergeben.
+ */
+function verlusttext(bilanz) {
+  const wort = (anzahl, einzahl, mehrzahl) =>
+    `${anzahl} ${anzahl === 1 ? einzahl : mehrzahl}`;
+  const teile = [];
+  if (bilanz.klassen) teile.push(wort(bilanz.klassen, "Zeile", "Zeilen"));
+  if (bilanz.vorhaben) teile.push(wort(bilanz.vorhaben, "Vorhaben", "Vorhaben"));
+  if (bilanz.ferien) {
+    teile.push(wort(bilanz.ferien, "Ferienzeitraum", "Ferienzeiträume"));
+  }
+  if (bilanz.sperrzeiten) {
+    teile.push(wort(bilanz.sperrzeiten, "Sperrzeitraum", "Sperrzeiträume"));
+  }
+  if (bilanz.freieTage) teile.push(wort(bilanz.freieTage, "freier Tag", "freie Tage"));
+  if (bilanz.freieZellen) {
+    teile.push(wort(bilanz.freieZellen, "freie Zelle", "freie Zellen"));
+  }
+  if (bilanz.fachfarben) {
+    teile.push(wort(bilanz.fachfarben, "Fachfarbe", "Fachfarben"));
+  }
+  if (bilanz.materialien) {
+    teile.push(wort(bilanz.materialien, "Material", "Materialien"));
+  }
+  if (bilanz.links) teile.push(wort(bilanz.links, "Link", "Links"));
+  if (bilanz.gekuerzteTexte) {
+    teile.push(wort(bilanz.gekuerzteTexte, "gekürzter Text", "gekürzte Texte"));
+  }
+  return teile.length ? "Übergangen: " + teile.join(", ") + "." : "";
+}
+
+function planungPruefen(roh) {
+  if (!istObjekt(roh)) {
+    throw new Planungsfehler("Die Datei ist keine gültige Planung.");
+  }
+
+  const typ = textwert(roh.typ);
+  if (typ !== "" && typ !== DATEITYP) {
+    throw new Planungsfehler("Die Datei gehört zu einer anderen Anwendung.");
+  }
+  if (typ === "" && !Array.isArray(roh.klassen) && roh.wochen === undefined) {
+    throw new Planungsfehler("Die Datei enthält keine Unterrichtsplanung.");
+  }
+
+  // Was die Datei nannte und diese Ansicht nicht übernommen hat. Eine Grenze,
+  // die nur beim Lesen gälte, bliebe sonst unbemerkt.
+  const bilanz = { klassen: 0, vorhaben: 0, materialien: 0, links: 0, ferien: 0,
+                   sperrzeiten: 0, freieTage: 0, freieZellen: 0, fachfarben: 0,
+                   gekuerzteTexte: 0 };
+
+  // Steht hier und nicht neben `textwert`: Gezählt wird in die Bilanz dieses
+  // einen Lesevorgangs.
+  function nichtLeer(wert, ersatz, hoechstens = MAX_NAMENSLAENGE) {
+    const t = textwert(wert);
+    // `ersatz` darf eine Funktion sein und wird dann nur ausgewertet, wenn er
+    // gebraucht wird. Sonst zählte ein verworfener Rückfall sein Kürzen mit —
+    // in der App leistet das `@autoclosure`.
+    const voll = t === "" ? (typeof ersatz === "function" ? ersatz() : ersatz) : t;
+    const gekuerzt = aufLaenge(voll, hoechstens);
+    if (gekuerzt !== voll) bilanz.gekuerzteTexte += 1;
+    return gekuerzt;
+  }
+
+  // Bis Fassung 1 meinte der Farbwert die alte Palette.
+  const altePalette = (ganzzahl(roh.version) ?? 0) < 2;
+
+  const startRoh = tagAusISO(textwert(roh.start)) ?? montagDerWoche(heute());
+  // Auch die Null fällt auf den Standardwert zurück, erst danach wird begrenzt.
+  const gelesen = ganzzahl(roh.wochen) ?? 0;
+  const wochen = Math.min(WOCHEN_MAX, Math.max(1, gelesen === 0 ? WOCHEN_STANDARD : gelesen));
+
+  const planung = {
+    titel: nichtLeer(roh.titel, "Unterrichtsplanung"),
+    erstellt: nichtLeer(roh.erstellt, ""),
+    geaendert: nichtLeer(roh.geaendert, ""),
+    // Ein Pfad, kein Name: an `MAX_PFADLAENGE` gemessen.
+    basis: nichtLeer(roh.basis,
+                     () => nichtLeer(roh.basisordner, "", MAX_PFADLAENGE),
+                     MAX_PFADLAENGE),
+    startISO: isoVon(montagDerWoche(startRoh)),
+    wochen,
+    // Leer heißt hergeleitete Zählung; stehen bleibt der geprüfte Rohtext.
+    ersterSchultagISO: (() => {
+      const wert = textwert(roh.ersterSchultag);
+      return tagAusISO(wert) ? wert : "";
+    })(),
+    frei: [],
+    freiMenge: new Set(),
+    ferien: [],
+    sperrzeiten: [],
+    // Ohne Prototyp: Sonst gälte ein Fach namens „constructor“ als belegt.
+    fachfarben: Object.create(null),
+    klassen: [],
+    zellenfrei: [],
+    eintraege: [],
+    // Nur in dieser Ansicht: der Satz über das, was beim Lesen wegfiel.
+    uebergangen: "",
+  };
+
+  // Die App führt `frei` als Menge; Dubletten fallen schon beim Lesen weg.
+  const roheTage = Array.isArray(roh.frei) ? roh.frei : [];
+  bilanz.freieTage = Math.max(0, roheTage.length - MAX_FREIE_TAGE);
+  for (const wert of roheTage.slice(0, MAX_FREIE_TAGE)) {
+    const tag = tagAusISO(textwert(wert));
+    if (tag) planung.freiMenge.add(isoVon(tag));
+    else bilanz.freieTage += 1;
+  }
+  planung.frei = [...planung.freiMenge];
+
+  const roheFerien = Array.isArray(roh.ferien) ? roh.ferien : [];
+  bilanz.ferien = Math.max(0, roheFerien.length - MAX_FERIEN);
+  for (const fall of roheFerien.slice(0, MAX_FERIEN)) {
+    const von = istObjekt(fall) ? tagAusISO(textwert(fall.von)) : null;
+    const bis = istObjekt(fall) ? tagAusISO(textwert(fall.bis)) : null;
+    if (!von || !bis) { bilanz.ferien += 1; continue; }
+    // Roh übernommen, auch wenn `bis` vor `von` liegt: Gedreht würde ein
+    // Zeitraum, den die App als „Ende vor Beginn“ ausweist und den `ungueltig`
+    // dort überall aussortiert, hier stillschweigend wirksam — dieselbe Datei
+    // bedeutete auf beiden Geräten Verschiedenes.
+    planung.ferien.push({
+      id: nichtLeer(fall.id, kennung("f")),
+      name: nichtLeer(fall.name, "Ferien"),
+      von: isoVon(von),
+      bis: isoVon(bis),
+    });
+  }
+
+  // `kurse` bleibt roh; eingegrenzt wird erst, wenn die Zeilen gelesen sind.
+  const roheSperren = Array.isArray(roh.sperrzeiten) ? roh.sperrzeiten : [];
+  bilanz.sperrzeiten = Math.max(0, roheSperren.length - MAX_SPERRZEITEN);
+  for (const fall of roheSperren.slice(0, MAX_SPERRZEITEN)) {
+    const von = istObjekt(fall) ? tagAusISO(textwert(fall.von)) : null;
+    const bis = istObjekt(fall) ? tagAusISO(textwert(fall.bis)) : null;
+    if (!von || !bis) { bilanz.sperrzeiten += 1; continue; }
+    // Ungedreht wie die Ferien.
+    planung.sperrzeiten.push({
+      id: nichtLeer(fall.id, kennung("s")),
+      name: nichtLeer(fall.name, "Sperrzeitraum"),
+      von: isoVon(von),
+      bis: isoVon(bis),
+      kurse: (Array.isArray(fall.kurse) ? fall.kurse : []).map(textwert),
+    });
+  }
+
+  if (istObjekt(roh.fachfarben)) {
+    // `JSONSerialization` verschluckt das führende U+FEFF auch im Schlüssel
+    // und behält bei zwei danach gleichen Schlüsseln den ERSTEN (nachgemessen).
+    // Sortiert gelesen: Welche Einträge über der Grenze
+    // wegfallen und welcher zweier Schlüssel mit gleichem Fachschlüssel gilt,
+    // wäre über die Einfügereihenfolge sonst von Datei zu Datei verschieden —
+    // geordnet nach Codepunkten, wie Swift Zeichenketten ordnet, nicht nach
+    // UTF-16-Einheiten.
+    const gelesen = new Map();
+    for (const fach of Object.keys(roh.fachfarben)) {
+      const schluessel = textwert(fach);
+      if (!gelesen.has(schluessel)) gelesen.set(schluessel, roh.fachfarben[fach]);
+    }
+    const roheFaecher = [...gelesen.keys()].sort(nachCodepunkten);
+    bilanz.fachfarben = Math.max(0, roheFaecher.length - MAX_FACHFARBEN);
+    for (const fach of roheFaecher.slice(0, MAX_FACHFARBEN)) {
+      // Gekappt wie der Fachname einer Zeile, damit beide nach dem Kürzen noch
+      // zueinanderfinden.
+      const schluessel = fachSchluessel(nichtLeer(fach, ""));
+      const roher = textwert(gelesen.get(fach));
+      const wert = altePalette ? alterTonZuFamilie(roher) : roher;
+      if (schluessel !== "" && wert !== null && TON_NACH_SCHLUESSEL.has(wert)) {
+        planung.fachfarben[schluessel] = wert;
+      }
+    }
+  }
+
+  // Doppelte Kennungen auflösen — sonst erschiene ein Vorhaben in zwei Zeilen.
+  const idsBelegt = new Set();
+  const alleKlassen = Array.isArray(roh.klassen) ? roh.klassen : [];
+  bilanz.klassen = Math.max(0, alleKlassen.length - MAX_KLASSEN);
+  const rohKlassen = alleKlassen.slice(0, MAX_KLASSEN);
+  rohKlassen.forEach((fall, stelle) => {
+    const k = istObjekt(fall) ? fall : {};
+    const name = nichtLeer(k.name, `Klasse/Kurs ${stelle + 1}`);
+    const fach = nichtLeer(k.fach, "");
+    // Grau, ein Wert außerhalb der Liste, gar keiner: bleibt offen.
+    const uebersetzt = altePalette && Number.isInteger(k.farbe)
+      ? farbstelle(alterTonZuPlatz(k.farbe))
+      : (istGueltigeFarbe(k.farbe) ? k.farbe : null);
+    const farbe = uebersetzt === null ? OHNE_FARBE : uebersetzt;
+
+    let id = stutzen(textwert(k.id));
+    if (id === "") id = kennung("k");
+    while (idsBelegt.has(id)) id = kennung("k");
+    idsBelegt.add(id);
+
+    planung.klassen.push({
+      id,
+      name,
+      fach,
+      notiz: nichtLeer(k.notiz, ""),
+      farbe,
+      // Ohne gültige Farbe sagt das Merkmal nichts aus (Planungsdatei.swift).
+      farbeManuell: istGueltigeFarbe(farbe) && wahrheit(k.farbeManuell),
+      verwaltung: nichtLeer(k.verwaltung, "", MAX_PFADLAENGE),
+      curriculum: nichtLeer(k.curriculum, "", MAX_PFADLAENGE),
+      unterrichtstage: unterrichtstageLesen(k.unterrichtstage),
+    });
+  });
+
+  // Erst jetzt, mit allen Zeilen und Fachfarben beisammen.
+  farbenVervollstaendigen(planung);
+
+  // Nur bekannte Zeilen, jede einmal; bleibt nichts übrig, gilt sie für alle.
+  const kursfolge = planung.klassen.map((k) => k.id);
+  for (const sperre of planung.sperrzeiten) {
+    const genannt = new Set(sperre.kurse.filter((id) => idsBelegt.has(id)));
+    sperre.kurse = kursfolge.filter((id) => genannt.has(id));
+  }
+
+  // Auch `zellenfrei` ist in der App eine Menge — jede Zelle nur einmal.
+  const zellenBelegt = new Set();
+  const roheZellen = Array.isArray(roh.zellenfrei) ? roh.zellenfrei : [];
+  bilanz.freieZellen = Math.max(0, roheZellen.length - MAX_FREIE_ZELLEN);
+  for (const fall of roheZellen.slice(0, MAX_FREIE_ZELLEN)) {
+    if (!istObjekt(fall)) { bilanz.freieZellen += 1; continue; }
+    const klasseId = textwert(fall.klasseId);
+    const woche = tagAusISO(textwert(fall.woche));
+    if (!idsBelegt.has(klasseId) || !woche) { bilanz.freieZellen += 1; continue; }
+    const wocheISO = isoVon(woche);
+    const schluessel = klasseId + "|" + wocheISO;
+    if (zellenBelegt.has(schluessel)) continue;
+    zellenBelegt.add(schluessel);
+    planung.zellenfrei.push({ klasseId, woche: wocheISO });
+  }
+
+  const vorhabenBelegt = new Set();
+  const roheVorhaben = Array.isArray(roh.eintraege) ? roh.eintraege : [];
+  bilanz.vorhaben = Math.max(0, roheVorhaben.length - MAX_VORHABEN);
+  for (const fall of roheVorhaben.slice(0, MAX_VORHABEN)) {
+    if (!istObjekt(fall)) { bilanz.vorhaben += 1; continue; }
+    const klasseId = textwert(fall.klasseId);
+    if (!idsBelegt.has(klasseId)) { bilanz.vorhaben += 1; continue; }
+    const woche = ganzzahl(fall.woche);
+    if (woche === null || woche < 0 || woche >= planung.wochen) {
+      bilanz.vorhaben += 1;
+      continue;
+    }
+
+    // Eingelesen, obwohl nicht gezeigt — sonst wiche die Regel von der App ab.
+    const roheMaterialien = Array.isArray(fall.materialien) ? fall.materialien : [];
+    const materialien = [];
+    for (const m of roheMaterialien.slice(0, MAX_MATERIALIEN)) {
+      if (!istObjekt(m)) continue;
+      const rohPfad = textwert(m.pfad);
+      if (rohPfad === "") continue;
+      const pfad = pfadZusammenfassen(rohPfad, planung.basis);
+      if (pfad === "") continue;
+      materialien.push({ titel: nichtLeer(m.titel, dateiName(pfad)), pfad });
+    }
+    bilanz.materialien += roheMaterialien.length - materialien.length;
+
+    const roheLinks = Array.isArray(fall.links) ? fall.links : [];
+    const links = [];
+    for (const l of roheLinks.slice(0, MAX_LINKS)) {
+      if (!istObjekt(l)) continue;
+      const adresse = linkPruefen(textwert(l.url));
+      if (!adresse) continue;
+      links.push({ titel: nichtLeer(l.titel, linkName(adresse)), adresse });
+    }
+    bilanz.links += roheLinks.length - links.length;
+
+    // Doppelte Kennung: Beide Vorhaben teilten sich einen Statuseintrag, und
+    // `kachelAuffrischen` träfe die Kachel des jeweils ersten.
+    let id = stutzen(textwert(fall.id));
+    if (id === "") id = kennung("e");
+    while (vorhabenBelegt.has(id)) id = kennung("e");
+    vorhabenBelegt.add(id);
+
+    planung.eintraege.push({
+      id,
+      klasseId,
+      woche,
+      titel: nichtLeer(fall.titel, ""),
+      text: nichtLeer(fall.text,
+                      () => nichtLeer(fall.beschreibung, "", MAX_TEXTLAENGE),
+                      MAX_TEXTLAENGE),
+      erledigt: wahrheit(fall.erledigt),
+      materialien,
+      links,
+      // Die Kennzeichnung überlebt auch ohne lesbaren Termin.
+      pruefung: wahrheit(fall.pruefung),
+      // Erst in Text verwandeln, dann prüfen — sonst prüfte der Rohwert.
+      pruefungstagISO: (() => {
+        const roh = textwert(fall.pruefungstag);
+        return tagAusISO(roh) ? roh : "";
+      })(),
+      datumISO: (() => {
+        const roh = textwert(fall.datum);
+        return tagAusISO(roh) ? roh : "";
+      })(),
+      dringend: wahrheit(fall.dringend),
+      kommentar: nichtLeer(fall.kommentar, "", MAX_TEXTLAENGE),
+      // Wann die App zuletzt an Haken oder Kommentar dieses Vorhabens war;
+      // leer heißt nie — dann gilt der hier gemerkte Stand.
+      statusGeaendert: textwert(fall.statusGeaendert),
+    });
+  }
+
+  planung.uebergangen = verlusttext(bilanz);
+  return planung;
+}
+
+// ── Zustand ───────────────────────────────────────────────────────────
+
+const zustand = {
+  planung: null,
+  wochen: [],
+  lagen: [],
+  schulwochen: [],
+  dunkel: false,
+  /** Der Knopf wurde betätigt; die Systemdarstellung entscheidet nicht mehr. */
+  themaVonHand: false,
+  suchworte: [],
+  kacheln: [],
+  dateiname: "",
+  /** Kennung → { erledigt, kommentar, geaendert } — nur was hier berührt wurde.
+      Ohne Prototyp angelegt: Eine Planungsdatei, die ein Vorhaben „__proto__“
+      nennt, soll eine Zuweisung sein und keine Verbiegung dieses Objekts. */
+  status: Object.create(null),
+  /** Kennung → { erledigt, kommentar } aus der Datei, vor jedem Zutun hier.
+      Ohne diesen Ausgangsstand schriebe schon das bloße Verlassen des
+      Kommentarfeldes einen Eintrag mit frischem Zeitstempel. */
+  ausgang: new Map(),
+  /** Seit der letzten Sicherung ist etwas passiert. */
+  statusOffen: false,
+  /** Zählt jede Änderung; die Marke sagt, ob ein Schreibvorgang noch der
+      aktuelle Stand ist. */
+  statusMarke: 0,
+  /** Der Speicher hat sich einmal verweigert — nicht alle 5 Sekunden mahnen. */
+  merkenVerwehrt: false,
+  /** Auf eine nicht sicherbare Kennung wurde hingewiesen — einmal genügt. */
+  kennungGemeldet: false,
+  /** Wie viele gemerkte Einträge die Datei beim Öffnen überstimmt hat. */
+  statusVerworfen: 0,
+  /** Zeitpunkt der letzten Sicherung, für den Hinweis am Knopf. */
+  statusGesichert: null,
+  /** Verbundene Zieldatei, sofern der Browser das kann (nie auf dem iPad). */
+  zieldatei: null,
+  /** `erstellt` der Planung, für die die Zieldatei gewählt wurde. Leer heißt
+      unbekannt; dann gilt die Verbindung beim nächsten Öffnen als gelöst. */
+  zieldateiFuer: "",
+  /** Sperre: nie zwei Schreibströme auf dieselbe Datei. */
+  schreibtGerade: false,
+  /** Der Datenschlüssel der geöffneten, verschlüsselten Planung — nur hier,
+      im Arbeitsspeicher; nach dem Neuladen wird neu gefragt. `null` bei einer
+      Klartextdatei. */
+  tresor: null,
+  /** Der zuletzt versiegelte Stand als Behältertext, damit das Teilen-Blatt
+      ohne ein einziges `await` an seine Datei kommt; die Marke sagt, ob er
+      noch der aktuelle ist. */
+  statusChiffrat: "",
+  statusChiffratMarke: -1,
+  /** Zählt die Versiegelungen für den Speicher: Nur die jüngste darf schreiben. */
+  merkLauf: 0,
+};
+
+const teile = {};
+for (const name of ["plan-titel", "plan-unter", "raster", "raster-huelle", "leer", "melder",
+                    "statusgruppe", "druckfassung",
+                    "suche", "suchhuelle", "werkzeuge", "reglergruppe", "breite", "dateiwahl"]) {
+  teile[name] = document.getElementById(name);
+}
+
+// ── Bausteine ─────────────────────────────────────────────────────────
+// Ausschließlich über das Dokumentmodell und `textContent`, nie über innerHTML.
+
+function bau(tag, klasse, inhalt) {
+  const element = document.createElement(tag);
+  if (klasse) element.className = klasse;
+  if (inhalt !== undefined && inhalt !== null) element.textContent = String(inhalt);
+  return element;
+}
+
+function ikon(name, klasse) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", klasse || "ikon");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+  const nutzung = document.createElementNS("http://www.w3.org/2000/svg", "use");
+  nutzung.setAttribute("href", "#i-" + name);
+  svg.append(nutzung);
+  return svg;
+}
+
+/**
+ * Der Melder zieht in das oberste offene Blatt: `showModal()` hebt das Blatt in
+ * die Top-Layer, über die kein `z-index` eines Geschwisters mehr hinaufreicht —
+ * und außerhalb des Blattes wäre der `aria-live`-Bereich obendrein inert. Am
+ * Sichtfeld bleibt er trotzdem hängen: `.blatt` bildet keinen enthaltenden
+ * Block für `position: fixed` und klemmt es auch nicht am `overflow`.
+ */
+function melderEinhaengen() {
+  const aktiv = document.activeElement;
+  const oben = aktiv && aktiv.closest ? aktiv.closest("dialog[open]") : null;
+  const offene = document.querySelectorAll("dialog[open]");
+  const ziel = oben || offene[offene.length - 1] || document.body;
+  if (teile.melder.parentNode !== ziel) ziel.append(teile.melder);
+}
+
+function melden(nachricht, warnend) {
+  melderEinhaengen();
+  const kasten = bau("div", "meldung glas" + (warnend ? " warnend" : ""));
+  kasten.append(ikon(warnend ? "warnung" : "haken"), bau("span", null, nachricht));
+  teile.melder.append(kasten);
+  window.setTimeout(() => kasten.remove(), warnend ? 9000 : 4000);
+}
+
+// ── Raster ────────────────────────────────────────────────────────────
+
+function kennzahlen(planung) {
+  if (!planung || !zustand.wochen.length) return "—";
+  const erste = zustand.wochen[0];
+  const letzte = zustand.wochen[zustand.wochen.length - 1];
+  return `KW ${erste.kw}/${erste.jahr} – KW ${letzte.kw}/${letzte.jahr}`
+    + ` · ${planung.wochen} Wochen · ${planung.klassen.length} Klassen/Kurse`
+    + ` · ${planung.eintraege.length} Vorhaben`;
+}
+
+function laufendeWoche() {
+  const montag = isoVon(montagDerWoche(heute()));
+  const treffer = zustand.wochen.find((w) => w.montagISO === montag);
+  return treffer ? treffer.nummer : null;
+}
+
+function wochenkopfBauen(woche, lageDerWoche, vonHand, laufend, tag = "div") {
+  const kopf = bau(tag, "wochenkopf");
+  if (lageDerWoche.frei) kopf.classList.add("frei");
+  if (laufend) kopf.classList.add("heute");
+  // In der Tafel des Ausdrucks trägt `th` die Rolle schon von sich aus.
+  if (tag === "th") kopf.scope = "col";
+  else kopf.setAttribute("role", "columnheader");
+
+  const zeile = bau("div", "zeile-1");
+  zeile.append(bau("span", "kw", wochenLabel(woche)));
+  if (laufend) zeile.append(bau("span", "heute-marke", "Heute"));
+  if (lageDerWoche.frei || vonHand) zeile.append(ikon("ferien", "ikon schirm"));
+  kopf.append(zeile, bau("div", "spanne", woche.spanne));
+
+  if (lageDerWoche.frei || lageDerWoche.teilweise) {
+    const beschriftung = lageDerWoche.teilweise
+      ? `${lageDerWoche.name} (${lageDerWoche.tage} von 5 Tagen)`
+      : lageDerWoche.name;
+    const zeile2 = bau("div", "lage" + (lageDerWoche.teilweise ? " teil" : ""), beschriftung);
+    zeile2.title = beschriftung;
+    kopf.append(zeile2);
+  }
+  return kopf;
+}
+
+function klassenkopfBauen(klasse, tag = "div") {
+  const kopf = bau(tag, "klassenkopf");
+  if (tag === "th") kopf.scope = "row";
+  else kopf.setAttribute("role", "rowheader");
+  farbeAnlegen(kopf, klasse.farbe);
+  kopf.append(bau("div", "name", klasse.name || "Ohne Bezeichnung"));
+  if (klasse.fach) kopf.append(bau("div", "fach", klasse.fach));
+  if (klasse.notiz) kopf.append(bau("div", "notiz", klasse.notiz));
+  // Verwaltungsdatei, Curriculum und Materialien fehlen überall: Mac-Pfade.
+  return kopf;
+}
+
+function verweiszeile(symbol, beschriftung, nachlauf) {
+  const zeile = bau("div", "verweis");
+  zeile.append(ikon(symbol), bau("span", null, beschriftung));
+  if (nachlauf) zeile.append(ikon(nachlauf));
+  return zeile;
+}
+
+function pruefungstext(vorhaben) {
+  const tag = tagAusISO(vorhaben.pruefungstagISO);
+  return "Prüfung · " + (tag ? mitWochentag(tag) : "Termin offen");
+}
+
+/** Nach Termin geordnet, ohne Termin ans Ende — wie
+ *  `Planungsspeicher.pruefungsliste` in der App. */
+function pruefungsliste() {
+  const planung = zustand.planung;
+  if (!planung) return [];
+  const nachKurs = new Map(planung.klassen.map((k) => [k.id, k]));
+  return planung.eintraege
+    .filter((e) => e.pruefung && nachKurs.has(e.klasseId))
+    .map((e) => ({ vorhaben: e, klasse: nachKurs.get(e.klasseId) }))
+    .sort((a, b) => {
+      const x = a.vorhaben.pruefungstagISO;
+      const y = b.vorhaben.pruefungstagISO;
+      if (x && y && x !== y) return x < y ? -1 : 1;
+      if (!x && y) return 1;
+      if (x && !y) return -1;
+      // Wie der Tupelvergleich der App: erst Kurs, dann Anzeigetitel, und
+      // beides mit dem schlichten `<` statt einer Sprachordnung.
+      if (a.klasse.name !== b.klasse.name) {
+        return a.klasse.name < b.klasse.name ? -1 : 1;
+      }
+      const titelA = a.vorhaben.titel || "Ohne Titel";
+      const titelB = b.vorhaben.titel || "Ohne Titel";
+      if (titelA === titelB) return 0;
+      return titelA < titelB ? -1 : 1;
+    });
+}
+
+/** Nachbau von `Planung.sperre(am:fuer:)` — leere Kursliste heißt: für alle. */
+function sperreAm(tagISO, klasseId) {
+  if (!tagISO) return null;
+  const planung = zustand.planung;
+  if (!planung) return null;
+  return planung.sperrzeiten.find((s) =>
+    zeitraumGueltig(s) && s.von <= tagISO && tagISO <= s.bis
+    && (s.kurse.length === 0 || s.kurse.includes(klasseId))) || null;
+}
+
+function sperrenKurstext(sperre) {
+  if (!sperre.kurse.length) return "alle Klassen/Kurse";
+  const namen = sperre.kurse
+    .map((id) => (zustand.planung.klassen.find((k) => k.id === id) || null))
+    .filter(Boolean)
+    .map((k) => k.name + (k.fach ? " · " + k.fach : ""));
+  return namen.join(", ");
+}
+
+function ausserhalbDerWoche(tagISO, wochennummer) {
+  const tag = tagAusISO(tagISO);
+  const woche = zustand.wochen[wochennummer];
+  if (!tag || !woche) return false;
+  const montag = tagAusISO(woche.montagISO);
+  if (!montag) return false;
+  return tag < montag || tag > plusTage(montag, 6);
+}
+
+function terminAusserhalb(vorhaben) {
+  return ausserhalbDerWoche(vorhaben.pruefungstagISO, vorhaben.woche);
+}
+
+function datumAusserhalb(vorhaben) {
+  return ausserhalbDerWoche(vorhaben.datumISO, vorhaben.woche);
+}
+
+// ── Heute (Modell/Tagesliste.swift) ───────────────────────────────────
+
+const TAGESGRUND = {
+  datum: "für heute datiert",
+  pruefung: "Prüfung heute",
+  beides: "für heute datiert · Prüfung heute",
+  woche: "ohne festen Tag",
+};
+
+/**
+ * Was an einem Tag ansteht — in zwei Gruppen.
+ *
+ * Die zweite ist keine Notlösung: Ohne sie bliebe die Liste bei einer Planung
+ * ohne Datumsangaben immer leer. Wessen Tag bekannt ist und nicht heute, steht
+ * auf keiner der beiden.
+ */
+function tagesliste(tag = heute()) {
+  const stand = {
+    tag,
+    woche: null,
+    lage: { frei: false, teilweise: false, name: "", tage: 0 },
+    ferientag: null,
+    amTag: [],
+    inDerWoche: [],
+  };
+  const planung = zustand.planung;
+  if (!planung) return stand;
+
+  const tagISO = isoVon(tag);
+  const montagISO = isoVon(montagDerWoche(tag));
+  const nummer = zustand.wochen.findIndex((w) => w.montagISO === montagISO);
+  if (nummer >= 0) {
+    stand.woche = zustand.wochen[nummer];
+    stand.lage = zustand.lagen[nummer] || stand.lage;
+  }
+  const ferien = planung.ferien.find((f) =>
+    zeitraumGueltig(f) && f.von <= tagISO && tagISO <= f.bis);
+  stand.ferientag = ferien ? ferien.name : null;
+
+  // Eine ganz unterrichtsfreie Woche trägt keine Wochengruppe.
+  const wochengruppe = stand.lage.frei ? null : stand.woche;
+
+  const kurse = new Map();
+  planung.klassen.forEach((klasse, stelle) => {
+    kurse.set(klasse.id, { platz: stelle, klasse });
+  });
+  const freieZellen = new Set(planung.zellenfrei.map((z) => z.klasseId + "|" + z.woche));
+
+  planung.eintraege.forEach((vorhaben, stelle) => {
+    const kurs = kurse.get(vorhaben.klasseId);
+    if (!kurs) return;
+    const posten = {
+      vorhaben,
+      klasse: kurs.klasse,
+      platz: kurs.platz,
+      stelle,
+      grund: "woche",
+    };
+    const datiert = vorhaben.datumISO === tagISO;
+    const geprueft = vorhaben.pruefung && vorhaben.pruefungstagISO === tagISO;
+    if (datiert || geprueft) {
+      posten.grund = datiert && geprueft ? "beides" : (datiert ? "datum" : "pruefung");
+      stand.amTag.push(posten);
+      return;
+    }
+    if (!wochengruppe || vorhaben.woche !== wochengruppe.nummer) return;
+    // Ein bekannter Tag, der nicht dieser ist, schließt aus.
+    if (vorhaben.datumISO) return;
+    if (vorhaben.pruefung && vorhaben.pruefungstagISO) return;
+    // Ein für diese Woche freigestellter Kurs hat heute nichts vor.
+    if (freieZellen.has(vorhaben.klasseId + "|" + wochengruppe.montagISO)) return;
+    stand.inDerWoche.push(posten);
+  });
+
+  // Geordnet wie im Raster: erst der Kurs, dann die Reihenfolge in der Zelle.
+  const ordnen = (liste) => liste.sort((a, b) => a.platz - b.platz || a.stelle - b.stelle);
+  ordnen(stand.amTag);
+  ordnen(stand.inDerWoche);
+  return stand;
+}
+
+/**
+ * Steht das Vorhaben in einer anderen Woche als dem heutigen Tag?
+ * (`Tagesposten.ausserhalbSeinerWoche` in Modell/Tagesliste.swift.)
+ *
+ * Erlaubt, aber meist ein Vertippen. Gefragt wird nach der Angabe, die den
+ * Posten auf die Liste gebracht hat.
+ */
+function ausserhalbSeinerWoche(posten) {
+  const vorhaben = posten.vorhaben;
+  switch (posten.grund) {
+    case "datum": return datumAusserhalb(vorhaben);
+    case "pruefung": return terminAusserhalb(vorhaben);
+    case "beides": return datumAusserhalb(vorhaben) || terminAusserhalb(vorhaben);
+    default: return false;
+  }
+}
+
+function datumstext(vorhaben) {
+  const tag = tagAusISO(vorhaben.datumISO);
+  return tag ? "Datum \u00b7 " + mitWochentag(tag) : "";
+}
+
+/**
+ * Den Inhalt einer Kachel setzen — Klassen, Kinder, Beschriftung.
+ *
+ * Getrennt vom Bauen, weil `kachelAuffrischen` dasselbe Element behalten muss:
+ * Ein Austausch nähme dem offenen Blatt das Element, auf das es beim Schließen
+ * den Tastaturfokus zurückgibt, und der Fokus fiele auf den Seitenkörper.
+ */
+function kachelFuellen(kachel, vorhaben, klasse) {
+  kachel.className = "kachel" + (vorhaben.erledigt ? " erledigt" : "")
+    + (vorhaben.pruefung ? " pruefung" : "")
+    + (vorhaben.dringend ? " dringend" : "");
+  kachel.replaceChildren();
+
+  if (vorhaben.pruefung) {
+    const marke = bau("div", "pruefungsmarke");
+    marke.append(ikon("pruefung"));
+    marke.append(bau("span", "", pruefungstext(vorhaben)));
+    kachel.append(marke);
+  }
+
+  if (vorhaben.datumISO) kachel.append(bau("div", "datumsmarke", datumstext(vorhaben)));
+
+  const kopf = bau("div", "kopf");
+  kopf.append(bau("div", "titel", vorhaben.titel || "Ohne Titel"));
+  if (vorhaben.erledigt) {
+    const haken = bau("span", "haken");
+    haken.append(ikon("haken-voll"));
+    kopf.append(haken);
+  }
+  kachel.append(kopf);
+
+  if (vorhaben.text) kachel.append(bau("div", "text", vorhaben.text));
+  if (vorhaben.kommentar) kachel.append(bau("div", "kommentar", vorhaben.kommentar));
+
+  if (vorhaben.links.length) {
+    const liste = bau("div", "verweisliste");
+    for (const link of vorhaben.links.slice(0, 3)) {
+      liste.append(verweiszeile("verweis", link.titel || linkName(link.adresse), "auswaerts"));
+    }
+    if (vorhaben.links.length > 3) {
+      liste.append(bau("div", "verweis mehr", `+ ${vorhaben.links.length - 3} weitere Links`));
+    }
+    kachel.append(liste);
+  }
+
+  const woche = zustand.wochen[vorhaben.woche];
+  kachel.setAttribute("aria-label",
+    `Vorhaben ${vorhaben.titel || "Ohne Titel"}`
+    + (vorhaben.pruefung ? `, ${pruefungstext(vorhaben)}` : "")
+    + (vorhaben.datumISO ? `, ${datumstext(vorhaben)}` : "")
+    + (vorhaben.dringend ? ", dringlich" : "")
+    + `, ${klasse.name}`
+    + (woche ? `, KW ${woche.kw}` : "")
+    + (vorhaben.erledigt ? ", durchgeführt" : "")
+    + (vorhaben.kommentar ? ", kommentiert" : ""));
+  return kachel;
+}
+
+function kachelBauen(vorhaben, klasse) {
+  const kachel = document.createElement("button");
+  kachel.type = "button";
+  const posten = { element: kachel, vorhaben, klasse };
+  // Über den Posten, nicht über die Fangvariable: Beim Auffrischen kann ein
+  // frisches Vorhaben derselben Kennung an dieselbe Kachel treten.
+  kachel.addEventListener("click", () => vorhabenZeigen(posten.vorhaben, posten.klasse));
+  zustand.kacheln.push(posten);
+  return kachelFuellen(kachel, vorhaben, klasse);
+}
+
+/** Dieselbe Kachel ohne Tippziel und ohne Eintrag in `zustand.kacheln` —
+ *  für den Ausdruck, auf dem nichts angetippt wird. */
+function druckkachel(vorhaben, klasse) {
+  return kachelFuellen(document.createElement("div"), vorhaben, klasse);
+}
+
+/** Vorhaben nach Zelle — Klassenkennung und Wochennummer, wie
+ *  `Zellenverzeichnis` in der App. */
+function zellenverzeichnis(planung) {
+  const nachZelle = new Map();
+  for (const eintrag of planung.eintraege) {
+    const schluessel = eintrag.klasseId + "|" + eintrag.woche;
+    const liste = nachZelle.get(schluessel);
+    if (liste) liste.push(eintrag);
+    else nachZelle.set(schluessel, [eintrag]);
+  }
+  return nachZelle;
+}
+
+/** Einzeln freigestellte Zellen, nach Kurs gebündelt. */
+function freiverzeichnis(planung) {
+  const freiNachKurs = new Map();
+  for (const zelle of planung.zellenfrei) {
+    const menge = freiNachKurs.get(zelle.klasseId);
+    if (menge) menge.add(zelle.woche);
+    else freiNachKurs.set(zelle.klasseId, new Set([zelle.woche]));
+  }
+  return freiNachKurs;
+}
+
+/**
+ * Eine Zelle des Rasters: Zeilenfarbe, Kacheln, Marke für freie Wochen.
+ *
+ * `bauer` baut die Kacheln — `kachelBauen` am Schirm, `druckkachel` auf Papier;
+ * `tag` ist dort `td`. Beides teilen sich beide Fassungen, damit auf dem Blatt
+ * nichts anders aussieht als auf dem Schirm.
+ */
+function zelleBauen(tag, klasse, woche, eintraege, lageDerWoche, einzelFrei, bauer) {
+  const frei = lageDerWoche.frei || einzelFrei;
+  const zelle = bau(tag, "zelle");
+  if (tag === "div") zelle.setAttribute("role", "gridcell");
+  farbeAnlegen(zelle, klasse.farbe);
+  if (frei) zelle.classList.add("frei");
+  else if (lageDerWoche.teilweise) zelle.classList.add("teil");
+
+  for (const eintrag of eintraege) zelle.append(bauer(eintrag, klasse));
+
+  if (frei && !eintraege.length) {
+    const marke = bau("div", "freimarke");
+    marke.append(ikon("ferien"), bau("span", null,
+      einzelFrei && !lageDerWoche.frei ? "kein Unterricht" : "unterrichtsfrei"));
+    zelle.append(marke);
+  }
+
+  zelle.setAttribute("aria-label", `${klasse.name}, KW ${woche.kw}`);
+  return zelle;
+}
+
+function rasterZeichnen() {
+  const planung = zustand.planung;
+  zustand.kacheln = [];
+  teile.raster.replaceChildren();
+  if (!planung) return;
+
+  const laufend = laufendeWoche();
+
+  const kopfzeile = bau("div", "rasterzeile kopfzeile");
+  kopfzeile.setAttribute("role", "row");
+  const ecke = bau("div", "ecke");
+  // In `role="row"` braucht jedes Kind eine Zellenrolle, sonst fällt es bei der
+  // Sprachausgabe heraus.
+  ecke.setAttribute("role", "columnheader");
+  ecke.append(bau("b", null, "Klasse/Kurs"), bau("span", null, `${planung.wochen} Wochen`));
+  kopfzeile.append(ecke);
+
+  for (const woche of zustand.wochen) {
+    kopfzeile.append(wochenkopfBauen(
+      woche, zustand.lagen[woche.nummer],
+      planung.freiMenge.has(woche.montagISO), laufend === woche.nummer));
+  }
+  teile.raster.append(kopfzeile);
+
+  const nachZelle = zellenverzeichnis(planung);
+  const freiNachKurs = freiverzeichnis(planung);
+
+  for (const klasse of planung.klassen) {
+    const zeile = bau("div", "rasterzeile");
+    zeile.setAttribute("role", "row");
+    zeile.append(klassenkopfBauen(klasse));
+    const eigeneFrei = freiNachKurs.get(klasse.id) ?? new Set();
+
+    for (const woche of zustand.wochen) {
+      zeile.append(zelleBauen("div", klasse, woche,
+                              nachZelle.get(klasse.id + "|" + woche.nummer) ?? [],
+                              zustand.lagen[woche.nummer],
+                              eigeneFrei.has(woche.montagISO), kachelBauen));
+    }
+    teile.raster.append(zeile);
+  }
+}
+
+// ── Ausdruck (Dienste/Drucken.swift) ──────────────────────────────────
+// Am Schirm rollt das Raster waagerecht; Papier tut das nicht, und CSS kennt
+// keinen Seitenumbruch quer — alle 52 Wochen in einer Zeile ergäben rund
+// 10.000 px auf einem 1.047 px breiten Blatt. Gedruckt wird deshalb dieselbe
+// Aufteilung wie in der App: die Wochen in Blöcke, die neben der Kursspalte auf
+// ein Blatt passen, jeder Block ein eigener Abschnitt mit eigenem Kopf und
+// eigener Kursspalte. Die Tafel entsteht erst beim Drucken und wird danach
+// wieder abgeräumt.
+//
+// Die Blattbreite geht allein in die Frage ein, wie viele Wochen nebeneinander
+// noch lesbar sind: Die Tafel selbst nimmt `width: 100%` des Seitenkastens.
+// Anderes Papier oder hochkant macht die Spalten also enger, schneidet aber
+// nichts ab.
+
+/** A4 quer bei 10 mm Rand, wie `@page` es festlegt: 277 mm ≈ 1047 px (96 dpi). */
+const DRUCK_BLATTBREITE = 1047;
+/** `Druckmasse` der App rechnet in **Punkt** (72 je Zoll), diese Seite in
+    CSS-Pixeln (96 je Zoll). Dieselbe Zahl bedeutet hier also ein Viertel
+    weniger Papier: Ungerechnet standen vier Wochen auf einem Blatt, wo die App
+    drei setzt, und die Spalte war 50 statt 67 mm breit. */
+const PIXEL_JE_PUNKT = 96 / 72;
+/** Wie `Druckmasse.spalteKlasse` (150 pt). */
+const DRUCK_SPALTE_KLASSE = 150 * PIXEL_JE_PUNKT;
+/** Wie `Druckmasse.spalteWoche` (190 pt) — ein Mindestmaß; auf dem Blatt
+    teilen sich die Wochen den Rest zu gleichen Teilen. */
+const DRUCK_SPALTE_WOCHE = 190 * PIXEL_JE_PUNKT;
+const DRUCK_WOCHEN_JE_BLATT = Math.max(1, Math.floor(
+  (DRUCK_BLATTBREITE - DRUCK_SPALTE_KLASSE) / DRUCK_SPALTE_WOCHE));
+
+function druckkopfBauen(planung, wochen, abschnittNr, abschnitte) {
+  const kopf = bau("div", "druckkopf");
+  const erste = wochen[0];
+  const letzte = wochen[wochen.length - 1];
+  kopf.append(
+    bau("span", "titel", planung.titel),
+    bau("span", "spanne", erste === letzte
+      ? `${wochenLabel(erste)} · ${erste.spanneMitJahr}`
+      : `${wochenLabel(erste)} bis ${wochenLabel(letzte)}`),
+    bau("span", "zaehler", `Abschnitt ${abschnittNr} von ${abschnitte}`));
+  return kopf;
+}
+
+/** Ein Wochenblock als Tafel: Kopfzeile, dann je Kurs eine Zeile. */
+function druckblattBauen(planung, wochen, abschnittNr, abschnitte, nachZelle,
+                         freiNachKurs) {
+  const seite = bau("section", "druckblatt");
+  seite.append(druckkopfBauen(planung, wochen, abschnittNr, abschnitte));
+
+  const tafel = bau("table", "drucktafel");
+  const spalten = bau("colgroup");
+  spalten.append(bau("col", "spalte-klasse"));
+  for (let i = 0; i < wochen.length; i += 1) spalten.append(bau("col"));
+  tafel.append(spalten);
+
+  const kopfzeile = bau("tr");
+  const ecke = bau("th", "ecke");
+  ecke.scope = "col";
+  ecke.append(bau("b", null, "Klasse/Kurs"),
+              bau("span", null, `${planung.wochen} Wochen`));
+  kopfzeile.append(ecke);
+  for (const woche of wochen) {
+    // Ohne „Heute“: Auf abgeheftetem Papier führte die Marke in die Irre.
+    kopfzeile.append(wochenkopfBauen(woche, zustand.lagen[woche.nummer],
+                                     planung.freiMenge.has(woche.montagISO),
+                                     false, "th"));
+  }
+  const kopfteil = bau("thead");
+  kopfteil.append(kopfzeile);
+  tafel.append(kopfteil);
+
+  const rumpf = bau("tbody");
+  for (const klasse of planung.klassen) {
+    const zeile = bau("tr");
+    zeile.append(klassenkopfBauen(klasse, "th"));
+    const eigeneFrei = freiNachKurs.get(klasse.id) ?? new Set();
+    for (const woche of wochen) {
+      zeile.append(zelleBauen("td", klasse, woche,
+                              nachZelle.get(klasse.id + "|" + woche.nummer) ?? [],
+                              zustand.lagen[woche.nummer],
+                              eigeneFrei.has(woche.montagISO), druckkachel));
+    }
+    rumpf.append(zeile);
+  }
+  tafel.append(rumpf);
+  seite.append(tafel);
+  return seite;
+}
+
+/** Die ganze Druckfassung aufbauen — gerufen, kurz bevor der Browser druckt. */
+function druckfassungBauen() {
+  const planung = zustand.planung;
+  if (!planung) return;
+  const nachZelle = zellenverzeichnis(planung);
+  const freiNachKurs = freiverzeichnis(planung);
+
+  const bloecke = [];
+  for (let anfang = 0; anfang < zustand.wochen.length;
+       anfang += DRUCK_WOCHEN_JE_BLATT) {
+    bloecke.push(zustand.wochen.slice(anfang, anfang + DRUCK_WOCHEN_JE_BLATT));
+  }
+  teile.druckfassung.replaceChildren(...bloecke.map((wochen, stelle) =>
+    druckblattBauen(planung, wochen, stelle + 1, bloecke.length,
+                    nachZelle, freiNachKurs)));
+}
+
+function druckfassungLeeren() {
+  teile.druckfassung.replaceChildren();
+}
+
+/**
+ * `beforeprint` sagt verlässlich, wann gebaut werden muss, und `afterprint`,
+ * wann die Tafel wieder wegkann; wo es das nicht gibt, bleibt allein die
+ * Medienabfrage. Nur einer der beiden Wege wird angemeldet — sonst entstünde
+ * die ganze Tafel zweimal.
+ */
+function druckuebergabeAnmelden() {
+  if ("onbeforeprint" in window) {
+    window.addEventListener("beforeprint", druckfassungBauen);
+    window.addEventListener("afterprint", druckfassungLeeren);
+    return;
+  }
+  if (!window.matchMedia) return;
+  window.matchMedia("print").addEventListener("change", (ereignis) => {
+    if (ereignis.matches) druckfassungBauen();
+    else druckfassungLeeren();
+  });
+}
+
+// ── Suche (Speicher/Planungsspeicher.swift) ───────────────────────────
+// Gefiltert wird über die Sichtbarkeit der Kacheln, nicht durch Neuaufbau.
+
+function trifft(vorhaben, klasse) {
+  if (!zustand.suchworte.length) return true;
+  let heu = vorhaben.titel + " " + vorhaben.text;
+  heu += " " + klasse.name + " " + klasse.fach;
+  // Materialien bleiben draußen: ein nicht sichtbarer Grund wirkt wie ein Fehler.
+  for (const l of vorhaben.links) heu += " " + l.titel + " " + l.adresse;
+  const klein = heu.toLowerCase();
+  return zustand.suchworte.every((wort) => klein.includes(wort));
+}
+
+function sucheAnwenden() {
+  if (!zustand.planung) return;
+  zustand.suchworte = teile.suche.value.toLowerCase().split(/\s+/).filter(Boolean);
+  let sichtbar = 0;
+  for (const posten of zustand.kacheln) {
+    const passt = trifft(posten.vorhaben, posten.klasse);
+    posten.element.hidden = !passt;
+    if (passt) sichtbar += 1;
+  }
+  teile["plan-unter"].textContent = zustand.suchworte.length
+    ? `${sichtbar} von ${zustand.planung.eintraege.length} Vorhaben gefunden`
+    : kennzahlen(zustand.planung);
+}
+
+// ── Blätter ───────────────────────────────────────────────────────────
+
+function blattOeffnen(id) {
+  const blatt = document.getElementById(id);
+  // `showModal()` auf einem schon offenen `dialog` wirft (⌘D bei offener Liste).
+  if (blatt.open) return;
+  if (typeof blatt.showModal === "function") blatt.showModal();
+  else blatt.setAttribute("open", "");
+  // Eine schon stehende Meldung bliebe sonst unter dem frischen Blatt.
+  melderEinhaengen();
+}
+
+/** Die Wochentagsreihe der Dialoge, nur lesend: `unterrichtstage` getönt,
+ *  `gewaehlt` (1…5 oder null) angekreuzt. Dekorativ — die Bedienungshilfen
+ *  bekommen denselben Inhalt als Satz daneben. */
+function tagreiheBauen(unterrichtstage, gewaehlt) {
+  const reihe = bau("span", "tagreihe");
+  reihe.setAttribute("aria-hidden", "true");
+  for (const tag of WOCHENTAGE) {
+    const kasten = bau("span", "tag", tag.kurz);
+    if (unterrichtstage.includes(tag.nummer)) kasten.classList.add("unterricht");
+    if (gewaehlt === tag.nummer) kasten.classList.add("gewaehlt");
+    kasten.title = tag.lang + (unterrichtstage.includes(tag.nummer) ? " — Unterrichtstag" : "");
+    reihe.append(kasten);
+  }
+  return reihe;
+}
+
+/** Der Satz zur Reihe — wortgleich mit dem Hinweis im Vorhaben-Dialog. */
+function unterrichtstageSatz(klasse) {
+  return klasse.unterrichtstage.length
+    ? `Hervorgehoben sind die Unterrichtstage von ${klasse.name} (`
+      + wochentageText(klasse.unterrichtstage) + ")."
+    : `Für ${klasse.name} sind unter „Klassen/Kurse und Fächer“ keine Unterrichtstage `
+      + "hinterlegt.";
+}
+
+function wertzeile(bezeichnung, wert) {
+  const zeile = bau("div", "wert");
+  zeile.append(bau("dt", null, bezeichnung), bau("dd", null, wert));
+  return zeile;
+}
+
+function abschnitt(ueberschrift) {
+  const kasten = bau("section", "abschnitt");
+  if (ueberschrift) kasten.append(bau("h3", null, ueberschrift));
+  return kasten;
+}
+
+function vorhabenZeigen(vorhaben, klasse) {
+  const woche = zustand.wochen[vorhaben.woche];
+  document.getElementById("vorhaben-titel").textContent = vorhaben.titel || "Ohne Titel";
+  document.getElementById("vorhaben-unter").textContent =
+    klasse.name + (klasse.fach ? " · " + klasse.fach : "")
+    + (woche ? ` · ${wochenLabel(woche)} · ${woche.spanneMitJahr}` : "");
+
+  const inhalt = document.getElementById("vorhaben-inhalt");
+  inhalt.replaceChildren();
+  farbeAnlegen(inhalt, klasse.farbe);
+
+  if (vorhaben.dringend) {
+    inhalt.append(bau("span", "marke dringend-marke", "Dringlich"));
+  }
+  const datum = tagAusISO(vorhaben.datumISO);
+  if (datum) {
+    inhalt.append(bau("span", "marke",
+                      "Datum: " + wochentagLang(datum) + ", " + deutsch(datum)));
+    if (datumAusserhalb(vorhaben)) {
+      inhalt.append(bau("span", "marke",
+                        "Datum außerhalb der Woche, in der das Vorhaben steht"));
+    }
+  }
+  if (vorhaben.pruefung) {
+    const tag = tagAusISO(vorhaben.pruefungstagISO);
+    inhalt.append(bau("span", "marke pruefung-marke",
+                      tag ? "Prüfung am " + deutsch(tag) : "Prüfung ohne Termin"));
+    if (terminAusserhalb(vorhaben)) {
+      inhalt.append(bau("span", "marke",
+                        "Termin außerhalb der Woche, in der das Vorhaben steht"));
+    }
+  }
+
+  // Die Wochentagszeile des Dialogs — immer alle fünf: Der Wochentag ist der
+  // des Datums (`Vorhaben.wochentag`), kein eigenes Feld.
+  const wochentag = abschnitt("Wochentag");
+  wochentag.append(tagreiheBauen(klasse.unterrichtstage, datum ? wochentagISO(datum) : null));
+  const satz = bau("p", null, unterrichtstageSatz(klasse)
+    + (datum && wochentagISO(datum) ? ` Gewählt: ${wochentagLang(datum)}.` : " Kein Wochentag gewählt."));
+  satz.className = "hinweis";
+  wochentag.append(satz);
+  inhalt.append(wochentag);
+
+  inhalt.append(statusteil(vorhaben));
+
+  if (vorhaben.text) {
+    const kasten = abschnitt("Beschreibung");
+    kasten.append(bau("div", "beschreibung", vorhaben.text));
+    inhalt.append(kasten);
+  }
+
+  if (vorhaben.links.length) {
+    const kasten = abschnitt(vorhaben.links.length === 1 ? "Link" : "Links");
+    const liste = bau("div", "liste");
+    for (const link of vorhaben.links) {
+      // Bis hierher kommen ausschließlich geprüfte http- und https-Adressen.
+      const posten = document.createElement("a");
+      posten.className = "listenposten";
+      posten.href = link.adresse;
+      posten.target = "_blank";
+      posten.rel = "noopener noreferrer nofollow";
+      const zwei2 = bau("div", "zwei");
+      zwei2.append(bau("b", null, link.titel || linkName(link.adresse)),
+                   bau("small", null, link.adresse));
+      posten.append(ikon("verweis"), zwei2, ikon("auswaerts"));
+      liste.append(posten);
+    }
+    kasten.append(liste);
+    inhalt.append(kasten);
+  }
+
+  blattOeffnen("blatt-vorhaben");
+}
+
+function klassenZeigen() {
+  const planung = zustand.planung;
+  document.getElementById("klassen-unter").textContent =
+    `${planung.klassen.length} Klassen/Kurse · ${planung.eintraege.length} Vorhaben`;
+
+  const inhalt = document.getElementById("klassen-inhalt");
+  inhalt.replaceChildren();
+
+  const kurse = abschnitt("Klassen/Kurse in der Reihenfolge des Rasters");
+  const liste = bau("div", "liste");
+  for (const klasse of planung.klassen) {
+    const posten = bau("div", "listenposten");
+    farbeAnlegen(posten, klasse.farbe);
+    const zwei2 = bau("div", "zwei");
+    zwei2.append(bau("b", null, klasse.name + (klasse.fach ? " · " + klasse.fach : "")));
+    const unter = [ton(klasse.farbe).name];
+    if (klasse.farbeManuell) unter.push("Farbe von Hand gesetzt");
+    if (klasse.notiz) unter.push(klasse.notiz);
+    unter.push(klasse.unterrichtstage.length
+      ? "Unterrichtstage: " + wochentageText(klasse.unterrichtstage)
+      : "keine Unterrichtstage hinterlegt");
+    zwei2.append(bau("small", null, unter.filter(Boolean).join(" · ")));
+    zwei2.append(tagreiheBauen(klasse.unterrichtstage, null));
+    const anzahl = planung.eintraege.filter((e) => e.klasseId === klasse.id).length;
+    posten.append(bau("span", "farbpunkt"), zwei2, bau("span", "marke", `${anzahl} Vorhaben`));
+    liste.append(posten);
+  }
+  kurse.append(liste);
+  inhalt.append(kurse);
+
+  // Hat ein Fach keine wirksame Farbe, zeigt der Posten die der ersten Zeile.
+  const karte = fachfarbenWirksam(planung);
+  const faecher = new Map();
+  for (const klasse of planung.klassen) {
+    const schluessel = fachSchluessel(klasse.fach);
+    if (!schluessel || faecher.has(schluessel)) continue;
+    faecher.set(schluessel, { name: klasse.fach, farbe: karte.get(schluessel) ?? klasse.farbe });
+  }
+  for (const schluessel of Object.keys(planung.fachfarben)) {
+    if (faecher.has(schluessel)) continue;
+    faecher.set(schluessel, { name: schluessel, farbe: karte.get(schluessel) ?? 0 });
+  }
+
+  if (faecher.size) {
+    const kasten = abschnitt("Fachfarben");
+    const fachliste = bau("div", "liste");
+    for (const fach of faecher.values()) {
+      const posten = bau("div", "listenposten");
+      farbeAnlegen(posten, fach.farbe);
+      const zwei2 = bau("div", "zwei");
+      zwei2.append(bau("b", null, fach.name), bau("small", null, ton(fach.farbe).name));
+      posten.append(bau("span", "farbpunkt"), zwei2);
+      fachliste.append(posten);
+    }
+    kasten.append(fachliste);
+    inhalt.append(kasten);
+  }
+
+  blattOeffnen("blatt-klassen");
+}
+
+/** Alle Prüfungen auf einen Blick — dieselbe Übersicht wie der
+ *  `PruefungsDialog` der App, nur lesend. */
+function pruefungenZeigen() {
+  const liste = pruefungsliste();
+  const ohneTermin = liste.filter((e) => !e.vorhaben.pruefungstagISO).length;
+  const offen = liste.filter((e) => !e.vorhaben.erledigt).length;
+  document.getElementById("pruefungen-unter").textContent = liste.length
+    ? `${liste.length} ${liste.length === 1 ? "Prüfung" : "Prüfungen"}`
+      + ` · ${offen} noch offen`
+      + (ohneTermin > 0 ? ` · ${ohneTermin} ohne Termin` : "")
+    : "keine Prüfung gekennzeichnet";
+
+  const inhalt = document.getElementById("pruefungen-inhalt");
+  inhalt.replaceChildren();
+
+  if (!liste.length) {
+    const kasten = abschnitt("Termine");
+    kasten.append(bau("p", "statushinweis",
+      "In dieser Planung ist noch kein Vorhaben als Prüfung gekennzeichnet. "
+      + "Gekennzeichnet wird in der macOS-App; diese Ansicht liest nur."));
+    inhalt.append(kasten);
+    sperrzeitenAnhaengen(inhalt);
+    blattOeffnen("blatt-pruefungen");
+    return;
+  }
+
+  const gruppen = [];
+  for (const eintrag of liste) {
+    const tag = tagAusISO(eintrag.vorhaben.pruefungstagISO);
+    const titel = tag ? monatUndJahr(tag) : "Ohne Termin";
+    const letzte = gruppen[gruppen.length - 1];
+    if (letzte && letzte.titel === titel) letzte.eintraege.push(eintrag);
+    else gruppen.push({ titel, eintraege: [eintrag] });
+  }
+
+  for (const gruppe of gruppen) {
+    const kasten = abschnitt(gruppe.titel);
+    const reihe = bau("div", "liste");
+    for (const { vorhaben, klasse } of gruppe.eintraege) {
+      const tag = tagAusISO(vorhaben.pruefungstagISO);
+      const woche = zustand.wochen[vorhaben.woche];
+      const posten = bau("div", "listenposten");
+      farbeAnlegen(posten, klasse.farbe);
+      const zwei2 = bau("div", "zwei");
+      zwei2.append(bau("b", null,
+        (tag ? mitWochentag(tag) : "ohne Termin") + " · " + (vorhaben.titel || "Ohne Titel")));
+      const angaben = [klasse.name + (klasse.fach ? " · " + klasse.fach : "")];
+      if (woche) angaben.push(wochenLabel(woche));
+      if (vorhaben.erledigt) angaben.push("durchgeführt");
+      if (terminAusserhalb(vorhaben)) angaben.push("Termin außerhalb der geplanten Woche");
+      // Eine nachträglich darübergelegte Sperre tastet den Termin nicht an.
+      const gesperrt = sperreAm(vorhaben.pruefungstagISO, klasse.id);
+      if (gesperrt) angaben.push(`Termin im Sperrzeitraum „${gesperrt.name}“`);
+      zwei2.append(bau("small", null, angaben.join(" · ")));
+      posten.append(ikon("pruefung"), zwei2);
+      reihe.append(posten);
+    }
+    kasten.append(reihe);
+    inhalt.append(kasten);
+  }
+
+  sperrzeitenAnhaengen(inhalt);
+  blattOeffnen("blatt-pruefungen");
+}
+
+/** Die Sperrzeiträume unter den Terminen. Gesetzt wird nur in der macOS-App. */
+function sperrzeitenAnhaengen(inhalt) {
+  const sperren = zustand.planung ? zustand.planung.sperrzeiten : [];
+  if (!sperren.length) return;
+
+  const kasten = abschnitt("Sperrzeiträume");
+  const liste = bau("div", "liste");
+  for (const sperre of sperren) {
+    const von = tagAusISO(sperre.von);
+    const bis = tagAusISO(sperre.bis);
+    // Beide Grenzen zählen mit — „vom 14. bis zum 18.“ sind fünf Tage.
+    const tage = von && bis ? Math.round((bis - von) / 86400000) + 1 : 0;
+    const posten = bau("div", "listenposten");
+    const zwei2 = bau("div", "zwei");
+    zwei2.append(bau("b", null, sperre.name));
+    const angaben = [`${von ? deutsch(von) : sperre.von} – ${bis ? deutsch(bis) : sperre.bis}`];
+    // Wie im Prüfungs-Dialog der App: Ein solcher Zeitraum sperrt keinen Tag.
+    if (!zeitraumGueltig(sperre)) angaben.push("Ende vor Beginn");
+    else if (tage > 0) angaben.push(`${tage} ${tage === 1 ? "Tag" : "Tage"}`);
+    angaben.push("gilt für " + sperrenKurstext(sperre));
+    zwei2.append(bau("small", null, angaben.join(" · ")));
+    posten.append(ikon("warnung"), zwei2);
+    liste.append(posten);
+  }
+  kasten.append(liste);
+  kasten.append(bau("p", "statushinweis",
+    "In einem Sperrzeitraum nimmt die macOS-App keinen Prüfungstermin an. "
+    + "Wird ein Zeitraum nachträglich über bereits eingetragene Termine gelegt, "
+    + "bleiben diese stehen und sind oben gekennzeichnet."));
+  inhalt.append(kasten);
+}
+
+// ── Heute anstehende Vorhaben ─────────────────────────────────────────
+// Geschrieben wird ausschließlich über `statusSetzen`.
+
+function tagesUnterzeile(stand) {
+  const teile = [wochentagLang(stand.tag) + ", " + deutsch(stand.tag)];
+  if (stand.woche) teile.push(wochenLabel(stand.woche));
+  const alle = stand.amTag.concat(stand.inDerWoche);
+  if (!alle.length) {
+    teile.push("nichts eingetragen");
+  } else {
+    const offen = alle.filter((posten) => !posten.vorhaben.erledigt).length;
+    // „Vorhaben“ lautet in Ein- und Mehrzahl gleich.
+    teile.push(`${alle.length} Vorhaben · ${offen} offen`);
+  }
+  if (stand.ferientag) teile.push("Ferien: " + stand.ferientag);
+  return teile.join(" · ");
+}
+
+/**
+ * Eine Zeile: links der Haken, rechts der Weg ins Vorhaben.
+ *
+ * Der Klick auf den Haken RUFT NUR `statusSetzen`; gezeichnet wird erst auf die
+ * Benachrichtigung hin. So erzeugt ein Umlegen genau einen Schreibvorgang.
+ */
+function tagesposten(posten) {
+  const vorhaben = posten.vorhaben;
+  const zeile = bau("div", "listenposten tagesposten");
+  farbeAnlegen(zeile, posten.klasse.farbe);
+
+  const haken = bau("button", "hakenknopf");
+  haken.type = "button";
+  haken.addEventListener("click", () => {
+    statusSetzen(vorhaben, { erledigt: !vorhaben.erledigt });
+  });
+
+  const ziel = bau("button", "tagesziel");
+  ziel.type = "button";
+  ziel.title = "Vorhaben öffnen";
+  ziel.addEventListener("click", () => vorhabenZeigen(vorhaben, posten.klasse));
+
+  const kursname = posten.klasse.name + (posten.klasse.fach ? " · " + posten.klasse.fach : "");
+  const kurs = bau("div", "kursspalte");
+  kurs.append(bau("span", "farbpunkt"), bau("span", null, kursname));
+  const zwei2 = bau("div", "zwei");
+  const titel = bau("b");
+  const neben = bau("small");
+  zwei2.append(titel, neben);
+  ziel.append(kurs, zwei2);
+  zeile.append(haken, ziel);
+
+  const frischauf = () => {
+    haken.replaceChildren(ikon(vorhaben.erledigt ? "haken-voll" : "kreis"));
+    haken.setAttribute("aria-pressed", vorhaben.erledigt ? "true" : "false");
+    // Mit dem Kurs: „Wiederholung“ gibt es in mehreren.
+    haken.setAttribute("aria-label", "Durchgeführt — " + kursname + ", "
+                       + (vorhaben.titel || "Ohne Titel"));
+    haken.title = vorhaben.erledigt ? "Haken entfernen" : "Als durchgeführt kennzeichnen";
+    zeile.classList.toggle("erledigt", vorhaben.erledigt);
+    titel.textContent = vorhaben.titel || "Ohne Titel";
+
+    const angaben = [TAGESGRUND[posten.grund]];
+    if (ausserhalbSeinerWoche(posten)) {
+      angaben.push("steht in einer anderen Woche");
+    }
+    if (vorhaben.kommentar) angaben.push(vorhaben.kommentar);
+    neben.replaceChildren();
+    // Der Kurs zuerst — auf dem Telefon nennt ihn nur diese Zeile.
+    neben.append(bau("span", "kursklein", kursname + " · "));
+    if (vorhaben.dringend) {
+      neben.append(bau("span", "dringlich", "dringlich"), document.createTextNode(" · "));
+    }
+    neben.append(document.createTextNode(angaben.join(" · ")));
+
+    // Die Marken werden mitgeführt: ein Kommentar kann kommen und gehen.
+    for (const alt of [...ziel.querySelectorAll(":scope > .ikon, :scope > .nur-vorlesen")]) {
+      alt.remove();
+    }
+    if (vorhaben.pruefung) {
+      ziel.append(ikon("pruefung", "ikon pruefungszeichen"));
+      // Das Symbol ist `aria-hidden` — bei „Prüfung heute“ steht es im Grund.
+      if (posten.grund !== "pruefung" && posten.grund !== "beides") {
+        ziel.append(bau("span", "nur-vorlesen", "als Prüfung geführt"));
+      }
+    }
+    if (vorhaben.kommentar) ziel.append(ikon("stift"));
+  };
+  frischauf();
+  return { element: zeile, frischauf };
+}
+
+function tageslisteZeigen() {
+  const stand = tagesliste();
+  const unter = document.getElementById("tagesliste-unter");
+  unter.textContent = tagesUnterzeile(stand);
+
+  const inhalt = document.getElementById("tagesliste-inhalt");
+  inhalt.replaceChildren();
+
+  // Eine Liste je Kennung: dieselbe Kennung zweimal ergibt zwei Zeilen.
+  const zeilen = new Map();
+  const gruppe = (ueberschrift, posten, hinweis) => {
+    if (!posten.length) return;
+    const kasten = abschnitt(ueberschrift);
+    const liste = bau("div", "liste");
+    for (const einer of posten) {
+      const gebaut = tagesposten(einer);
+      const bisher = zeilen.get(einer.vorhaben.id);
+      if (bisher) bisher.push(gebaut.frischauf);
+      else zeilen.set(einer.vorhaben.id, [gebaut.frischauf]);
+      liste.append(gebaut.element);
+    }
+    kasten.append(liste);
+    kasten.append(bau("p", "statushinweis", hinweis));
+    inhalt.append(kasten);
+  };
+
+  gruppe("Für heute eingetragen", stand.amTag,
+         "Vorhaben mit einem Datum auf den " + deutsch(stand.tag)
+         + " — dazu Prüfungen, die heute geschrieben werden.");
+  gruppe("Diese Woche, ohne festen Tag", stand.inDerWoche,
+         "Diese Vorhaben stehen in der laufenden Woche, tragen aber kein Datum. "
+         + "Was einen Tag trägt, der nicht heute ist, steht nicht hier — auch keine "
+         + "Prüfung, deren Termin auf einen anderen Tag der Woche fällt.");
+
+  if (!stand.amTag.length && !stand.inDerWoche.length) {
+    const kasten = abschnitt("Heute");
+    kasten.append(bau("p", null, tagesleertext(stand)));
+    kasten.append(bau("p", "statushinweis",
+      "Auf dieser Liste steht, was für heute datiert ist — und, solange kein Datum "
+      + "gesetzt wurde, was in der laufenden Woche geplant ist. Ein Datum bekommt ein "
+      + "Vorhaben in der macOS-App."));
+    inhalt.append(kasten);
+  } else {
+    inhalt.append(bau("p", "statushinweis",
+      "Der Haken ist derselbe wie an der Kachel und im Blatt des Vorhabens — es gibt "
+      + "nur einen Stand, alle drei zeigen ihn an. Gesichert wird er wie jede andere "
+      + "Änderung über die Diskette in der Leiste."));
+  }
+
+  statusAnzeigeAnmelden("blatt-tagesliste", (vorhaben) => {
+    for (const frischauf of zeilen.get(vorhaben.id) ?? []) frischauf();
+    unter.textContent = tagesUnterzeile(stand);
+  });
+
+  blattOeffnen("blatt-tagesliste");
+}
+
+function tagesleertext(stand) {
+  if (!stand.woche) return "Der heutige Tag liegt außerhalb des Planungszeitraums.";
+  if (stand.ferientag) return `Heute sind Ferien („${stand.ferientag}“) — es steht nichts an.`;
+  if (stand.lage.frei) return "Diese Woche ist unterrichtsfrei — es steht nichts an.";
+  return "Für heute ist nichts eingetragen, und in der laufenden Woche steht kein "
+    + "Vorhaben ohne festen Tag.";
+}
+
+function ferienZeigen() {
+  const planung = zustand.planung;
+  let frei = 0;
+  let teilweise = 0;
+  for (const l of zustand.lagen) {
+    if (l.frei) frei += 1;
+    else if (l.teilweise) teilweise += 1;
+  }
+
+  document.getElementById("ferien-unter").textContent =
+    `${planung.wochen - frei} Unterrichtswochen · ${frei} unterrichtsfrei`
+    + (teilweise > 0 ? ` · ${teilweise} angeschnitten` : "")
+    + ` · ${planung.wochen} insgesamt`;
+
+  const inhalt = document.getElementById("ferien-inhalt");
+  inhalt.replaceChildren();
+
+  if (planung.ferien.length) {
+    const kasten = abschnitt("Ferienzeiträume");
+    const liste = bau("div", "liste");
+    for (const zeitraum of planung.ferien) {
+      let voll = 0;
+      let angeschnitten = 0;
+      for (const woche of zustand.wochen) {
+        const tage = tageIn(woche, zeitraum);
+        if (tage >= 5) voll += 1;
+        else if (tage > 0) angeschnitten += 1;
+      }
+      const zusatz = [];
+      if (voll > 0) zusatz.push(`${voll} ganze ${voll === 1 ? "Woche" : "Wochen"}`);
+      if (angeschnitten > 0) zusatz.push(`${angeschnitten} angeschnitten`);
+      // Gezählt wird Montag bis Freitag: Ein Zeitraum mitten in der Planung,
+      // der keinen Unterrichtstag trifft, liegt auf einem Wochenende — nicht
+      // außerhalb. Dieselben drei Fälle nennt `Ferienzeitraum.lageText`.
+      const lagetext = !zeitraumGueltig(zeitraum) ? "Ende vor Beginn"
+        : zusatz.length ? zusatz.join(" · ")
+        : trifftPlanung(planung, zeitraum) ? "nur am Wochenende"
+        : "außerhalb des Zeitraums";
+
+      const von = tagAusISO(zeitraum.von);
+      const bis = tagAusISO(zeitraum.bis);
+      const posten = bau("div", "listenposten");
+      const zwei2 = bau("div", "zwei");
+      zwei2.append(bau("b", null, zeitraum.name));
+      zwei2.append(bau("small", null,
+        `${von ? deutsch(von) : zeitraum.von} – ${bis ? deutsch(bis) : zeitraum.bis}`
+        + " · " + lagetext));
+      posten.append(ikon("ferien"), zwei2);
+      liste.append(posten);
+    }
+    kasten.append(liste);
+    inhalt.append(kasten);
+  }
+
+  if (planung.frei.length) {
+    const kasten = abschnitt("Von Hand freigestellte Wochen");
+    const liste = bau("div", "liste");
+    for (const montagISO of [...planung.frei].sort()) {
+      const woche = zustand.wochen.find((w) => w.montagISO === montagISO);
+      const tag = tagAusISO(montagISO);
+      const posten = bau("div", "listenposten");
+      const zwei2 = bau("div", "zwei");
+      zwei2.append(bau("b", null, woche ? `KW ${woche.kw}` : montagISO));
+      zwei2.append(bau("small", null,
+        woche ? woche.spanneMitJahr : (tag ? deutsch(tag) : montagISO)));
+      posten.append(ikon("kalender"), zwei2);
+      liste.append(posten);
+    }
+    kasten.append(liste);
+    inhalt.append(kasten);
+  }
+
+  if (planung.zellenfrei.length) {
+    const kasten = abschnitt("Einzelne Klassen/Kurse ohne Unterricht");
+    const liste = bau("div", "liste");
+    const geordnet = [...planung.zellenfrei].sort((a, b) =>
+      a.woche === b.woche ? a.klasseId.localeCompare(b.klasseId) : a.woche.localeCompare(b.woche));
+    for (const zelle of geordnet) {
+      const klasse = planung.klassen.find((k) => k.id === zelle.klasseId);
+      if (!klasse) continue;
+      const woche = zustand.wochen.find((w) => w.montagISO === zelle.woche);
+      const posten = bau("div", "listenposten");
+      farbeAnlegen(posten, klasse.farbe);
+      const zwei2 = bau("div", "zwei");
+      zwei2.append(bau("b", null, klasse.name + (klasse.fach ? " · " + klasse.fach : "")));
+      zwei2.append(bau("small", null,
+        woche ? `${wochenLabel(woche)} · ${woche.spanneMitJahr}` : zelle.woche));
+      posten.append(bau("span", "farbpunkt"), zwei2);
+      liste.append(posten);
+    }
+    kasten.append(liste);
+    inhalt.append(kasten);
+  }
+
+  if (!planung.ferien.length && !planung.frei.length && !planung.zellenfrei.length) {
+    const kasten = abschnitt(null);
+    kasten.append(bau("p", null,
+      "In dieser Planung ist keine unterrichtsfreie Zeit eingetragen."));
+    inhalt.append(kasten);
+  }
+
+  blattOeffnen("blatt-ferien");
+}
+
+function zeitpunktLang(iso) {
+  if (!iso) return "unbekannt";
+  const zeitpunkt = new Date(iso);
+  if (Number.isNaN(zeitpunkt.getTime())) return iso;
+  return `${zeitpunkt.getDate()}.${zeitpunkt.getMonth() + 1}.${zeitpunkt.getFullYear()}, `
+    + `${zwei(zeitpunkt.getHours())}:${zwei(zeitpunkt.getMinutes())}:`
+    + `${zwei(zeitpunkt.getSeconds())}`;
+}
+
+function infoZeigen() {
+  const inhalt = document.getElementById("info-inhalt");
+  inhalt.replaceChildren();
+
+  const was = abschnitt("Was diese Seite tut");
+  was.append(bau("p", null,
+    "Sie zeigt eine Planungsdatei der macOS-App an. Geändert werden können genau "
+    + "zwei Dinge: der Haken „durchgeführt“ und ein Kommentar je Vorhaben. Titel, "
+    + "Wochen, Klassen/Kurse und Termine bleiben unantastbar — geplant wird am Mac."));
+  was.append(bau("p", null,
+    "Diese beiden Angaben merkt sich der Browser dieses Geräts — als "
+    + "Zwischenspeicher, nicht als Sicherung: Safari räumt ihn ab, wenn die Seite "
+    + "sieben Tage lang nicht aufgerufen wird, und mit den Websitedaten ist er "
+    + "sofort fort. Bewahrt ist der Stand erst, wenn er über die Diskette in einer "
+    + "Datei liegt. Sonst wird nichts abgelegt: keine Cookies, keine Verbindung "
+    + "nach außen. Auch Darstellung und Spaltenbreite werden weiterhin nicht "
+    + "gemerkt."));
+  was.append(bau("p", null,
+    "Der Knopf mit der Merkliste in der Leiste (⌘D) zeigt, was heute ansteht: die für "
+    + "heute datierten Vorhaben und — solange kein Datum gesetzt ist — die der "
+    + "laufenden Woche. Abgehakt wird dort wie überall sonst. Es ist derselbe Haken: "
+    + "Umgelegt, steht er an der Kachel, im Blatt des Vorhabens und in der Liste "
+    + "sofort gleich, und gespeichert wird er ein einziges Mal."));
+  inhalt.append(was);
+
+  const tresor = abschnitt("Verschlüsselt");
+  tresor.append(bau("p", null,
+    "Die macOS-App schreibt die Sicherungskopie nur verschlüsselt "
+    + "(AES-256). Diese Ansicht öffnet sie mit der Passphrase — oder mit dem gedruckten "
+    + "Wiederherstellungsschlüssel — und entsiegelt sie hier im Browser; nichts verlässt "
+    + "das Gerät. Die Passphrase wird nur zum Öffnen gebraucht und nicht behalten; der "
+    + "daraus abgeleitete Datenschlüssel bleibt für diese Sitzung im Arbeitsspeicher des "
+    + "Browsers — als nicht exportierbarer Schlüssel der Web-Crypto-Schnittstelle, den kein "
+    + "Skript auslesen kann. Nach dem Neuladen wird neu gefragt. Safari darf die Passphrase "
+    + "auf Wunsch im Schlüsselbund des Systems sichern; diese Seite selbst merkt sie sich "
+    + "nicht."));
+  tresor.append(bau("p", null,
+    "Haken und Kommentare gehen denselben Weg zurück: Die Statusdatei und der "
+    + "Zwischenspeicher dieses Geräts tragen bei verschlüsselter Planung nur Chiffrat "
+    + "unter demselben Datenschlüssel. Wer die Ansicht als Datei aus „Dateien“ öffnet, "
+    + "braucht dafür einen sicheren Kontext — sonst bleibt der Weg über https oder den "
+    + "Home-Bildschirm."));
+  inhalt.append(tresor);
+
+  const zurueck = abschnitt("Wie der Stand zurück zum Mac kommt");
+  const wege = bau("ol", "schritte");
+  for (const schritt of [
+    "Vorhaben antippen, „Durchgeführt“ umlegen oder einen Kommentar schreiben. "
+      + "Alle 5 Sekunden merkt sich der Browser den Stand — als Zwischenspeicher, "
+      + "der beim Aufräumen verschwindet. Der nächste Schritt bewahrt ihn.",
+    "Auf die Diskette in der Leiste tippen. Auf dem iPad öffnet sich das "
+      + "Teilen-Blatt: „In Dateien sichern“ und den Ordner der Planung wählen, "
+      + "die vorhandene current_status.json ersetzen.",
+    "Beim nächsten Start liest die macOS-App die Datei und trägt Haken und "
+      + "Kommentare in ihre Planung ein.",
+  ]) {
+    wege.append(bau("li", null, schritt));
+  }
+  zurueck.append(wege);
+  zurueck.append(bau("p", null,
+    "Am Rechner (Chrome, Edge) fragt die Diskette einmalig nach einer Zieldatei "
+    + "und schreibt danach alle 5 Sekunden still hinein. Safari kennt diesen Weg "
+    + "nicht — auf dem iPad bleibt es beim Teilen-Blatt."));
+  zurueck.append(bau("p", null,
+    "Ändern beide Seiten dasselbe Vorhaben, gewinnt der zuletzt gespeicherte "
+    + "Stand. Die App meldet beim Start, was sie übernommen hat."));
+  inhalt.append(zurueck);
+
+  const weg = abschnitt("Wie die Datei hierherkommt");
+  const schritte = bau("ol", "schritte");
+  for (const schritt of [
+    "In der macOS-App unter „Einstellungen“ die Sicherungskopie beim Beenden "
+      + "einschalten und einen Zielordner wählen — am besten einen, der auch auf "
+      + "dem iPad liegt, etwa in iCloud Drive.",
+    "Die App beenden. Sie legt die Kopie unter dem Namen der Planung im Zielordner ab "
+      + "und schreibt sie bei jedem Beenden neu.",
+    "Hier auf „Datei“ tippen und die Kopie in „Dateien“ auswählen — derselbe "
+      + "Ordner nimmt später die Statusdatei auf. Ist die Kopie verschlüsselt, fragt "
+      + "die Ansicht nach der Passphrase.",
+  ]) {
+    schritte.append(bau("li", null, schritt));
+  }
+  weg.append(schritte);
+  weg.append(bau("p", null,
+    "Ohne die Sicherungskopie geht es genauso: in der App „Als JSON sichern“ (⌘S) "
+    + "wählen und die Datei aufs iPad legen."));
+  inhalt.append(weg);
+
+  const herkunft = abschnitt("Herkunft und Lizenz");
+  herkunft.append(bau("p", null,
+    `Version ${VERSION} (${VERSIONSSTUFE}) — dieselbe Fassung wie die macOS-App.`));
+  herkunft.append(bau("p", null, "Erstellt mit Claude Code (Opus 5 & Fable 5/5.1)."));
+  const lizenzzeile = bau("p");
+  lizenzzeile.append(document.createTextNode(
+    "© 2026 Dominik Kluge. Freie Software unter der "));
+  const lizenzverweis = document.createElement("a");
+  lizenzverweis.href = "https://www.gnu.org/licenses/agpl-3.0.html";
+  lizenzverweis.target = "_blank";
+  lizenzverweis.rel = "noopener noreferrer";
+  lizenzverweis.textContent = "GNU Affero General Public License, Version 3 oder neuer";
+  lizenzzeile.append(lizenzverweis, document.createTextNode(
+    " — ohne Gewährleistung. Der Quelltext dieser Ansicht ist die Seite selbst; "
+    + "wer sie verändert weitergibt oder im Netz betreibt, stellt seine Fassung "
+    + "unter dieselbe Lizenz und macht ihren Quelltext zugänglich. Der Lizenztext "
+    + "liegt als LICENSE.txt neben dieser Datei."));
+  herkunft.append(lizenzzeile);
+  if (QUELLTEXT) {
+    const quelle = bau("p");
+    quelle.append(document.createTextNode("Quelltext und macOS-App: "));
+    const quellverweis = document.createElement("a");
+    quellverweis.href = QUELLTEXT;
+    quellverweis.target = "_blank";
+    quellverweis.rel = "noopener noreferrer";
+    quellverweis.textContent = QUELLTEXT;
+    quelle.append(quellverweis);
+    herkunft.append(quelle);
+  }
+  inhalt.append(herkunft);
+
+  if (zustand.planung) {
+    const planung = zustand.planung;
+    const stand = abschnitt("Geöffnete Planung");
+    const werte = bau("dl", "werte");
+    werte.append(wertzeile("Bezeichnung", planung.titel));
+    if (zustand.dateiname) werte.append(wertzeile("Datei", zustand.dateiname));
+    werte.append(wertzeile("Zeitraum", kennzahlen(planung)));
+    const links = planung.eintraege.reduce((s, e) => s + e.links.length, 0);
+    werte.append(wertzeile(links === 1 ? "Link" : "Links", String(links)));
+    werte.append(wertzeile("Zuletzt geändert", zeitpunktLang(planung.geaendert)));
+    stand.append(werte);
+    inhalt.append(stand);
+  }
+
+  blattOeffnen("blatt-info");
+}
+
+// ── Tresor: Behälter erkennen, entwickeln, öffnen, versiegeln ─────────
+// Zwilling von `Tresor` in der App; nur `crypto.subtle`, kein Netz. Die
+// Zusatzdaten (AAD) sind kurze feste Zeichenketten, kein kanonischer Kopf.
+
+const KODIERER = new TextEncoder();
+const DEKODIERER = new TextDecoder();
+
+/** `crypto.subtle` gibt es nur im sicheren Kontext (https, Home-Bildschirm);
+    ob der Aufruf „als Datei“ einer ist, entscheidet WebKit. */
+function tresorMoeglich() {
+  return typeof window.crypto === "object" && window.crypto !== null
+    && typeof window.crypto.subtle === "object" && window.crypto.subtle !== null;
+}
+
+function istBehaelter(zerlegt) {
+  return istObjekt(zerlegt) && textwert(zerlegt.typ) === TRESOR_TYP;
+}
+
+function base64Zu(bytes) {
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(bin);
+}
+
+function base64Von(text) {
+  if (typeof text !== "string" || !/^[A-Za-z0-9+/]*={0,2}$/.test(text)) return null;
+  try {
+    const bin = atob(text);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  } catch {
+    return null;
+  }
+}
+
+function hexVon(text) {
+  if (typeof text !== "string" || text.length % 2 !== 0 || !/^[0-9a-fA-F]*$/.test(text)) return null;
+  const bytes = new Uint8Array(text.length / 2);
+  for (let i = 0; i < bytes.length; i += 1) bytes[i] = parseInt(text.slice(2 * i, 2 * i + 2), 16);
+  return bytes;
+}
+
+function zusatz(text) { return KODIERER.encode(text); }
+
+/** Der gelesene Kopf — noch verschlossen; „beschädigt“ und „falscher
+    Schlüssel“ bleiben getrennt. Eine neuere Fassung des Behälters wird
+    benannt, nicht geraten. */
+function kopfLesen(zerlegt) {
+  const beschaedigt = () => new Planungsfehler("Der verschlüsselte Behälter ist beschädigt.");
+  if (!istBehaelter(zerlegt)) throw beschaedigt();
+  const version = ganzzahl(zerlegt.version);
+  if (version !== null && version > TRESOR_VERSION) {
+    throw new Planungsfehler(`Der Behälter stammt aus einer neueren Fassung (${version}) — `
+                             + "diese Ansicht kann ihn nicht öffnen.");
+  }
+  const inhalt = textwert(zerlegt.inhalt);
+  const kennung = textwert(zerlegt.schluesselkennung).toLowerCase();
+  const nonce = base64Von(textwert(zerlegt.nonce));
+  const daten = base64Von(textwert(zerlegt.daten));
+  if (version === null || version < 1 || !inhalt
+      || !hexVon(kennung) || kennung.length !== TRESOR_KENNUNG_LAENGE * 2
+      || textwert(zerlegt.verfahren) !== TRESOR_VERFAHREN
+      || !nonce || nonce.length !== 12 || !daten || daten.length < 16
+      || !Array.isArray(zerlegt.wicklungen)) throw beschaedigt();
+  const wicklungen = [];
+  for (const eintrag of zerlegt.wicklungen) {
+    if (!istObjekt(eintrag) || !textwert(eintrag.art)) throw beschaedigt();
+    wicklungen.push(eintrag);
+  }
+  return { version, inhalt, kennung, nonce, wicklungen, daten };
+}
+
+function wicklung(kopf, art) {
+  return kopf.wicklungen.find((w) => textwert(w.art) === art) || null;
+}
+
+/** NFC-normalisiert und UTF-8 — wie `precomposedStringWithCanonicalMapping`
+    in der App; sonst ist ein „ä“ hier zwei Zeichen und dort eines. */
+async function schluesselAusPassphrase(passphrase, salt, runden) {
+  const grund = await crypto.subtle.importKey(
+    "raw", KODIERER.encode(passphrase.normalize("NFC")), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", hash: "SHA-256", salt: salt, iterations: runden },
+    grund, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+}
+
+async function schluesselAusWiederherstellung(roh, salt) {
+  const grund = await crypto.subtle.importKey("raw", roh, "HKDF", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "HKDF", hash: "SHA-256", salt: salt, info: KODIERER.encode("wiederherstellung") },
+    grund, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+}
+
+/** Nachsichtig beim Abtippen — dieselbe Regel wie in der App: Groß und Klein
+    gleich, Striche und Leerzeichen frei, 0 und 1 als O und I. */
+function wiederherstellungRoh(text) {
+  const bereinigt = String(text || "").toUpperCase().replace(/0/g, "O").replace(/1/g, "I")
+    .replace(/[^A-Z0-9]/g, "");
+  if (bereinigt.length !== TRESOR_WIEDERHERSTELLUNG_LAENGE * 8 / 5) return null;
+  const bytes = [];
+  let wert = 0;
+  let bits = 0;
+  for (const z of bereinigt) {
+    const stelle = TRESOR_WIEDERHERSTELLUNG_ALPHABET.indexOf(z);
+    if (stelle < 0) return null;
+    wert = ((wert << 5) | stelle) & 0x1fff;
+    bits += 5;
+    if (bits >= 8) {
+      bits -= 8;
+      bytes.push((wert >> bits) & 255);
+    }
+  }
+  return bytes.length === TRESOR_WIEDERHERSTELLUNG_LAENGE ? new Uint8Array(bytes) : null;
+}
+
+/** 32 Byte Datenschlüssel — oder „passt nicht“: Die Beglaubigung der Wicklung
+    schlägt an, bevor irgendwer die Daten anrührt. */
+async function entwickeln(w, kennung, kek, fehltext) {
+  const nonce = base64Von(textwert(w.nonce));
+  const umschlag = base64Von(textwert(w.umschlag));
+  if (!nonce || nonce.length !== 12 || !umschlag || umschlag.length !== 48) {
+    throw new Planungsfehler("Die Wicklung ist beschädigt.");
+  }
+  try {
+    const roh = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: nonce, additionalData: zusatz(textwert(w.art) + "|" + kennung) },
+      kek, umschlag);
+    return new Uint8Array(roh);
+  } catch {
+    throw new Planungsfehler(fehltext);
+  }
+}
+
+async function datenschluesselMitPassphrase(kopf, passphrase) {
+  const w = wicklung(kopf, "passphrase");
+  if (!w) throw new Planungsfehler("Die Datei trägt keine Passphrase-Wicklung.");
+  const runden = ganzzahl(w.runden);
+  // Das Feld heißt im Dateiformat „salz“ — der Feldname bleibt, der Begriff ist Salt.
+  const salt = base64Von(textwert(w.salz));
+  if (textwert(w.kdf) !== TRESOR_KDF_PASSPHRASE || runden === null
+      || runden < TRESOR_RUNDEN_MINDESTENS || runden > TRESOR_RUNDEN_HOECHSTENS
+      || !salt || salt.length < 8) {
+    throw new Planungsfehler("Die Passphrase-Wicklung ist beschädigt.");
+  }
+  const kek = await schluesselAusPassphrase(passphrase, salt, runden);
+  return entwickeln(w, kopf.kennung, kek, "Die Passphrase passt nicht.");
+}
+
+async function datenschluesselMitWiederherstellung(kopf, text) {
+  const w = wicklung(kopf, "wiederherstellung");
+  if (!w) throw new Planungsfehler("Die Datei trägt keine Wiederherstellungswicklung.");
+  const salt = base64Von(textwert(w.salz));
+  if (textwert(w.kdf) !== TRESOR_KDF_WIEDERHERSTELLUNG || !salt || salt.length < 8) {
+    throw new Planungsfehler("Die Wiederherstellungswicklung ist beschädigt.");
+  }
+  const roh = wiederherstellungRoh(text);
+  if (!roh) {
+    throw new Planungsfehler("Der Wiederherstellungsschlüssel hat nicht die erwartete Form "
+                             + "(8 Gruppen zu 4 Zeichen).");
+  }
+  const kek = await schluesselAusWiederherstellung(roh, salt);
+  return entwickeln(w, kopf.kennung, kek, "Der Wiederherstellungsschlüssel passt nicht.");
+}
+
+/** Datenschlüssel (nicht exportierbar), Kennung und die Wicklungen des
+    Kopfes — sie reisen in jede Datei, die die Ansicht schreibt. */
+async function tresorAnlegen(roh, kopf) {
+  const schluessel = await crypto.subtle.importKey(
+    "raw", roh, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+  return { schluessel, kennung: kopf.kennung, wicklungen: kopf.wicklungen.slice() };
+}
+
+async function behaelterOeffnen(kopf, tresor) {
+  if (tresor.kennung !== kopf.kennung) {
+    throw new Planungsfehler("Die Datei ist unter einem anderen Schlüssel versiegelt.");
+  }
+  try {
+    const klar = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: kopf.nonce,
+        additionalData: zusatz(`${TRESOR_TYP}|${kopf.version}|${kopf.inhalt}|${kopf.kennung}`) },
+      tresor.schluessel, kopf.daten);
+    return DEKODIERER.decode(klar);
+  } catch {
+    throw new Planungsfehler("Der Inhalt des Behälters ließ sich nicht entsiegeln — die Datei "
+                             + "ist beschädigt oder verändert.");
+  }
+}
+
+/** Ein Behälter, wie ihn die App schreibt — `typ` vorne, die Wicklungen
+    ohne die, die am Gerät hängen (die Ansicht schreibt nur für die Kopie). */
+async function behaelterVersiegeln(text, inhalt, tresor) {
+  const nonce = crypto.getRandomValues(new Uint8Array(12));
+  const chiffrat = new Uint8Array(await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv: nonce,
+      additionalData: zusatz(`${TRESOR_TYP}|${TRESOR_VERSION}|${inhalt}|${tresor.kennung}`) },
+    tresor.schluessel, KODIERER.encode(text)));
+  return JSON.stringify({
+    typ: TRESOR_TYP,
+    version: TRESOR_VERSION,
+    inhalt,
+    schluesselkennung: tresor.kennung,
+    verfahren: TRESOR_VERFAHREN,
+    nonce: base64Zu(nonce),
+    wicklungen: tresor.wicklungen.filter((w) => textwert(w.art) !== "enklave"),
+    daten: base64Zu(chiffrat),
+  });
+}
+
+/** Fragt, bis die Wicklung aufgeht oder das Blatt geschlossen wird. Die
+    Passphrase bleibt in keinem Speicher dieser Seite; Safari darf sie im
+    Schlüsselbund sichern — dafür trägt das Formular einen Benutzernamen. */
+function passphraseErfragen(kopf, dateiname) {
+  return new Promise((erfuellen, abweisen) => {
+    const blatt = document.getElementById("blatt-passphrase");
+    const formular = document.getElementById("passphrase-formular");
+    const nutzer = document.getElementById("passphrase-nutzer");
+    const feld = document.getElementById("passphrase-feld");
+    const wieder = document.getElementById("wiederherstellung-feld");
+    const umschalter = document.getElementById("passphrase-umschalter");
+    const fehler = document.getElementById("passphrase-fehler");
+    const unter = document.getElementById("passphrase-unter");
+    let erledigt = false;
+    let mitWiederherstellung = false;
+    let laeuft = false;
+
+    nutzer.value = dateiname || "Planung";
+    unter.textContent = dateiname ? `„${dateiname}“ ist verschlüsselt` : "Die Datei ist verschlüsselt";
+    fehler.textContent = "";
+    feld.value = "";
+    wieder.value = "";
+
+    const zeigen = () => {
+      document.getElementById("passphrase-zeile").hidden = mitWiederherstellung;
+      document.getElementById("wiederherstellung-zeile").hidden = !mitWiederherstellung;
+      umschalter.textContent = mitWiederherstellung
+        ? "Stattdessen die Passphrase eingeben"
+        : "Stattdessen den Wiederherstellungsschlüssel eingeben";
+      (mitWiederherstellung ? wieder : feld).focus();
+    };
+    const umschalten = () => { mitWiederherstellung = !mitWiederherstellung; fehler.textContent = ""; zeigen(); };
+    const absenden = async (ereignis) => {
+      ereignis.preventDefault();
+      if (laeuft) return;
+      laeuft = true;
+      fehler.textContent = "";
+      try {
+        const roh = mitWiederherstellung
+          ? await datenschluesselMitWiederherstellung(kopf, wieder.value)
+          : await datenschluesselMitPassphrase(kopf, feld.value);
+        const tresor = await tresorAnlegen(roh, kopf);
+        erledigt = true;
+        blatt.close();
+        erfuellen(tresor);
+      } catch (f) {
+        fehler.textContent = f instanceof Planungsfehler ? f.message : "Die Datei ließ sich nicht entsperren.";
+      } finally {
+        laeuft = false;
+      }
+    };
+    const schliessen = () => {
+      formular.removeEventListener("submit", absenden);
+      umschalter.removeEventListener("click", umschalten);
+      blatt.removeEventListener("close", schliessen);
+      feld.value = "";
+      wieder.value = "";
+      if (!erledigt) abweisen(new Planungsfehler("Ohne Passphrase bleibt die Datei geschlossen."));
+    };
+    formular.addEventListener("submit", absenden);
+    umschalter.addEventListener("click", umschalten);
+    blatt.addEventListener("close", schliessen);
+    blattOeffnen("blatt-passphrase");
+    zeigen();
+  });
+}
+
+/** Öffnet einen Behälter — mit dem Tresor der Sitzung, wenn er passt, sonst
+    über das Passphrase-Blatt. Liefert Klartext und setzt den Tresor. */
+async function behaelterMitFreigabeOeffnen(kopf, dateiname) {
+  if (!tresorMoeglich()) {
+    throw new Planungsfehler("Die Datei ist verschlüsselt, und dieser Aufruf der Ansicht kann sie "
+                             + "nicht öffnen: Die Verschlüsselung braucht einen sicheren Kontext — "
+                             + "die Ansicht über https oder vom Home-Bildschirm aufrufen.");
+  }
+  if (zustand.tresor && zustand.tresor.kennung === kopf.kennung) {
+    return behaelterOeffnen(kopf, zustand.tresor);
+  }
+  const tresor = await passphraseErfragen(kopf, dateiname);
+  const klar = await behaelterOeffnen(kopf, tresor);
+  zustand.tresor = tresor;
+  return klar;
+}
+
+// ── Datei öffnen ──────────────────────────────────────────────────────
+
+async function planungUebernehmen(planung, dateiname) {
+  // Ein noch offenes Blatt zeigte Vorhaben der vorigen Planung, und sein
+  // Rückruf hielte deren Objekte fest.
+  for (const blatt of document.querySelectorAll(".blatt[open]")) blatt.close();
+  statusAnzeigen.clear();
+  // Die Zieldatei gehört der Planung, für die sie gewählt wurde. Bliebe sie an
+  // einer anderen stehen, schriebe die Uhr den Stand dieser Planung in die
+  // `current_status.json` der vorigen — der Mac läse dort lauter fremde
+  // Kennungen und verlöre die dort noch nicht eingelesenen Haken.
+  const verbindungGeloest = zustand.zieldatei !== null
+    && !(zustand.zieldateiFuer !== "" && zustand.zieldateiFuer === planung.erstellt);
+  if (verbindungGeloest) {
+    zustand.zieldatei = null;
+    zustand.zieldateiFuer = "";
+  }
+  zustand.planung = planung;
+  zustand.dateiname = dateiname || "";
+  zustand.wochen = wochenListe(planung.startISO, planung.wochen);
+  zustand.lagen = zustand.wochen.map((w) => lage(planung, w));
+  zustand.schulwochen = schulwochen(planung, zustand.wochen, zustand.lagen);
+  const wieder = await statusWiederaufnehmen(planung);
+
+  teile["plan-titel"].textContent = planung.titel;
+  teile["plan-unter"].textContent = kennzahlen(planung);
+  document.title = planung.titel + " — Ansicht";
+
+  teile.leer.hidden = true;
+  teile["raster-huelle"].hidden = false;
+  teile.suchhuelle.hidden = false;
+  teile.werkzeuge.hidden = false;
+  teile.statusgruppe.hidden = false;
+  teile.reglergruppe.hidden = false;
+
+  teile.suche.value = "";
+  zustand.suchworte = [];
+  rasterZeichnen();
+  zurLaufendenWoche(false);
+  statusKnopfNachfuehren();
+  const verworfen = zustand.statusVerworfen;
+  melden(`„${planung.titel}“ geöffnet — ${planung.eintraege.length} Vorhaben.`
+         + (wieder ? ` ${wieder} noch nicht übernommene `
+                     + `${wieder === 1 ? "Änderung" : "Änderungen"} von diesem Gerät `
+                     + "wieder aufgenommen." : "")
+         + (verworfen ? ` ${verworfen} ${verworfen === 1
+                            ? "Eintrag von diesem Gerät wurde"
+                            : "Einträge von diesem Gerät wurden"} in der Datei `
+                        + "bereits neuer beantwortet und verworfen." : "")
+         + (verbindungGeloest ? " Die verbundene Statusdatei gehörte zur vorherigen "
+                                + "Planung und wurde gelöst — für diese Planung "
+                                + "erneut über die Diskette verbinden." : "")
+         + (planung.uebergangen ? " " + planung.uebergangen : ""),
+         verworfen > 0 || verbindungGeloest || planung.uebergangen !== "");
+}
+
+async function dateiLesen(datei) {
+  if (!datei) return;
+  try {
+    // Vor dem Lesen: Eine Datei dieser Größe ist keine Planung, und der Text
+    // läge doppelt im Speicher, ehe die Prüfung überhaupt beginnt.
+    if (Number.isFinite(datei.size) && datei.size > MAX_DATEIGROESSE) {
+      throw new Planungsfehler(
+        `Die Datei ist mit ${Math.round(datei.size / 1024 / 1024)} MB zu groß für `
+        + "eine Planungsdatei und wurde nicht geöffnet.");
+    }
+    const roh = await datei.text();
+    let zerlegt;
+    try {
+      zerlegt = JSON.parse(roh);
+    } catch {
+      throw new Planungsfehler("Die Datei ist kein lesbares JSON.");
+    }
+    if (istBehaelter(zerlegt)) {
+      // Verschlüsselt: erst der Kopf, dann die Freigabe, dann derselbe Leser wie immer.
+      const klartext = await behaelterMitFreigabeOeffnen(kopfLesen(zerlegt), datei.name);
+      try {
+        zerlegt = JSON.parse(klartext);
+      } catch {
+        throw new Planungsfehler("Der entsiegelte Inhalt ist kein lesbares JSON.");
+      }
+    } else {
+      // Eine Klartextdatei: kein Schlüssel — auch keiner von vorhin.
+      zustand.tresor = null;
+      zustand.statusChiffrat = "";
+      zustand.statusChiffratMarke = -1;
+    }
+    await planungUebernehmen(planungPruefen(zerlegt), datei.name);
+  } catch (fehler) {
+    melden(fehler instanceof Planungsfehler ? fehler.message
+                                            : "Die Datei ließ sich nicht lesen.", true);
+  }
+}
+
+function zurLaufendenWoche(weich = true) {
+  const nummer = laufendeWoche();
+  if (nummer === null) return;
+  const breite = Number.parseFloat(teile.breite.value) || 280;
+  // Die Kursspalte fällt aus der Rechnung: sie klebt links und verdeckt sich selbst.
+  teile["raster-huelle"].scrollTo({
+    left: Math.max(0, nummer * breite),
+    behavior: weich ? "smooth" : "auto",
+  });
+}
+
+// ── Darstellung ───────────────────────────────────────────────────────
+
+function themaSetzen(dunkel) {
+  zustand.dunkel = dunkel;
+  // Mehr ist nicht zu tun: Die Fachfarben hängen an --s-basis und --l-basis.
+  document.body.dataset.thema = dunkel ? "dunkel" : "hell";
+}
+
+// ── Status: Haken und Kommentar ───────────────────────────────────────
+// Drei Wege hinaus, in dieser Reihenfolge: verbundene Zieldatei
+// (`showSaveFilePicker`, nur Chromium am Rechner), Teilen-Blatt
+// (`navigator.share`) und Herunterladen; in den Speicher wird immer zuerst
+// geschrieben. Das Teilen-Blatt muss synchron im Klick-Handler stehen — jedes
+// `await` davor verwirkt die Nutzergeste.
+
+const STATUS_SCHLUESSEL = "unterrichtsplanung.status";
+const STATUS_DATEINAME = "current_status.json";
+const STATUS_TYP = "unterrichtsplanung-status";
+const STATUS_UHR_MS = 5000;
+/** Gegenstück zu `Statusdatei.hoechstgroesse`: Was die App gar nicht erst
+    einliest, wird hier auch nicht zusammengeführt und nicht überschrieben —
+    eine so große Datei ist nicht die, für die man sie hält. */
+const MAX_STATUSGROESSE = 8 * 1024 * 1024;
+/** Dieselbe Grenze wie `Planungsdatei.maxTextlaenge`, und aus demselben Grund
+    nicht enger: Was die App in einen Kommentar schreiben lässt, muss den Weg
+    über dieses Gerät unversehrt überstehen. Eine eigene, engere Grenze kappte
+    am Mac Getipptes und schriebe die Kürzung dorthin zurück. */
+const STATUS_KOMMENTAR_MAX = MAX_TEXTLAENGE;
+/** Für Hinweistexte: „20.000“ statt „20000“. */
+const KOMMENTAR_MAX_TEXT = STATUS_KOMMENTAR_MAX.toLocaleString("de-DE");
+/** Genau die Form, die `new Date().toISOString()` erzeugt.
+    Nicht `ISO_MUSTER` — das gibt es weiter oben schon für reine Tagesdaten. */
+const ZEITSTEMPEL_MUSTER = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+/** Schlüssel, die auf einem gewöhnlichen Objekt den Prototyp verbiegen. */
+const GEFAEHRLICHE_SCHLUESSEL = new Set(["__proto__", "constructor", "prototype"]);
+
+function kommentarKuerzen(wert) {
+  return aufLaenge(stutzenMitZeilen(wert || ""), STATUS_KOMMENTAR_MAX);
+}
+
+/**
+ * Ein Zeitstempel ist nur brauchbar, wenn er die erwartete Form hat UND nicht
+ * in der Zukunft liegt: Ein Eintrag mit „9999-…“ gewänne sonst für immer gegen
+ * jede Planungsdatei. Eine Minute Nachsicht für ungleich gehende Uhren.
+ */
+function zeitstempelBrauchbar(wert) {
+  if (!ZEITSTEMPEL_MUSTER.test(wert)) return false;
+  // Die Felder selbst prüfen statt sie dem Datumsleser zu überlassen: Der der
+  // App nimmt den 30. Februar an und rechnet ihn weiter, dieser hier weist ihn
+  // ab — bei der Schaltsekunde („…:59:60Z“) ist es umgekehrt. Ein Stempel, den
+  // nur eine Seite gelten lässt, entscheidet denselben Abgleich verschieden.
+  // `tagAusISO` ist dabei der Zwilling von `Tag(iso:)`, samt Jahresschranke.
+  if (!tagAusISO(wert.slice(0, 10))) return false;
+  const zahl = (von, bis) => Number(wert.slice(von, bis));
+  if (zahl(11, 13) > 23 || zahl(14, 16) > 59 || zahl(17, 19) > 59) return false;
+  const zeit = Date.parse(wert);
+  return Number.isFinite(zeit) && zeit <= Date.now() + 60000;
+}
+
+function jetztISO() {
+  return new Date().toISOString();
+}
+
+function uhrzeit(datum) {
+  return datum.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+}
+
+/** Der Inhalt der Statusdatei im Klartext — dieselbe Form für Speicher und
+    Datei; versiegelt wird sie in `statusAlsDatei`. Ohne Angabe der eigene
+    Stand; die verbundene Datei bekommt den vereinten. */
+function statusAlsText(eintraege) {
+  return JSON.stringify({
+    typ: STATUS_TYP,
+    version: 1,
+    gespeichert: jetztISO(),
+    planungstitel: zustand.planung ? zustand.planung.titel : "",
+    eintraege: eintraege || zustand.status,
+  }, null, 2);
+}
+
+/**
+ * Der eigene Stand über dem, was schon in der Datei steht.
+ *
+ * `zustand.status` trägt nur, was in DIESER Sitzung berührt wurde; in der Datei
+ * können Einträge liegen, die der Mac noch nicht eingelesen hat — etwa von
+ * einem anderen Gerät oder aus einem geleerten Zwischenspeicher. Sie bleiben
+ * stehen, gleiche Kennungen weichen dem jüngeren Stempel. Dieselbe Regel wendet
+ * `statusAnwenden` in der App in der Gegenrichtung an.
+ */
+async function eintraegeVereinen(vorhandenerText) {
+  const zusammen = Object.create(null);
+  const stand = await statusstandOeffnen(vorhandenerText);
+  const typ = stand ? textwert(stand.typ) : "";
+  // Ein fremder `typ` wird nicht fortgeschrieben: Die App weist eine solche
+  // Datei ohnehin ab („gehört zu einer anderen Anwendung“).
+  if (stand && (typ === "" || typ === STATUS_TYP)) {
+    const derDatei = textwert(stand.gespeichert);
+    for (const [id, eintrag] of Object.entries(stand.eintraege)) {
+      if (!id || !istObjekt(eintrag)) continue;
+      // Ältere Dateien tragen den Stempel nur an der Datei, nicht am Eintrag.
+      const stempel = textwert(eintrag.geaendert) || derDatei;
+      zusammen[id] = {
+        erledigt: wahrheit(eintrag.erledigt),
+        kommentar: kommentarKuerzen(textwert(eintrag.kommentar)),
+        geaendert: stempel,
+      };
+    }
+  }
+  for (const [id, eintrag] of Object.entries(zustand.status)) {
+    const dort = zusammen[id];
+    if (dort && zeitstempelBrauchbar(dort.geaendert)
+        && eintrag.geaendert <= dort.geaendert) continue;
+    zusammen[id] = eintrag;
+  }
+  return zusammen;
+}
+
+/**
+ * Je Planung ein eigener Schlüssel: Sonst löschte das Öffnen einer zweiten
+ * Planung die noch nicht übertragenen Einträge der ersten — beim ersten Haken
+ * schriebe der auf die neue Planung eingedampfte Stand über den alten.
+ * `erstellt` bleibt über alle Sicherungen hinweg dasselbe.
+ */
+function statusSchluessel(planung) {
+  const kennung = planung && planung.erstellt ? planung.erstellt : "";
+  return kennung ? STATUS_SCHLUESSEL + ":" + kennung : STATUS_SCHLUESSEL;
+}
+
+/** Was in die Datei und in den Speicher geht: bei verschlüsselter Planung der
+    Behälter unter demselben Datenschlüssel, sonst der Klartext. */
+async function statusAlsDatei(eintraege) {
+  const text = statusAlsText(eintraege);
+  return zustand.tresor ? behaelterVersiegeln(text, "status", zustand.tresor) : text;
+}
+
+/** Der abgelegte Text als Statusstand, auch aus einem Behälter — null, wenn er
+    keiner ist oder unter einem Schlüssel liegt, den diese Sitzung nicht hat. */
+async function statusstandOeffnen(text) {
+  const gelesen = statusstandLesen(text);
+  if (gelesen) return gelesen;
+  if (!text || !zustand.tresor) return null;
+  let zerlegt;
+  try {
+    zerlegt = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  if (!istBehaelter(zerlegt)) return null;
+  try {
+    return statusstandLesen(await behaelterOeffnen(kopfLesen(zerlegt), zustand.tresor));
+  } catch {
+    // Fremder Schlüssel oder beschädigt: Es gibt nichts, was hier gelten könnte.
+    return null;
+  }
+}
+
+/** Der abgelegte Text als Statusstand — null, wenn er keiner ist. */
+function statusstandLesen(text) {
+  if (!text) return null;
+  try {
+    const gelesen = JSON.parse(text);
+    return istObjekt(gelesen) && istObjekt(gelesen.eintraege) ? gelesen : null;
+  } catch {
+    // Fremder Inhalt unter unserem Schlüssel.
+    return null;
+  }
+}
+
+/**
+ * Der Stand dieser Planung — nicht irgendeiner.
+ *
+ * Ein schlüsselloser Altstand (ältere Ansichtsfassungen) gehört der Planung, deren Titel er
+ * trägt; einer fremden wird er nicht untergeschoben. Er wird einmal unter den
+ * planungseigenen Schlüssel gehoben und dann entfernt, statt auf Dauer als
+ * Rückfall zu gelten.
+ */
+async function statusAusSpeicher(planung) {
+  let stand = null;
+  try {
+    const schluessel = statusSchluessel(planung);
+    stand = await statusstandOeffnen(window.localStorage.getItem(schluessel));
+    if (schluessel === STATUS_SCHLUESSEL) return stand;
+    const roh = window.localStorage.getItem(STATUS_SCHLUESSEL);
+    const altstand = statusstandLesen(roh);
+    if (!altstand || textwert(altstand.planungstitel) !== planung.titel) return stand;
+    // Erst zuweisen, dann umhängen: Bricht das Ablegen am Kontingent ab, bleibt
+    // der Altstand liegen, statt ungelesen wegzufallen.
+    if (!stand) {
+      stand = altstand;
+      window.localStorage.setItem(schluessel, roh);
+    }
+    window.localStorage.removeItem(STATUS_SCHLUESSEL);
+  } catch {
+    // Privater Modus, volles Kontingent.
+  }
+  return stand;
+}
+
+function statusMerken() {
+  if (!zustand.planung) return;
+  const text = statusAlsText();
+  // Erst prüfen, dann schreiben — ein leerer Text überschriebe den Stand.
+  if (!text || text.length < 2) return;
+  if (!zustand.tresor) {
+    inSpeicherSchreiben(text);
+    return;
+  }
+  // Nur Chiffrat in den Speicher. Versiegeln ist asynchron: Nur der jüngste
+  // Lauf schreibt, und er hält den Behälter fürs Teilen-Blatt bereit.
+  zustand.merkLauf += 1;
+  const lauf = zustand.merkLauf;
+  const marke = zustand.statusMarke;
+  behaelterVersiegeln(text, "status", zustand.tresor).then((behaelter) => {
+    if (lauf !== zustand.merkLauf) return;
+    zustand.statusChiffrat = behaelter;
+    zustand.statusChiffratMarke = marke;
+    inSpeicherSchreiben(behaelter);
+  }).catch(() => {
+    if (zustand.merkenVerwehrt) return;
+    zustand.merkenVerwehrt = true;
+    melden("Der Stand ließ sich nicht versiegeln — bitte über die Diskette ablegen.", true);
+  });
+}
+
+function inSpeicherSchreiben(text) {
+  try {
+    window.localStorage.setItem(statusSchluessel(zustand.planung), text);
+  } catch {
+    // Die Uhr liefe sonst alle 5 Sekunden in dieselbe Warnung.
+    if (zustand.merkenVerwehrt) return;
+    zustand.merkenVerwehrt = true;
+    melden("Dieser Browser lässt kein Merken zu — bitte den Status jetzt über die "
+           + "Diskette ablegen.", true);
+  }
+}
+
+/**
+ * Was hier zuletzt eingetragen wurde, sofern es NEUER ist als die geöffnete
+ * Datei — sonst käme ein am Mac entfernter Haken wieder zurück.
+ */
+async function statusWiederaufnehmen(planung) {
+  zustand.status = Object.create(null);
+  // Über die Kennung, nicht über das Objekt: Ein Rückruf, der noch ein Vorhaben
+  // der vorigen Planung hält, fände sonst keinen Ausgangsstand.
+  // Genau so gestutzt, wie `statusSetzen` schreibt: Verglichen wird gegen den
+  // Ausgangsstand, und ein Unterschied allein aus verschiedener Behandlung
+  // machte aus dem bloßen Anfassen des Feldes eine Änderung.
+  zustand.ausgang = new Map(planung.eintraege.map((e) => [
+    e.id,
+    { erledigt: Boolean(e.erledigt), kommentar: kommentarKuerzen(e.kommentar) },
+  ]));
+  zustand.statusOffen = false;
+  zustand.statusVerworfen = 0;
+  zustand.merkenVerwehrt = false;
+  zustand.kennungGemeldet = false;
+  // Für diese Planung wurde noch nichts gesichert; „zuletzt 14:31“ gehörte zur
+  // vorigen.
+  zustand.statusGesichert = null;
+  zustand.statusChiffrat = "";
+  zustand.statusChiffratMarke = -1;
+  const gespeichert = await statusAusSpeicher(planung);
+  if (!gespeichert) return 0;
+
+  const bekannt = new Map(planung.eintraege.map((e) => [e.id, e]));
+  let zahl = 0;
+  for (const [id, eintrag] of Object.entries(gespeichert.eintraege)) {
+    if (GEFAEHRLICHE_SCHLUESSEL.has(id)) continue;
+    const vorhaben = bekannt.get(id);
+    // Unbekannte Kennung: Weglassen räumt den Speicher beim nächsten Sichern auf.
+    if (!vorhaben || !istObjekt(eintrag)) continue;
+    // Ohne brauchbaren Zeitstempel gilt die Datei — sie ist die belegte Quelle.
+    const geaendert = textwert(eintrag.geaendert);
+    if (!zeitstempelBrauchbar(geaendert)) continue;
+    // Verglichen wird gegen den Stempel dieses Vorhabens, nicht gegen
+    // `planung.geaendert` — sonst entwertete jede Änderung am Mac alles hier.
+    // Wie `statusAnwenden` in der App: Ein unbrauchbarer Stempel — aus einer
+    // falsch gestellten Uhr in die Planungsdatei geraten — sperrte das
+    // Vorhaben sonst für immer.
+    const roherStempel = textwert(vorhaben.statusGeaendert);
+    const dort = zeitstempelBrauchbar(roherStempel) ? roherStempel : "";
+    if (dort && geaendert <= dort) {
+      zustand.statusVerworfen += 1;
+      continue;
+    }
+    vorhaben.erledigt = wahrheit(eintrag.erledigt);
+    vorhaben.kommentar = kommentarKuerzen(textwert(eintrag.kommentar));
+    zustand.status[id] = {
+      erledigt: vorhaben.erledigt,
+      kommentar: vorhaben.kommentar,
+      geaendert,
+    };
+    zahl += 1;
+  }
+  zustand.statusOffen = zahl > 0;
+  // Ein Altstand im Klartext wird unter dem Schlüssel neu abgelegt — überschrieben,
+  // nicht entfernt: Von jetzt an trägt der Speicher nur noch Chiffrat.
+  if (zahl > 0 && zustand.tresor) statusMerken();
+  return zahl;
+}
+
+/**
+ * Der einzige Weg, an Haken und Kommentar zu rühren.
+ *
+ * **Ein Vorhaben, ein Eintrag:** Ob der Haken an der Kachel, im Blatt oder in
+ * der Tagesliste umgelegt wurde, ändert dieselbe Stelle. Ein Handgriff, der
+ * nichts ändert, schreibt gar nichts (die Schranke unten).
+ *
+ * Damit das so bleibt: Jede angemeldete Anzeige **zeichnet nur** — riefe eine
+ * Auffrischung selbst `statusSetzen`, liefe der Vorgang im Kreis.
+ */
+function statusSetzen(vorhaben, aenderung) {
+  if ("erledigt" in aenderung) vorhaben.erledigt = Boolean(aenderung.erledigt);
+  if ("kommentar" in aenderung) {
+    vorhaben.kommentar = kommentarKuerzen(aenderung.kommentar);
+  }
+  // Prototyp-verbiegende Kennungen bekommen keinen Eintrag, werden aber gezeigt.
+  if (GEFAEHRLICHE_SCHLUESSEL.has(vorhaben.id)) {
+    statusAnzeigenNachfuehren(vorhaben);
+    // Ohne Hinweis wäre die Eingabe beim nächsten Öffnen stillschweigend fort.
+    if (!zustand.kennungGemeldet) {
+      zustand.kennungGemeldet = true;
+      melden(`„${vorhaben.titel || "Ohne Titel"}“ trägt die Kennung `
+             + `„${vorhaben.id}“ — dieser Stand lässt sich nicht sichern und ist `
+             + "beim nächsten Öffnen fort.", true);
+    }
+    return;
+  }
+
+  const vorher = zustand.status[vorhaben.id] ?? zustand.ausgang.get(vorhaben.id);
+  const neu = {
+    erledigt: Boolean(vorhaben.erledigt),
+    kommentar: vorhaben.kommentar || "",
+    geaendert: jetztISO(),
+  };
+  // Ohne Änderung wird nur gezeichnet, nicht geschrieben.
+  if (vorher && vorher.erledigt === neu.erledigt && vorher.kommentar === neu.kommentar) {
+    statusAnzeigenNachfuehren(vorhaben);
+    return;
+  }
+
+  zustand.status[vorhaben.id] = neu;
+  zustand.statusOffen = true;
+  zustand.statusMarke += 1;
+  statusKnopfNachfuehren();
+  statusAnzeigenNachfuehren(vorhaben);
+  statusMerken();
+}
+
+// ── Anzeigen, die denselben Haken zeigen ──────────────────────────────
+// Wer zeichnet, meldet seine Auffrischung an und wird nach jeder Änderung gerufen.
+
+/** Kennung des Blattes → Auffrischung; je Blatt genau eine. */
+const statusAnzeigen = new Map();
+
+/** Anmelden, solange das Blatt offen ist; beim Schließen meldet es sich ab —
+ *  sonst zeigte die Auffrischung ins Leere. */
+function statusAnzeigeAnmelden(blattId, auffrischen) {
+  const blatt = document.getElementById(blattId);
+  if (!blatt) return;
+  // Ein offenes Blatt kann sich neu aufbauen (⌘D bei offener Tagesliste): die
+  // neue Auffrischung ersetzt die alte, ohne einen zweiten Zuhörer.
+  const schonAngemeldet = statusAnzeigen.has(blattId);
+  statusAnzeigen.set(blattId, auffrischen);
+  if (schonAngemeldet) return;
+  blatt.addEventListener("close", () => statusAnzeigen.delete(blattId), { once: true });
+}
+
+function statusAnzeigenNachfuehren(vorhaben) {
+  kachelAuffrischen(vorhaben);
+  for (const auffrischen of statusAnzeigen.values()) auffrischen(vorhaben);
+}
+
+function statusKnopfNachfuehren() {
+  const knopf = document.getElementById("btn-status");
+  knopf.classList.toggle("offen", zustand.statusOffen);
+  knopf.title = (zustand.statusOffen ? "Status speichern — ungesicherte Änderungen"
+                                     : "Status speichern")
+    + (zustand.statusGesichert ? " · zuletzt " + uhrzeit(zustand.statusGesichert) : "");
+}
+
+function statusGesichert(nachricht, marke) {
+  // Wurde während des Schreibens ein Haken umgelegt, bleibt der Stand offen —
+  // sonst hielte die Uhr an und die Änderung stünde in keiner Datei.
+  if (marke === undefined || marke === zustand.statusMarke) zustand.statusOffen = false;
+  zustand.statusGesichert = new Date();
+  statusKnopfNachfuehren();
+  if (nachricht) melden(nachricht);
+}
+
+/** Der Klick auf die Diskette — bis zum Teilen-Blatt ohne ein einziges await.
+    Verschlüsselt kommt der Behälter aus dem Vorrat der letzten Versiegelung;
+    ist er älter als der Stand, wird erst versiegelt — Safari verwirft dann die
+    Geste, und es bleibt der Download. */
+function statusSpeichern() {
+  if (!zustand.planung) return;
+  statusMerken();
+
+  if (zustand.zieldatei) {
+    inDateiSchreiben(true);
+    return;
+  }
+  if (typeof window.showSaveFilePicker === "function") {
+    zielWaehlen();
+    return;
+  }
+  if (zustand.tresor && zustand.statusChiffratMarke !== zustand.statusMarke) {
+    const marke = zustand.statusMarke;
+    behaelterVersiegeln(statusAlsText(), "status", zustand.tresor)
+      .then((behaelter) => {
+        zustand.statusChiffrat = behaelter;
+        zustand.statusChiffratMarke = marke;
+        dateiHerausgeben(behaelter);
+      })
+      .catch(() => melden("Der Stand ließ sich nicht versiegeln.", true));
+    return;
+  }
+  dateiHerausgeben(zustand.tresor ? zustand.statusChiffrat : statusAlsText());
+}
+
+/** Teilen-Blatt oder Download — synchron, damit die Geste trägt. */
+function dateiHerausgeben(text) {
+  const datei = new File([text], STATUS_DATEINAME, { type: "application/json" });
+  if (navigator.canShare && navigator.canShare({ files: [datei] })) {
+    // Nur `files`: mit `title` oder `text` reicht Safari den Text weiter und
+    // lässt die Datei fallen; `canShare({ files })` sagt darüber nichts.
+    navigator.share({ files: [datei] })
+      .then(() => statusGesichert("Status übergeben — in „Dateien“ im Ordner der "
+                                  + "Planung sichern und ersetzen."))
+      .catch((fehler) => {
+        // Abgebrochen ist kein Fehler; alles andere fällt auf den Download zurück.
+        if (!fehler || fehler.name !== "AbortError") herunterladen(datei);
+      });
+    return;
+  }
+  herunterladen(datei);
+}
+
+async function zielWaehlen() {
+  try {
+    zustand.zieldatei = await window.showSaveFilePicker({
+      suggestedName: STATUS_DATEINAME,
+      types: [{ description: "Statusdatei", accept: { "application/json": [".json"] } }],
+    });
+    zustand.zieldateiFuer = zustand.planung ? zustand.planung.erstellt : "";
+  } catch (fehler) {
+    if (!fehler || fehler.name !== "AbortError") {
+      melden("Die Zieldatei ließ sich nicht anlegen.", true);
+    }
+    return;
+  }
+  await inDateiSchreiben(true);
+}
+
+/**
+ * In die verbundene Datei schreiben. Vier Dinge halten den Vorgang unversehrt:
+ *
+ *   * **Erst lesen, dann schreiben** — `createWritable()` ersetzt die Datei,
+ *     und in ihr können Einträge stehen, die diese Sitzung nicht kennt.
+ *   * **Einer zur Zeit** — ohne Sperre könnten sich Uhr und Diskettenknopf
+ *     überholen, zwei Schreibströme auf dieselbe Datei.
+ *   * **Alles oder nichts** — `createWritable()` schreibt in eine Wechseldatei,
+ *     erst `close()` setzt sie an die Stelle der alten.
+ *   * **Abbrechen im Fehlerfall** — ohne `abort()` bliebe sie offen liegen.
+ */
+async function inDateiSchreiben(vomNutzer) {
+  if (!zustand.zieldatei) return false;
+  if (zustand.schreibtGerade) {
+    // Der laufende Vorgang nimmt den gemerkten Stand mit; bliebe der Klick
+    // stumm, wirkte er wirkungslos.
+    if (vomNutzer) {
+      melden("Wird bereits geschrieben — der Stand ist gleich in der Datei.");
+    }
+    return false;
+  }
+  zustand.schreibtGerade = true;
+  const marke = zustand.statusMarke;
+  let strom = null;
+  try {
+    let vorhanden = "";
+    try {
+      const bestand = await zustand.zieldatei.getFile();
+      if (Number.isFinite(bestand.size) && bestand.size > MAX_STATUSGROESSE) {
+        // Nicht überschreiben, was die App ohnehin nicht läse: Wer versehentlich
+        // eine fremde Datei verbunden hat, verlöre sie sonst beim ersten Haken.
+        if (vomNutzer) {
+          melden("Die verbundene Datei ist zu groß für eine Statusdatei und "
+                 + "wurde nicht überschrieben.", true);
+        }
+        return false;
+      }
+      vorhanden = await bestand.text();
+    } catch {
+      // Frisch angelegt oder nicht lesbar: dann eben nur der eigene Stand.
+    }
+    const text = await statusAlsDatei(await eintraegeVereinen(vorhanden));
+    strom = await zustand.zieldatei.createWritable();
+    await strom.write(text);
+    await strom.close();
+    strom = null;
+    statusGesichert(vomNutzer ? "Status in die verbundene Datei geschrieben." : null,
+                    marke);
+    return true;
+  } catch {
+    // Erlaubnis entzogen, Datei verschoben, Ordner weg — die Verbindung ist hin.
+    if (strom) { try { await strom.abort(); } catch { /* nichts zu retten */ } }
+    zustand.zieldatei = null;
+    zustand.zieldateiFuer = "";
+    if (vomNutzer) melden("In die verbundene Datei ließ sich nicht schreiben.", true);
+    return false;
+  } finally {
+    zustand.schreibtGerade = false;
+  }
+}
+
+function herunterladen(datei) {
+  const adresse = URL.createObjectURL(datei);
+  const verweis = document.createElement("a");
+  verweis.href = adresse;
+  verweis.download = STATUS_DATEINAME;
+  document.body.append(verweis);
+  verweis.click();
+  verweis.remove();
+  window.setTimeout(() => URL.revokeObjectURL(adresse), 10000);
+  statusGesichert("Status geladen — die Datei in den Ordner der Planung legen.");
+}
+
+/**
+ * Wer die Seite weglegt und wiederkommt, hat den gemerkten Stand noch — bis
+ * WebKit ihn abräumt. Darum beim Zurückkommen einmal erinnern, solange nichts
+ * abgelegt wurde; der kurze Blick in den App-Umschalter zählt nicht.
+ */
+function statusErinnerungStarten() {
+  let wegSeit = 0;
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") {
+      wegSeit = Date.now();
+      return;
+    }
+    if (Date.now() - wegSeit < 30000) return;
+    if (!zustand.planung || !zustand.statusOffen || zustand.zieldatei) return;
+    melden("Noch nicht abgelegt: Der Stand liegt allein im Zwischenspeicher "
+           + "dieses Browsers — über die Diskette in eine Datei sichern.", true);
+  });
+}
+
+/** Alle 5 Sekunden: immer in den Speicher, in die Datei nur wenn verbunden. */
+function statusUhrStarten() {
+  window.setInterval(() => {
+    if (!zustand.planung || !zustand.statusOffen) return;
+    statusMerken();
+    if (zustand.zieldatei) inDateiSchreiben(false);
+  }, STATUS_UHR_MS);
+}
+
+/** Eine einzelne Kachel nachziehen — dasselbe Element, frischer Inhalt. */
+function kachelAuffrischen(vorhaben) {
+  const posten = zustand.kacheln.find((k) => k.vorhaben.id === vorhaben.id);
+  if (!posten) return;
+  posten.vorhaben = vorhaben;
+  kachelFuellen(posten.element, vorhaben, posten.klasse);
+  // Läuft eine Suche, muss die frische Kachel ihr genügen wie alle anderen.
+  if (zustand.suchworte.length) sucheAnwenden();
+}
+
+/** Der Statusteil im Vorhaben-Blatt: ein Schalter und ein Feld. */
+function statusteil(vorhaben) {
+  const kasten = abschnitt("Aus dem Unterricht");
+
+  const schalter = bau("button", "statusschalter");
+  schalter.type = "button";
+  const schalterFuellen = () => {
+    schalter.replaceChildren(ikon(vorhaben.erledigt ? "haken-voll" : "haken"),
+                             bau("span", null, "Durchgeführt"));
+    schalter.setAttribute("aria-pressed", vorhaben.erledigt ? "true" : "false");
+  };
+  schalterFuellen();
+  schalter.addEventListener("click", () => {
+    statusSetzen(vorhaben, { erledigt: !vorhaben.erledigt });
+  });
+  statusAnzeigeAnmelden("blatt-vorhaben", (geaendert) => {
+    if (geaendert.id === vorhaben.id) schalterFuellen();
+  });
+  kasten.append(schalter);
+
+  const feld = document.createElement("textarea");
+  feld.className = "kommentarfeld";
+  feld.rows = 4;
+  feld.value = vorhaben.kommentar || "";
+  feld.placeholder = "Kommentar — wie ist es gelaufen?";
+  feld.setAttribute("aria-label", "Kommentar zu diesem Vorhaben");
+  // Der Browser hält die Eingabe selbst an der Grenze an; ohne das kürzte erst
+  // `kommentarKuerzen`, und zwar unsichtbar.
+  feld.maxLength = STATUS_KOMMENTAR_MAX;
+  // Auch beim Verlassen — sonst ginge die letzte Änderung beim Zugehen verloren.
+  let entpreller = 0;
+  let grenzeGemeldet = false;
+  feld.addEventListener("input", () => {
+    // Ein stumm stehenbleibendes Feld sähe aus wie eine hängende Tastatur.
+    if (!grenzeGemeldet && feld.value.length >= STATUS_KOMMENTAR_MAX) {
+      grenzeGemeldet = true;
+      melden(`Der Kommentar fasst ${KOMMENTAR_MAX_TEXT} Zeichen — mehr nimmt das `
+             + "Feld nicht auf.", true);
+    }
+    window.clearTimeout(entpreller);
+    entpreller = window.setTimeout(() => statusSetzen(vorhaben, { kommentar: feld.value }), 500);
+  });
+  feld.addEventListener("blur", () => {
+    window.clearTimeout(entpreller);
+    statusSetzen(vorhaben, { kommentar: feld.value });
+  });
+  kasten.append(feld);
+
+  kasten.append(bau("p", "statushinweis",
+                    "Haken und Kommentar gelten für dieses Gerät, bis sie über die "
+                    + "Diskette in der Leiste gesichert und von der macOS-App "
+                    + `eingelesen werden. Ein Kommentar fasst ${KOMMENTAR_MAX_TEXT} `
+                    + "Zeichen."));
+  return kasten;
+}
+
+// ── Verdrahtung ───────────────────────────────────────────────────────
+
+function verdrahten() {
+  const dateiWaehlen = () => teile.dateiwahl.click();
+  document.getElementById("btn-oeffnen").addEventListener("click", dateiWaehlen);
+  document.getElementById("leer-oeffnen").addEventListener("click", dateiWaehlen);
+  document.getElementById("leer-info").addEventListener("click", infoZeigen);
+  document.getElementById("btn-info").addEventListener("click", infoZeigen);
+  document.getElementById("btn-klassen").addEventListener("click", () => {
+    if (zustand.planung) klassenZeigen();
+  });
+  document.getElementById("btn-ferien").addEventListener("click", () => {
+    if (zustand.planung) ferienZeigen();
+  });
+  document.getElementById("btn-pruefungen").addEventListener("click", () => {
+    if (zustand.planung) pruefungenZeigen();
+  });
+  document.getElementById("btn-status").addEventListener("click", () => {
+    if (zustand.planung) statusSpeichern();
+  });
+  document.getElementById("btn-heute").addEventListener("click", () => zurLaufendenWoche());
+  document.getElementById("btn-tagesliste").addEventListener("click", () => {
+    if (zustand.planung) tageslisteZeigen();
+  });
+  document.getElementById("btn-thema").addEventListener("click", () => {
+    zustand.themaVonHand = true;
+    themaSetzen(!zustand.dunkel);
+  });
+
+  teile.dateiwahl.addEventListener("change", (ereignis) => {
+    const datei = ereignis.target.files && ereignis.target.files[0];
+    dateiLesen(datei);
+    // Zurücksetzen, damit sich dieselbe Datei erneut öffnen lässt.
+    ereignis.target.value = "";
+  });
+
+  let entpreller = 0;
+  teile.suche.addEventListener("input", () => {
+    window.clearTimeout(entpreller);
+    entpreller = window.setTimeout(sucheAnwenden, 140);
+  });
+  teile.suche.addEventListener("search", sucheAnwenden);
+
+  teile.breite.addEventListener("input", () => {
+    document.body.dataset.breite = teile.breite.value;
+  });
+
+  for (const knopf of document.querySelectorAll(".blatt .schliessen")) {
+    knopf.addEventListener("click", (ereignis) => {
+      ereignis.currentTarget.closest("dialog").close();
+    });
+  }
+  for (const blatt of document.querySelectorAll(".blatt")) {
+    blatt.addEventListener("click", (ereignis) => {
+      if (ereignis.target === blatt) blatt.close();
+    });
+  }
+
+  for (const name of ["dragenter", "dragover"]) {
+    document.addEventListener(name, (ereignis) => {
+      ereignis.preventDefault();
+      document.body.classList.add("zielt");
+    });
+  }
+  for (const name of ["dragleave", "dragend"]) {
+    document.addEventListener(name, (ereignis) => {
+      if (ereignis.relatedTarget === null) document.body.classList.remove("zielt");
+    });
+  }
+  document.addEventListener("drop", (ereignis) => {
+    ereignis.preventDefault();
+    document.body.classList.remove("zielt");
+    const datei = ereignis.dataTransfer && ereignis.dataTransfer.files[0];
+    if (datei) dateiLesen(datei);
+  });
+
+  document.addEventListener("keydown", (ereignis) => {
+    if (ereignis.metaKey || ereignis.ctrlKey) {
+      const taste = ereignis.key.toLowerCase();
+      if (taste === "o") { ereignis.preventDefault(); dateiWaehlen(); }
+      if (taste === "f" && zustand.planung) { ereignis.preventDefault(); teile.suche.focus(); }
+      if (taste === "j" && zustand.planung) { ereignis.preventDefault(); zurLaufendenWoche(); }
+      if (taste === "s" && zustand.planung) { ereignis.preventDefault(); statusSpeichern(); }
+      // Nicht übernommen bleiben ⌘+ und ⌘− — die gehören dem Zoom.
+      if (taste === "d" && zustand.planung) { ereignis.preventDefault(); tageslisteZeigen(); }
+    } else if (ereignis.key === "Escape" && document.activeElement === teile.suche) {
+      teile.suche.value = "";
+      sucheAnwenden();
+    }
+  });
+
+  // Von Hand umgeschaltet gilt bis zum Neuladen — Merken hieße Schreiben.
+  // Danach greift auch ein Wechsel der Systemdarstellung nicht mehr durch.
+  const dunkelfrage = window.matchMedia("(prefers-color-scheme: dark)");
+  themaSetzen(dunkelfrage.matches);
+  dunkelfrage.addEventListener("change", (ereignis) => {
+    if (!zustand.themaVonHand) themaSetzen(ereignis.matches);
+  });
+
+  // Ein zugehendes Blatt nähme den Melder sonst mit ins Verborgene.
+  document.addEventListener("close", melderEinhaengen, true);
+
+  statusUhrStarten();
+  statusErinnerungStarten();
+  druckuebergabeAnmelden();
+}
+
+verdrahten();
+</script>
+</body>
+</html>

@@ -9,12 +9,39 @@ Alle nennenswerten Änderungen an der Unterrichtsplanung — macOS-App und
 Ansicht fürs iPad — stehen in dieser Datei. Das Format folgt
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/); die Versionsnummer
 ist Apples Zählung „Version (Build)“, der Build ist zugleich die Nummer des
-Fassungsordners (`macOS-App/v33`, `Web-App/v33`).
+Fassungsordners (`macOS-App/v35`, `Web-App/v35`).
 
 Die Fassungen vor 1.2.3 (33) wurden nicht veröffentlicht, sondern
 ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
+
+## [1.2.5 (35)] - 2026-09-06
+
+### Added
+
+- **Prüfung auf Updates** — auf Wunsch sieht die App beim Öffnen nach, ob
+  unter *Releases* dieses Repositorys eine neuere Fassung liegt, und zeigt
+  dann ein Blatt mit den Release-Notizen und dem Weg zur Release-Seite;
+  geladen oder installiert wird nichts von selbst. Nur mit Einwilligung: als
+  dritte Frage der Ersteinrichtung, für bestehende Planungen einmal als
+  eigenes Blatt, jederzeit unter „Einstellungen → Updates“; höchstens einmal
+  je Woche. Von Hand über „Nach Updates suchen …“ im Menü „Unterrichtsplanung“.
+- **Was dabei übertragen wird** — eine Anfrage an api.github.com (GitHub,
+  Inc., USA) mit der IP-Adresse, der Versionsnummer der App und dem
+  Kennzeichen der zuletzt gesehenen Antwort (ETag); keine Planungsdaten, keine
+  Gerätekennung, keine Cookies. Ausgeschaltet geht beim Öffnen nichts ins Netz.
+- **Prüfstände** — `--updatetest` (Befund gegen die Schnittstelle oder eine
+  Datei aus `UPDATE_QUELLE`), `--abbild --dialog update|updateNachfrage`,
+  `ABBILD_SCHRITT=updates`; 367 Prüfungen in 41 Suiten.
+
+### Changed
+
+- **Ersteinrichtung** — drei Fragen: Verschlüsselung, Sicherungskopie, Updates.
+- **Einstellungen** — Abschnitt „Updates“ mit Schalter, „Zuletzt geprüft“,
+  „Jetzt suchen“ und dem Ergebnis der letzten Prüfung.
+- **Beipackzettel und Kurzanleitung** nennen die Prüfung und was sie überträgt.
+- **Ansicht fürs iPad** — unverändert bis auf die Versionsnummer.
 
 ## [1.2.3 (33)] - 2026-09-05
 
