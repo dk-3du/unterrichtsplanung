@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 -->
 
 <p align="center">
-<img height="256" src="https://github.com/dk-3du/unterrichtsplanung/blob/main/Web-App/v33/symbol/symbol-512.png">
+<img height="256" src="https://github.com/dk-3du/unterrichtsplanung/blob/main/AppIcon/Unterrichtsplanung-AppIcon-macOS-Default-512x512@1x.png">
 </p>
 
 <h1 align="center">Unterrichtsplanung</h1>
