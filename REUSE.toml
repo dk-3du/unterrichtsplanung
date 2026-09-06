@@ -14,6 +14,7 @@ SPDX-PackageSupplier = "Dominik Kluge"
 path = [
   "macOS-App/**",
   "*.md",
+  "AppIcon/**",
 ]
 SPDX-FileCopyrightText = "2026 Dominik Kluge"
 SPDX-License-Identifier = "GPL-3.0-or-later"
