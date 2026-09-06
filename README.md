@@ -3,6 +3,20 @@ SPDX-FileCopyrightText: 2026 Dominik Kluge
 SPDX-License-Identifier: GPL-3.0-or-later
 -->
 
+<p align="center">
+<img height="256" src="https://github.com/dk-3du/unterrichtsplanung/blob/main/Web-App/v33/symbol/symbol-512.png">
+</p>
+
+<h1 align="center">Unterrichtsplanung</h1>
+
+<p align="center">Unterricht planen, weitere Vorhaben organisieren und passende Lehr- und Lernmaterialien kuratieren</p>
+
+<p align="center">
+· <a href="https://github.com/dk-3du/unterrichtsplanung/releases">Releases</a> ·
+</p>
+
+---
+
 # Unterrichtsplanung
 
 Jahresplanung im Wochenraster für Lehrkräfte, mit Blick auf Datensicherheit:
