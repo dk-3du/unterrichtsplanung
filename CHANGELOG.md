@@ -16,6 +16,37 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.2.6 (36)] - 2026-09-07
+
+Behebungen nach einer externen Code-Review von 1.2.5 (35); am Dateiformat
+und am Tresor ändert sich nichts.
+
+### Fixed
+
+- **Ansicht fürs iPad** — eine abgewiesene Planungsdatei ließ die geöffnete,
+  verschlüsselte Planung ohne Schlüssel zurück: Haken und Kommentare wären ab
+  dann im Klartext gemerkt und geschrieben worden. Jetzt wird eine Datei erst
+  vollständig gelesen und geprüft; Planung und Schlüssel wechseln nur zusammen.
+- **Verschlüsselte Dateien** — ein Kopf mit einer Rundenzahl außerhalb des
+  darstellbaren Bereichs (etwa `1e100`) beendete die App beim Öffnen; jetzt
+  gilt er als beschädigt. Dieselbe Schranke greift bei „Passphrase ändern“.
+- **Versiegeln der Nebendateien** — was sich beim Einschalten der
+  Verschlüsselung, beim Erneuern des Schlüssels oder beim Ändern der
+  Passphrase nicht versiegeln ließ, wird benannt statt übergangen; beim
+  nächsten Start holt die App es nach und meldet, was übrig bleibt.
+- **Materialien öffnen** — ein Alias wird einmal aufgelöst, geprüft und genau
+  so geöffnet; ein Alias, der sich nicht auflösen lässt, wird abgewiesen.
+- **Statusdatei** — App und Ansicht prüfen die Fassung der Datei: Fehlt sie,
+  gilt der Altbestand; `1` wird gelesen; alles andere wird benannt und weder
+  gelesen noch überschrieben.
+
+### Changed
+
+- **Repository** — `beglaubigen.sh` und die Prüf- und Abgleichskripte der
+  Ansicht liegen je Fassung bei, auch für 1.2.3 und 1.2.5.
+- **Prüfungen** — 372 in 42 Suiten; `leser_pruefen.py` hält zusätzlich die
+  Fassung der Statusdatei in beiden Lesern gegeneinander.
+
 ## [1.2.5 (35)] - 2026-09-06
 
 ### Added
