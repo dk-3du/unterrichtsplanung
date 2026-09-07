@@ -10,14 +10,11 @@ Planung einen zeilenweisen Abzug aus; verglichen wird Zeile für Zeile.
 Anders als `leser_pruefen.py` braucht das keine Erwartungswerte: Gefüttert wird
 mit **erzeugten** Fällen — krumme Zahlen, unsichtbare Zeichen, doppelte und
 leere Kennungen, Datumsformen am Rand, Farben außerhalb der Palette,
-Unterrichtstage aller Art. Genau so hat die vierte Vollprüfung (0.23) ihre
-Befunde gefunden; das Werkzeug lag damals nicht im Ordner. Seit 1.0 (25) liegt es
-hier, weil es beim ersten Lauf gegen 0.24 sofort ausgeschlagen hat: 136 von
-1 500 Fällen, eine Ursache (das führende U+FEFF vor Zahlen, in Wahrheitswerten
-und in Schlüsseln — siehe DateiPruefungen.vorspannBeiderFassungen); mit dem
-heutigen Erzeuger, der U+FEFF gezielt auch vor `woche`, `wochen`, `version` und
-Wahrheitswerte setzt, sind es gegen 0.24 456 von 1 500 (`--html ../v24/…
---modell ../../macOS-App/v<N>/…/Modell`).
+Unterrichtstage aller Art. Der Erzeuger setzt U+FEFF gezielt auch vor `woche`,
+`wochen`, `version` und Wahrheitswerte — die Stelle, an der zwei JSON-Leser am
+leichtesten auseinandergehen (siehe DateiPruefungen.vorspannBeiderFassungen).
+Ein Werkzeug, das nie ausschlägt, belegt nichts: Mit `--html` und `--modell`
+lässt es sich gegen eine andere Fassung richten, bei der es ausschlagen muss.
 
 Was hier NICHT geprüft wird: Weblinks (`jsc` kennt kein `URL` — siehe
 `weblinks_pruefen.py`), doppelte Schlüssel im selben Objekt (`JSONSerialization`
@@ -325,9 +322,8 @@ def main() -> int:
     parser.add_argument("--anzahl", type=int, default=1500)
     parser.add_argument("--saat", type=int, default=7)
     parser.add_argument("--zeigen", type=int, default=12)
-    # Für die Gegenprobe gegen eine ältere Fassung (das Werkzeug muss einmal
-    # ausgeschlagen haben, bevor ein grüner Lauf etwas belegt): gegen 0.24
-    # meldet es 136 von 1 500 Fällen.
+    # Für die Gegenprobe gegen eine andere Fassung: Das Werkzeug muss einmal
+    # ausgeschlagen haben, bevor ein grüner Lauf etwas belegt.
     parser.add_argument("--html", type=Path, default=HTML)
     parser.add_argument("--modell", type=Path, default=MODELL)
     args = parser.parse_args()

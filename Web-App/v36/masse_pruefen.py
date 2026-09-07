@@ -11,11 +11,11 @@ Das ist die Sorte Abweichung, die still bleibt: Der Bau ist grün, die Prüfunge
 sind grün (sie kennen je nur eine Seite), und trotzdem kappt die eine Fassung,
 wo die andere durchlässt.
 
-Anlass war 0.23: Die Ansicht hatte `Druckmasse` als **Zahl ohne Einheit**
-übernommen — die App rechnet in Punkt (72 je Zoll), eine Webseite in CSS-Pixeln
-(96 je Zoll). Aus denselben 150 und 190 wurden hier vier Wochen je Blatt und
-dort drei. Kein Skript hat das gesehen, weil keines die beiden Zahlen
-nebeneinandergelegt hat.
+Das Beispiel dafür: Übernimmt die Ansicht `Druckmasse` als **Zahl ohne
+Einheit**, rechnet die App in Punkt (72 je Zoll), eine Webseite aber in
+CSS-Pixeln (96 je Zoll) — aus denselben 150 und 190 werden hier vier Wochen je
+Blatt und dort drei. Kein Skript sieht das, solange keines die beiden Zahlen
+nebeneinanderlegt.
 
 **Neuer gemeinsamer Festwert = neue Zeile in `PAARE`.**
 
@@ -76,7 +76,7 @@ PAARE = [
      "DRUCK_SPALTE_KLASSE", 96 / 72),
     ("Druck, Wochenspalte", "Dienste/Drucken.swift", "spalteWoche",
      "DRUCK_SPALTE_WOCHE", 96 / 72),
-    # Der Tresor (seit 1.1.0): Beide Seiten öffnen denselben Behälter.
+    # Der Tresor: Beide Seiten öffnen denselben Behälter.
     ("Tresor, Fassung des Behaelters", "Dienste/Tresor.swift", "version",
      "TRESOR_VERSION", 1),
     ("Tresor, Runden mindestens", "Dienste/Tresor.swift", "rundenMindestens",
@@ -108,7 +108,7 @@ NAMENSPAARE = [
 
 def wochentage_pruefen(rumpf: str) -> list:
     """„Mo.“ … „Fr.“ und „Montag“ … „Freitag“: `Wochentag.kurz`/`.lang` gegen
-    `WOCHENTAGE` — Literale auf beiden Seiten, seit 0.24."""
+    `WOCHENTAGE` — Literale auf beiden Seiten."""
     quelle = (APP / "Modell/Tag.swift").read_text(encoding="utf-8")
     aus = []
     for feld in ("kurz", "lang"):
@@ -123,9 +123,8 @@ def wochentage_pruefen(rumpf: str) -> list:
 
 def fassung_pruefen(rumpf: str) -> list:
     """`VERSION`/`VERSIONSSTUFE` der Ansicht gegen die Info.plist der App —
-    seit 1.0 (25) nennt das Info-Blatt dieselbe Fassung wie „Über“; seit
-    1.0.1 (26) dazu `QUELLTEXT` gegen `UPQuelltext`, die Adresse des Repositorys
-    (beide leer, bis es veröffentlicht ist)."""
+    das Info-Blatt nennt dieselbe Fassung wie „Über“; dazu `QUELLTEXT` gegen
+    `UPQuelltext`, die Adresse des Repositorys."""
     import plistlib
     plist = APP.parent.parent / "Beiwerk" / "Info.plist"
     with plist.open("rb") as datei:

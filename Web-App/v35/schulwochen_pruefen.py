@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Gleicht die JS-Zwillingsfunktionen `lage()` und `schulwochen()` der Ansicht
 gegen die Fälle der Swift-Prüfungen ab (macOS-App: Pruefungen/
-SchulwochenPruefungen.swift, Regel: Modell/Wochenlage.swift) — seit 0.18 samt
-dem von Hand gesetzten ersten Schultag.
+SchulwochenPruefungen.swift, Regel: Modell/Wochenlage.swift) — samt dem von
+Hand gesetzten ersten Schultag.
 
 Die mitgezogenen Kalenderfunktionen (`tagAusISO`, `montagDerWoche`,
 `kalenderwoche`, `wochenListe`, `heute`) stehen dabei auch unmittelbar gegen
@@ -50,7 +50,7 @@ FAELLE = [
      [1, 2, 3, None, 4, 5, 6, 7], "...F...."),
     ("Angeschnittene Ferienwoche zählt mit", "", [0], [], [(16, 18)],
      [1, 2, 3, 4, 5, 6, 7, 8], "..3....."),
-    # Ende vor Beginn: Seit 0.22 dreht keine der beiden Fassungen mehr, und der
+    # Ende vor Beginn: Keine der beiden Fassungen dreht den Zeitraum um, und der
     # Zeitraum bleibt dadurch überall wirkungslos.
     ("Ende vor Beginn wirkt nicht", "", [0], [], [(25, 21)],
      [1, 2, 3, 4, 5, 6, 7, 8], "........"),
@@ -115,7 +115,7 @@ MONTAG_FAELLE = [
 ]
 
 # `wochentagISO` gegen ModellPruefungen.wochentage (`Tag.wochentag`): Montag = 1
-# bis Freitag = 5, am Wochenende keiner. Seit 0.24 der Wochentag eines Vorhabens.
+# bis Freitag = 5, am Wochenende keiner — der Wochentag eines Vorhabens.
 WOCHENTAG_FAELLE = [
     ("2026-08-10", 1),
     ("2026-08-12", 3),

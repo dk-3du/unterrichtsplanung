@@ -7,8 +7,8 @@
 
 Beide Fassungen lesen dieselbe Datei. Eine Obergrenze, ein Ersatzwert oder eine
 Wertumdeutung, die nur eine Seite kennt, lässt dieselbe Planung auf Mac und
-iPad Verschiedenes bedeuten — in den beiden letzten Nachprüfungen war genau
-das der schwerste Befund. Die Funktionen werden per Klammerzählung aus
+iPad Verschiedenes bedeuten — der schwerste Fehler, den ein Zwillingsleser
+machen kann. Die Funktionen werden per Klammerzählung aus
 `unterrichtsplanung-ansicht.html` gezogen und mit `jsc` (JavaScriptCore, ohne
 Node) laufen gelassen.
 
@@ -43,7 +43,7 @@ LANGER_TEXT = "t" * (20000 + 5000)
 
 GRUND = {"typ": "unterrichtsplanung", "version": 2, "start": "2026-08-10", "wochen": 4}
 
-# Zeichen, an denen die beiden Fassungen bis 0.22 auseinanderliefen.
+# Zeichen, an denen zwei Leser leicht auseinanderlaufen.
 BOM = "\ufeff"      # verschluckt `JSONSerialization`, `JSON.parse` nicht
 NEL = "\u0085"      # stutzt `CharacterSet.newlines`, `String.trim()` nicht
 
@@ -142,7 +142,7 @@ FAELLE = [
          eintraege=[], fachfarben={"mathe": "blau-mittel"}),
      {"farbeEins": 5, "farbeZwei": 5, "farbeDreiAnders": True}),
 
-    # Seit 0.24: Was keinen Tag Montag bis Freitag nennt, faellt still weg,
+    # Was keinen Tag Montag bis Freitag nennt, faellt still weg,
     # Dubletten fallen zusammen — DateiPruefungen.unterrichtstageBeiderFassungen.
     ("Unterrichtstage werden nachsichtig gelesen",
      mit(klassen=[{"id": "k1", "name": "5a",
@@ -152,8 +152,8 @@ FAELLE = [
          eintraege=[]),
      {"tageEins": [1, 3, 5], "tageZwei": [], "tageDrei": [], "uebergangen": ""}),
 
-    # Abzugvergleich 02.09.2026 (abzug_pruefen.py, 1 500 Faelle, 136 Abweichungen
-    # mit EINER Ursache): JSONSerialization verschluckt das fuehrende U+FEFF
+    # Aus dem Abzugvergleich (abzug_pruefen.py): JSONSerialization verschluckt
+    # das fuehrende U+FEFF
     # jeder Zeichenkette — auch vor Zahlen, in Wahrheitswerten und Schluesseln;
     # bei zwei danach gleichen Schluesseln gilt der erste.
     # DateiPruefungen.vorspannBeiderFassungen.
