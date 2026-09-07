@@ -46,7 +46,7 @@ exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
   — über den Auswahldialog oder durch Ziehen; die Wahl merkt sie sich, ein 
   Ordner gilt für alles darin. Nach einem Update fragt sie einmal nach den 
   Ordnern, die sie bisher benutzt hat.
-- **Updates:** Auf Wunsch sieht die App seit Version 1.2.6 beim Öffnen nach, 
+- **Updates:** Auf Wunsch sieht die App seit Version 1.2.5 beim Öffnen nach, 
   ob unter **Releases** eine neuere Fassung liegt — nur mit Einwilligung (Frage 
   bei der Ersteinrichtung, Schalter unter „Einstellungen“), höchstens einmal je 
   Woche; von Hand über „Nach Updates suchen …“. Übertragen werden dabei 
