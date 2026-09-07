@@ -1,0 +1,39 @@
+{
+  "fill" : {
+    "automatic-gradient" : "extended-srgb:0.514,0.325,0.776,1.000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        { "image-name" : "uhr.svg", "name" : "Zeit", "glass" : false }
+      ],
+      "name" : "Akzente",
+      "shadow" : { "kind" : "neutral", "opacity" : 0.45 }
+    },
+    {
+      "layers" : [
+        { "image-name" : "eintraege.svg", "name" : "Eintraege" }
+      ],
+      "name" : "Vorhaben",
+      "specular" : true
+    },
+    {
+      "layers" : [
+        { "image-name" : "buch.svg", "name" : "Buch" }
+      ],
+      "name" : "Planungsbuch",
+      "shadow" : { "kind" : "neutral", "opacity" : 0.5 },
+      "specular" : true
+    },
+    {
+      "layers" : [
+        { "image-name" : "grund.svg", "name" : "Verlauf" }
+      ],
+      "name" : "Grund"
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [ "watchOS" ],
+    "squares" : [ "macOS" ]
+  }
+}

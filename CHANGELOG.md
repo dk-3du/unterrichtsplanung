@@ -16,6 +16,45 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.3.0 (37)] - 2026-09-07
+
+Die App läuft im App Sandbox von macOS. Am Dateiformat, am Tresor und an der
+Ansicht fürs iPad ändert sich nichts.
+
+### Added
+
+- **App Sandbox** — Von sich aus liest und schreibt die App nur noch ihre
+  eigenen Dateien. Auf alles andere — Materialien, Kursdateien, den Ordner
+  der Sicherungskopie — darf sie erst zugreifen, wenn es ihr einmal gezeigt
+  wurde: über „Datei wählen …“, „Ordner wählen …“ oder Ziehen aus dem Finder.
+  Die Wahl wird als Lesezeichen gemerkt; ein Ordner gilt für alles darin. Ein
+  Ort, der noch nicht gezeigt wurde, fragt beim Öffnen nach der Auswahl.
+- **Nachwahl nach dem Update** — Beim ersten Start fragt die App einmal nach
+  den Ordnern, die sie bisher benutzt hat (Sicherungskopie, Basisordner der
+  Materialien), und erklärt, warum. „Später“ ist möglich; die Frage kommt beim
+  nächsten Start wieder, bis die Ordner gewählt sind.
+- **Prüfstände** — `--container` nennt den Container der App, `--ordnertest`
+  belegt die Lesezeichen im Sandbox, `--abbild --dialog nachwahl` zeigt das
+  Blatt. Prüfstände arbeiten nur noch unterhalb des Containers; ein Abbild mit
+  Ziel außerhalb wandert in den Prüfordner. 385 Prüfungen in 43 Suiten.
+
+### Changed
+
+- **Ablage** — Die laufende Sicherung liegt im Container der App
+  (`~/Library/Containers/org.3ducation.Unterrichtsplanung/Data/Library/Application Support/Unterrichtsplanung/`);
+  beim ersten Start dieser Fassung ziehen Planung und Einstellungen von selbst
+  dorthin um.
+- **Berechtigungen** — neben dem Sandbox: vom Nutzer gewählte Dateien und
+  Ordner, Lesezeichen mit Sicherheitsbereich, Netz nur für die Prüfung auf
+  Updates, Drucken. `bauen.sh` und `beglaubigen.sh --probe` prüfen, dass das
+  Sandbox in der Signatur steht.
+
+### Removed
+
+- **„Pfad einfügen“** im Vorhaben-Dialog — ein eingetippter Pfad gewährt im
+  Sandbox keinen Zugriff. Materialien kommen über „Datei wählen …“, „Ordner
+  wählen …“ und Ziehen hinzu.
+
 ## [1.2.6 (36)] - 2026-09-07
 
 Behebungen nach einer externen Code-Review von 1.2.5 (35); am Dateiformat
