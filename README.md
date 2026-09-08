@@ -33,13 +33,18 @@ exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
 - **Materialien kuratieren:** je Vorhaben Verweise auf Dateien und Ordner
   (über einen Basisordner) und Weblinks; je Klasse/Kurs eine Verwaltungs- und
   eine Curriculumdatei, aus der Kursspalte zu öffnen.
-- **Ansicht fürs iPad** (`Web-App/v38/`): eine einzige HTML-Datei, im Netz
+- **Ansicht fürs iPad** (`Web-App/v39/`): eine einzige HTML-Datei, im Netz
   unter <https://3ducation.org/upapp/>; sie ist ihr eigener Quelltext.
   Daneben die Skripte, die sie gegen die App abgleichen.
 - **Verschlüsselung:** Die Planung lässt sich mit AES-256 versiegeln — auf
   dem Mac über Touch ID oder das Anmeldepasswort (Secure Enclave), überall
   sonst über eine Passphrase, für den Notfall über einen gedruckten
   Wiederherstellungsschlüssel. Kein Geheimnis liegt irgendwo im Klartext.
+  Seit Version 1.3.2 nimmt eine verschlüsselte Planung nur eine verschlüsselte
+  Statusdatei aus der Ansicht an, und Einschalten, Erneuern und Passphrase
+  ändern ziehen Kopie und Statusdatei sofort nach — die Meldung sagt, was
+  auf der Platte liegt. Gelesen werden Planungsdateien ab Version 1.2.3;
+  eine ältere öffnet man einmal mit einer früheren Fassung und sichert sie.
 - **App Sandbox:** Von sich aus liest und schreibt die App seit Version 1.3.0 ihre 
   eigenen Dateien. Auf Materialien, Kursdateien und den Ordner der 
   Sicherungskopie darf sie erst zugreifen, wenn sie ihr einmal gezeigt wurden 
@@ -57,13 +62,13 @@ exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
 **Lizenzen.** Freie Software: die macOS-App und alles Übrige unter der GNU
 General Public License, Version 3 oder neuer ([`LICENSE`](LICENSE)), die
 Ansicht unter der GNU Affero General Public License, Version 3 oder neuer
-([`Web-App/v38/LICENSE.txt`](Web-App/v38/LICENSE.txt)). Die Zuordnung je Datei
+([`Web-App/v39/LICENSE.txt`](Web-App/v39/LICENSE.txt)). Die Zuordnung je Datei
 steht in [`REUSE.toml`](REUSE.toml), die Lizenztexte liegen in
 [`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code
 (Opus 5 & Fable 5/5.1).
 
 **Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v38/`,
-`Web-App/v38/`; ältere Fassungen bleiben daneben stehen); die Nummer im
+`Web-App/v39/`; ältere Fassungen bleiben daneben stehen); die Nummer im
 Ordnernamen ist der Build der Version. Was sich je Fassung ändert, steht in
 [`CHANGELOG.md`](CHANGELOG.md). Oberfläche und
 Dokumentation sind deutsch.

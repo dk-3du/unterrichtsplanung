@@ -16,6 +16,50 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.3.2 (39)] - 2026-09-08
+
+Härtung nach einer externen Code-Review: Der Weg vom iPad zurück zur App
+nimmt bei verschlüsselter Planung nur noch Beglaubigtes an, das Einschalten
+der Verschlüsselung belegt sein Ergebnis auf der Platte, und die Dateileser
+lesen nur noch, was eine veröffentlichte Fassung geschrieben hat. Am
+Behälterformat, am Tresor und an der Oberfläche ändert sich nichts.
+
+### Security
+
+- **Status nur beglaubigt** — Ist die Planung verschlüsselt, nehmen App und
+  Ansicht eine unverschlüsselte Statusdatei nicht mehr an: Sie wird benannt,
+  nicht übernommen und nicht überschrieben. Eine Statusdatei ändert nichts
+  mehr am Schlüsselkopf — Wicklungen aus ihr werden nicht übernommen.
+- **Schlüsselableitung** — Die Rundenzahl wird an der tiefsten Stelle geprüft,
+  an der kein Aufrufer vorbeikommt; ein Wahrheitswert gilt nicht als Fassung
+  eines Behälters.
+
+### Changed
+
+- **Einschalten, Erneuern, Passphrase ändern** — Der Übergang läuft in fester
+  Reihenfolge: erst den letzten Stand der Ansicht übernehmen, dann die Ablage
+  schreiben und zurücklesen, dann Nebendateien, Kopie außer Haus und
+  Statusdatei sofort nachziehen — nicht erst beim Beenden. Die Meldung kommt
+  aus dem Ergebnis; lässt sich die Ablage nicht schreiben, bleibt alles beim
+  Alten, und die Meldung sagt es.
+- **Dateileser** — Eine Planungsdatei braucht Typ und Fassung 2, wie sie jede
+  veröffentlichte Fassung schreibt; eine ältere wird benannt abgewiesen statt
+  mit falschen Farben geöffnet, eine neuere nicht gedeutet. Eine Statusdatei
+  braucht die Fassung 1. Zahlen gelten nur als Zahlen; die alten Feldnamen
+  `basisordner` und `beschreibung` und die Übersetzung der alten Farbpalette
+  entfallen — in App und Ansicht gleich (Abzugvergleich).
+- **Entsperren** — Passphrase und Wiederherstellungsschlüssel werden abseits
+  des Hauptstrangs abgeleitet; das Blatt bleibt bedienbar, ein verspätetes
+  Ergebnis für ein anderes Ziel wird verworfen.
+- **Ansicht** — Ein Schreibziel, das sich nicht lesen lässt oder keine
+  Statusdatei ist, wird nicht überschrieben; ein Stand, der nicht gilt, wird
+  mit Grund benannt. Der schlüssellose Altstand des Browserspeichers wird
+  nicht mehr umgehängt.
+- **Kleineres** — Lässt sich eine Datei nicht öffnen, sagt es die App; die
+  vorgemerkte Warnung zur Sicherungskopie nennt keinen Pfad mehr; das
+  Prüfziel von `swift test` arbeitet auch ohne `PLANUNGSORDNER` in einem
+  eigenen Ordner. 409 Prüfungen in 47 Suiten, neue Suite „Schutzübergang“.
+
 ## [1.3.1 (38)] - 2026-09-07
 
 Innerer Umbau des Quelltextes, ohne Änderung am Verhalten: Am Dateiformat, am
