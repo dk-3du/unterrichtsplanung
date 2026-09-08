@@ -16,6 +16,45 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.4.0 (40)] - 2026-09-08
+
+Die Lesezeichen versiegelt: Bei eingeschalteter Verschlüsselung liegen die
+gemerkten Orte des App Sandbox und der Zielordner der Sicherungskopie als
+Behälter neben der Planung — unter demselben Datenschlüssel, nirgends mehr
+im Klartext. Am Behälterformat, am Tresor und an der Ansicht ändert sich
+nichts als die Nummer.
+
+### Security
+
+- **Lesezeichen und Zielordner versiegelt** — Die Lesezeichen mit
+  Sicherheitsbereich (Materialien, Kursdateien, Ordner der Sicherungskopie)
+  und der Pfad des Zielordners lagen bisher im Klartext in den Einstellungen
+  des Containers. Ist die Verschlüsselung eingeschaltet, liegen sie jetzt als
+  Behälter `lesezeichen.json` neben `planung.json`, versiegelt unter dem
+  Datenschlüssel der Planung; die Einstellungen tragen dann keinen Pfad mehr.
+  Bis zum Entsperren ist der Vorrat zu: Nichts ist zuständig, und nichts fragt
+  vorher nach einem Ort.
+
+### Changed
+
+- **Übergänge** — Einschalten bringt die Lesezeichen aus den Einstellungen in
+  den Behälter (zurückgelesen; misslingt es, bleibt der Klartext, und die
+  Meldung sagt es), Erneuern schreibt den Behälter unter den neuen Schlüssel,
+  Aufheben holt die Lesezeichen in die Einstellungen zurück und entfernt den
+  Behälter; Passphrase ändern lässt ihn unangetastet. Beim ersten Start
+  dieser Fassung hinter einer versiegelten Ablage wandert der bisherige
+  Klartext-Vorrat nach dem Entsperren in den Behälter — die App sagt es
+  einmal. Ein beschädigter oder fremd versiegelter Behälter wird als
+  `lesezeichen-beschaedigt-<Stempel>.json` beiseitegelegt, benannt und leer
+  neu angelegt; ein Fehlschlag beim Schreiben wird gemeldet, nicht verschluckt.
+- **Ordnerzugriff je Ablage** — Der Vorrat der Lesezeichen ist kein
+  prozessweiter Zustand mehr, sondern gehört zum Sicherungsdienst der Ablage;
+  Prüfungen mit eigener Ablage haben ihren eigenen.
+- **Prüfstand** — `--ordnertest` belegt an einer versiegelten Ablage, dass der
+  Vorrat vor dem Entsperren zu ist, das neue Lesezeichen im Behälter liegt,
+  die Einstellungen keinen Pfad tragen und ein zweiter Lauf derselben Ablage
+  Lesezeichen und Zielordner ohne Nachwahl wiederfindet.
+
 ## [1.3.2 (39)] - 2026-09-08
 
 Härtung nach einer externen Code-Review: Der Weg vom iPad zurück zur App

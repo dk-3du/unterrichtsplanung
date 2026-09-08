@@ -24,7 +24,7 @@ eine native **macOS-App**, in der geplant wird und Lehr- und Lernmaterialien
 kuratiert werden, und eine rein lesende **Ansicht fürs iPad**, die eine
 exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
 
-- **macOS-App** (`macOS-App/v38/`): Swift und SwiftUI, macOS 26 auf Apple
+- **macOS-App** (`macOS-App/v40/`): Swift und SwiftUI, macOS 26 auf Apple
   Silicon, ohne fremde Bibliothek. Bauen mit `./bauen.sh` (Xcode wird
   gebraucht; `./bauen.sh --dmg` schnürt zusätzlich ein Abbild), Prüfungen mit
   `PLANUNGSORDNER=$(mktemp -d) swift test`. Weitergegeben wird ein mit
@@ -33,7 +33,7 @@ exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
 - **Materialien kuratieren:** je Vorhaben Verweise auf Dateien und Ordner
   (über einen Basisordner) und Weblinks; je Klasse/Kurs eine Verwaltungs- und
   eine Curriculumdatei, aus der Kursspalte zu öffnen.
-- **Ansicht fürs iPad** (`Web-App/v39/`): eine einzige HTML-Datei, im Netz
+- **Ansicht fürs iPad** (`Web-App/v40/`): eine einzige HTML-Datei, im Netz
   unter <https://3ducation.org/upapp/>; sie ist ihr eigener Quelltext.
   Daneben die Skripte, die sie gegen die App abgleichen.
 - **Verschlüsselung:** Die Planung lässt sich mit AES-256 versiegeln — auf
@@ -45,12 +45,20 @@ exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
   ändern ziehen Kopie und Statusdatei sofort nach — die Meldung sagt, was
   auf der Platte liegt. Gelesen werden Planungsdateien ab Version 1.2.3;
   eine ältere öffnet man einmal mit einer früheren Fassung und sichert sie.
+  Seit Version 1.4.0 liegen bei eingeschalteter Verschlüsselung auch die
+  gemerkten Orte des Sandbox und der Zielordner der Sicherungskopie
+  versiegelt neben der Planung (`lesezeichen.json`) — die Einstellungen
+  tragen dann keinen Pfad mehr; beim Aufheben wandern sie zurück. Nicht
+  versiegelt sind, was der Finder ohnehin zeigt (Dateinamen, der Ordner der
+  Ablage), der Schalter der Sicherungskopie und Sicherungen des Systems von
+  vor dem Einschalten.
 - **App Sandbox:** Von sich aus liest und schreibt die App seit Version 1.3.0 ihre 
   eigenen Dateien. Auf Materialien, Kursdateien und den Ordner der 
   Sicherungskopie darf sie erst zugreifen, wenn sie ihr einmal gezeigt wurden 
   — über den Auswahldialog oder durch Ziehen; die Wahl merkt sie sich, ein 
-  Ordner gilt für alles darin. Nach einem Update fragt sie einmal nach den 
-  Ordnern, die sie bisher benutzt hat.
+  Ordner gilt für alles darin — seit Version 1.4.0 bei eingeschalteter 
+  Verschlüsselung versiegelt neben der Planung. Nach einem Update fragt sie 
+  einmal nach den Ordnern, die sie bisher benutzt hat.
 - **Updates:** Auf Wunsch sieht die App seit Version 1.2.5 beim Öffnen nach, 
   ob unter **Releases** eine neuere Fassung liegt — nur mit Einwilligung (Frage 
   bei der Ersteinrichtung, Schalter unter „Einstellungen“), höchstens einmal je 
@@ -62,13 +70,13 @@ exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
 **Lizenzen.** Freie Software: die macOS-App und alles Übrige unter der GNU
 General Public License, Version 3 oder neuer ([`LICENSE`](LICENSE)), die
 Ansicht unter der GNU Affero General Public License, Version 3 oder neuer
-([`Web-App/v39/LICENSE.txt`](Web-App/v39/LICENSE.txt)). Die Zuordnung je Datei
+([`Web-App/v40/LICENSE.txt`](Web-App/v40/LICENSE.txt)). Die Zuordnung je Datei
 steht in [`REUSE.toml`](REUSE.toml), die Lizenztexte liegen in
 [`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code
 (Opus 5 & Fable 5/5.1).
 
-**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v38/`,
-`Web-App/v39/`; ältere Fassungen bleiben daneben stehen); die Nummer im
+**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v40/`,
+`Web-App/v40/`; ältere Fassungen bleiben daneben stehen); die Nummer im
 Ordnernamen ist der Build der Version. Was sich je Fassung ändert, steht in
 [`CHANGELOG.md`](CHANGELOG.md). Oberfläche und
 Dokumentation sind deutsch.
@@ -86,7 +94,8 @@ and comments back to the app. Plans can be encrypted with AES-256 — on the
 Mac via Touch ID or the login password (Secure Enclave), elsewhere via a
 passphrase, with a printed recovery key for emergencies. The app runs in the
 macOS App Sandbox: it reaches files and folders only where the user has
-pointed it once. An optional, weekly
+pointed it once; with encryption on, those bookmarks are sealed next to the
+plan as well. An optional, weekly
 update check against this repository's releases can be enabled (opt-in); it
 transmits only the IP address, the app's version number and an ETag, and it
 never downloads or installs anything by itself. The user interface
