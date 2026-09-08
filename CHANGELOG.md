@@ -16,6 +16,30 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.3.1 (38)] - 2026-09-07
+
+Innerer Umbau des Quelltextes, ohne Änderung am Verhalten: Am Dateiformat, am
+Tresor, an der Oberfläche und an der Ansicht fürs iPad ändert sich nichts.
+
+### Changed
+
+- **Aufteilung des Speichers** — Der Planungsspeicher besteht aus einer
+  Hauptdatei und zwölf Erweiterungen je Abschnitt. Der Sitzungszustand — leer,
+  gesperrt, Klartext, verschlüsselt — ist ein einziger Wert mit einer
+  Serialisierungsgrenze; unmögliche Kombinationen (Planung ohne Schlüssel bei
+  eingeschalteter Verschlüsselung) gibt es darin nicht. Die Ablage versiegelt
+  weiter allein, bekommt den Schlüssel aber je Schreibvorgang mit, statt ihn
+  zu halten.
+- **Dienste** — Die laufende Sicherung samt Kopie außer Haus, der Abgleich mit
+  der Statusdatei der iPad-Ansicht und die Prüfung auf Updates sind eigene
+  Typen mit hereingereichter Ablage; `Ablage.shared` kennt nur noch der
+  Anwendungsdelegat, Prüfungen arbeiten mit einem Temp-Ordner.
+- **Prüfstände** — Ein Verteiler (`App/Pruefstaende.swift`) liest die
+  Argumente einmal, prüft die Schranke einmal und ruft genau einen Prüfstand
+  (`--mischtest` geht `--abbild` vor); die Prüfstände liegen nach Aufgaben in
+  eigenen Dateien und laufen weiter gegen den signierten Bau. 402 Prüfungen
+  in 46 Suiten (neu: Sitzungszustand, Dienste, Verteiler).
+
 ## [1.3.0 (37)] - 2026-09-07
 
 Die App läuft im App Sandbox von macOS. Am Dateiformat, am Tresor und an der

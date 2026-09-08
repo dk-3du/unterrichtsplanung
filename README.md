@@ -24,7 +24,7 @@ eine native **macOS-App**, in der geplant wird und Lehr- und Lernmaterialien
 kuratiert werden, und eine rein lesende **Ansicht fürs iPad**, die eine
 exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
 
-- **macOS-App** (`macOS-App/v37/`): Swift und SwiftUI, macOS 26 auf Apple
+- **macOS-App** (`macOS-App/v38/`): Swift und SwiftUI, macOS 26 auf Apple
   Silicon, ohne fremde Bibliothek. Bauen mit `./bauen.sh` (Xcode wird
   gebraucht; `./bauen.sh --dmg` schnürt zusätzlich ein Abbild), Prüfungen mit
   `PLANUNGSORDNER=$(mktemp -d) swift test`. Weitergegeben wird ein mit
@@ -33,7 +33,7 @@ exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
 - **Materialien kuratieren:** je Vorhaben Verweise auf Dateien und Ordner
   (über einen Basisordner) und Weblinks; je Klasse/Kurs eine Verwaltungs- und
   eine Curriculumdatei, aus der Kursspalte zu öffnen.
-- **Ansicht fürs iPad** (`Web-App/v37/`): eine einzige HTML-Datei, im Netz
+- **Ansicht fürs iPad** (`Web-App/v38/`): eine einzige HTML-Datei, im Netz
   unter <https://3ducation.org/upapp/>; sie ist ihr eigener Quelltext.
   Daneben die Skripte, die sie gegen die App abgleichen.
 - **Verschlüsselung:** Die Planung lässt sich mit AES-256 versiegeln — auf
@@ -57,13 +57,13 @@ exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
 **Lizenzen.** Freie Software: die macOS-App und alles Übrige unter der GNU
 General Public License, Version 3 oder neuer ([`LICENSE`](LICENSE)), die
 Ansicht unter der GNU Affero General Public License, Version 3 oder neuer
-([`Web-App/v37/LICENSE.txt`](Web-App/v37/LICENSE.txt)). Die Zuordnung je Datei
+([`Web-App/v38/LICENSE.txt`](Web-App/v38/LICENSE.txt)). Die Zuordnung je Datei
 steht in [`REUSE.toml`](REUSE.toml), die Lizenztexte liegen in
 [`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code
 (Opus 5 & Fable 5/5.1).
 
-**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v37/`,
-`Web-App/v37/`; ältere Fassungen bleiben daneben stehen); die Nummer im
+**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v38/`,
+`Web-App/v38/`; ältere Fassungen bleiben daneben stehen); die Nummer im
 Ordnernamen ist der Build der Version. Was sich je Fassung ändert, steht in
 [`CHANGELOG.md`](CHANGELOG.md). Oberfläche und
 Dokumentation sind deutsch.
