@@ -16,6 +16,73 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.4.1 (41)] - 2026-09-09
+
+Die Nachbesserung des Schlüssellebenszyklus: Ein Wechsel von Passphrase,
+Datenschlüssel oder Wicklung erreicht jetzt jede Datei, die diese App
+verwaltet — und die Lesezeichen fallen im versiegelten Zustand nie in den
+Klartext zurück.
+
+### Security
+
+- **Passphrase ändern wickelt alles neu** — Bisher blieben der Behälter der
+  Lesezeichen und die Statusdatei der Ansicht unter der alten Passphrase; mit
+  ihr ließ sich der Datenschlüssel weiter entwickeln und die Planung öffnen.
+  Jetzt bekommen Ablage, Nebendateien, Lesezeichen, Kopie außer Haus und
+  Statusdatei die neue Hülle sofort; die alte Passphrase öffnet danach keine
+  Datei mehr, die diese App schreibt.
+- **Touch ID abschalten erreicht die Vorgängerfassung** — `planung-vorher.json`
+  behielt die Wicklung dieses Macs. Jeder Wechsel der Hülle zieht jetzt alle
+  Nebendateien über ein Register nach — auch die Rettungskopien.
+- **Schlüssel erneuern verlangt eine neue Passphrase** — Bisher blieb die
+  Passphrase beim Erneuern erhalten, obwohl es als Antwort auf eine verbrannte
+  Passphrase empfohlen war. Übersicht und Blatt sagen, was Ändern und Erneuern
+  leisten — und dass keines von beiden Kopien zurückholt, die vorher jemand
+  mitgenommen hat.
+- **Kein Klartext-Rückfall der Lesezeichen** — Lässt sich der Behälter nicht
+  schreiben, bleibt der Vorrat in der Sitzung und wird beim nächsten Anlass
+  erneut versiegelt; Einstellungen und Verschlüsselungs-Übersicht zeigen den
+  Zustand, bis er behoben ist. Einschalten schreibt den Behälter vor der
+  Ablage und findet ohne ihn nicht statt.
+- **Verweise in Release-Notizen** — Links im Update-Blatt öffnen nur noch als
+  http/https, wie der Download-Knopf.
+
+### Fixed
+
+- **Behälter der Lesezeichen wird nicht mehr überschrieben** — Ein Behälter,
+  der sich nicht lesen ließ oder aus einer neueren Fassung stammt, bleibt
+  unangetastet; der Vorrat ist bis zum nächsten Start gesperrt. Ein Behälter
+  unter einem fremden Schlüssel wird als `lesezeichen-fremd-…` beiseitegelegt,
+  ein beschädigter als `lesezeichen-beschaedigt-…` — erst dann wird neu
+  angelegt. Der Rettungsweg über die Vorgängerfassung öffnet die Lesezeichen
+  erst, wenn der Schlüssel der Sitzung feststeht.
+- **Neue Planung im gesperrten Zustand** — Lag die Ablage von einer neueren
+  Fassung versiegelt, wurde eine neue oder geöffnete Planung still verworfen
+  und trotzdem Erfolg gemeldet. Jetzt sagt die App, warum nichts angelegt
+  wird; eine Planungsdatei aus einer neueren Fassung bleibt unangetastet.
+- **Kursdatei-Menü** — „Im Finder zeigen“ zeigte die Zugriffs-Rückfrage
+  hinter dem offenen Blatt und blockierte Menüs.
+- **Zielordner verloren** — Geht der Zielordner mit dem Behälter verloren,
+  fragt die Nachwahl danach, und das Beenden merkt die ausgebliebene Kopie
+  vor, statt still keine zu schreiben.
+- **Passphrase aus Leerraum** — ließ sich anlegen, aber am Mac nicht
+  eingeben; sie wird jetzt beim Anlegen abgewiesen.
+- **Passphrase ändern, Schlüssel erneuern** — Ist die neue Passphrase die
+  bisherige, sagt das Blatt es jetzt, statt nur den Knopf zu sperren.
+- **Ansicht fürs iPad** — Der normale Rundlauf meldete jeden übernommenen
+  Eintrag als „bereits neuer beantwortet und verworfen“, und ein tatsächlich
+  überholter Eintrag blieb im Browserspeicher liegen und wurde bei jedem Öffnen
+  erneut gemeldet — jetzt einmal, mit Vorhaben und beiden Zeitpunkten; ein
+  Klartext-Altstand im Browserspeicher blieb bei verschlüsselter Planung liegen;
+  ein fremder Behälterinhalt wurde erst nach der Passphrase benannt.
+
+### Changed
+
+- **Vormerkung eines Kopiefehlers** — trägt keinen Systemtext mit Datei- und
+  Ordnernamen mehr in die Einstellungen; den Grund nennt „Jetzt schreiben“.
+- **Leistung** — Mehrere gewählte oder hergezogene Dateien schreiben den
+  Behälter der Lesezeichen einmal statt je Datei.
+
 ## [1.4.0 (40)] - 2026-09-08
 
 Die Lesezeichen versiegelt: Bei eingeschalteter Verschlüsselung liegen die

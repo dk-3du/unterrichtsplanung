@@ -1,0 +1,574 @@
+// SPDX-FileCopyrightText: 2026 Dominik Kluge
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import Foundation
+import Observation
+
+/// Zugriff auf Orte außerhalb des Containers — über Lesezeichen mit
+/// Sicherheitsbereich, die aus der Wahl des Nutzers entstehen (Auswahldialog,
+/// Ziehen) und diese Wahl über Neustarts hinweg festhalten. Dazu der Pfad des
+/// Zielordners der Kopie: Er ist ein Ort wie die Lesezeichen und geht
+/// denselben Weg.
+///
+/// Im App Sandbox erreicht die App von sich aus nur ihren Container. Jede Wahl
+/// des Nutzers gewährt den Zugriff für die laufende Sitzung; damit er den
+/// Neustart übersteht, entsteht sofort ein Lesezeichen (`merken`). Ein
+/// Lesezeichen auf einen Ordner deckt alles darunter ab.
+///
+/// **Wo der Vorrat liegt**, hängt am Schutz der Ablage: unverschlüsselt in den
+/// Einstellungen im Container — nur für diese App auf diesem Mac; bei
+/// eingeschalteter Verschlüsselung als Behälter `lesezeichen.json` neben
+/// `planung.json`, versiegelt unter dem Datenschlüssel. Bis zum Entsperren ist
+/// der Vorrat **zu**, nicht leer. Im versiegelten Zustand geht nie ein Pfad in
+/// die Einstellungen: Lässt sich der Behälter nicht schreiben, gilt der Vorrat
+/// für die Sitzung, `ungesichert` nennt den Grund, und der nächste Schreibanlass
+/// versucht es erneut. Ein Behälter, der nicht zu lesen ist, wird nicht
+/// angefasst — der Vorrat ist dann **gesperrt**, bis der nächste Start ihn liest.
+///
+/// Ohne Sandbox (das Prüfziel von `swift test`, ein ungesiegelter Bau) läuft
+/// derselbe Code mit gewöhnlichen Lesezeichen: `mit` legt keinen
+/// Sicherheitsbereich, und der Zugriff gelingt ohnehin.
+///
+/// Einer je Sicherungsdienst, an dessen Ablage — keinen prozessweiten.
+/// Die vier Handgriffe, die der Klartext-Vorrat an den Einstellungen braucht
+/// — `UserDefaults` hat sie; Prüfungen bringen eine Attrappe im Speicher mit,
+/// damit kein Prüflauf eine Datei unter `~/Library/Preferences` hinterlässt.
+protocol Einstellungsspeicher: AnyObject {
+    func dictionary(forKey defaultName: String) -> [String: Any]?
+    func string(forKey defaultName: String) -> String?
+    func set(_ value: Any?, forKey defaultName: String)
+    func removeObject(forKey defaultName: String)
+}
+
+extension UserDefaults: Einstellungsspeicher {}
+
+@MainActor
+@Observable
+final class Ordnerzugriff {
+
+    /// Läuft die App im App Sandbox? Dann gilt: kein Zugriff ohne Wahl.
+    static var imSandbox: Bool { Ablage.container != nil }
+
+    /// Ein benannter Fehler — die Oberfläche macht daraus „erneut wählen“,
+    /// nie ein stilles Scheitern.
+    struct Fehler: Error, Equatable, Sendable {
+        enum Art: Sendable { case keinLesezeichen, unaufloesbar, keinZugriff, versiegelt, gesperrt }
+        let art: Art
+        let pfad: String
+        let text: String
+
+        init(_ art: Art, pfad: String, grund: String = "") {
+            self.art = art
+            self.pfad = pfad
+            let name = Pfade.dateiName(pfad)
+            let dazu = grund.isEmpty ? "" : " (\(grund))"
+            switch art {
+            case .keinLesezeichen:
+                text = "Auf „\(name)“ darf die App noch nicht zugreifen — der Ort wurde ihr "
+                    + "in dieser Fassung noch nicht gezeigt."
+            case .unaufloesbar:
+                text = "„\(name)“ ließ sich nicht wiederfinden\(dazu)."
+            case .keinZugriff:
+                text = "Der Zugriff auf „\(name)“ wurde nicht gewährt\(dazu) — bitte den Ort erneut wählen."
+            case .versiegelt:
+                text = "Die Lesezeichen sind noch versiegelt — bitte zuerst die Planung entsperren."
+            case .gesperrt:
+                text = "Die Lesezeichen sind gerade nicht verfügbar\(dazu) — die App liest sie beim "
+                    + "nächsten Start erneut."
+            }
+        }
+    }
+
+    private static let schluessel = "unterrichtsplanung.lesezeichen"
+
+    // ── Der Vorrat und seine Quelle ───────────────────────────────────────
+
+    /// Woher der Vorrat kommt — und ob er gerade offensteht.
+    enum Quelle: Equatable, Sendable {
+        /// Klartext in den Einstellungen: Die Ablage ist unverschlüsselt.
+        case einstellungen
+        /// Die Ablage liegt versiegelt, der Behälter ist noch zu.
+        case zu
+        /// Der Behälter neben der Ablage, offen unter dem Datenschlüssel.
+        case behaelter
+        /// Der Behälter liegt, wird aber nicht angefasst: unlesbar, aus einer
+        /// neueren Fassung, oder nicht beiseitezulegen. Nichts gilt, nichts
+        /// wird geschrieben — bis der nächste Start ihn liest.
+        case gesperrt(String)
+    }
+
+    private(set) var quelle: Quelle = .einstellungen
+
+    /// Der Behälter trägt nicht den Stand der Sitzung — der Grund; `nil`
+    /// heißt gesichert. Die Oberfläche zeigt es, solange es gilt.
+    private(set) var ungesichert: String?
+
+    @ObservationIgnored private let ablage: Ablage
+    @ObservationIgnored private var tresor: Tresor?
+
+    /// Wo der Klartext-Vorrat liegt — `nil` im Prüflauf: Der lässt die
+    /// Einstellungen des Nutzers unangetastet.
+    @ObservationIgnored private let einstellungen: (any Einstellungsspeicher)?
+
+    /// Die Einstellungen tragen noch Klartext, der in den Behälter gehört —
+    /// geleert wird erst, wenn der Behälter ihn nachweislich trägt.
+    @ObservationIgnored private var einstellungenNachzutragen = false
+
+    /// Schlüssel = kanonischer Pfad. Zu heißt: liegt im Speicher, gilt nicht.
+    private(set) var eintraege: [String: Data]
+
+    /// Der Zielordner der Kopie, wie er gemerkt ist — auch hinter „zu“.
+    private var gemerkterZielordner: String
+
+    /// Ein Schreibfehler des Behälters, einmal je Störung gemeldet.
+    @ObservationIgnored var beiStoerung: @MainActor (String) -> Void = { _ in }
+
+    init(ablage: Ablage,
+         einstellungen: (any Einstellungsspeicher)? = Ablage.istPruefstand ? nil : UserDefaults.standard) {
+        self.ablage = ablage
+        self.einstellungen = einstellungen
+        guard let einstellungen else {
+            eintraege = [:]
+            gemerkterZielordner = ""
+            return
+        }
+        eintraege = einstellungen.dictionary(forKey: Ordnerzugriff.schluessel) as? [String: Data] ?? [:]
+        gemerkterZielordner = einstellungen.string(forKey: Einstellungen.Schluessel.autoexportOrdner) ?? ""
+        einstellungenNachzutragen = !eintraege.isEmpty || !gemerkterZielordner.isEmpty
+    }
+
+    /// Für Prüfungen: Ein Prüflauf hat keinen Einstellungsspeicher.
+    var hatEinstellungsspeicher: Bool { einstellungen != nil }
+
+    /// Offen für Lesen und Schreiben — Einstellungen oder Behälter.
+    var schreibbar: Bool {
+        switch quelle {
+        case .einstellungen, .behaelter: true
+        case .zu, .gesperrt: false
+        }
+    }
+
+    var sperrgrund: String? {
+        if case .gesperrt(let grund) = quelle { grund } else { nil }
+    }
+
+    /// Leer heißt: noch keiner gewählt — oder noch zu.
+    var zielordner: String {
+        get { schreibbar ? gemerkterZielordner : "" }
+        set {
+            guard schreibbar, newValue != gemerkterZielordner else { return }
+            gemerkterZielordner = newValue
+            ablegen()
+        }
+    }
+
+    // ── Ablegen: Einstellungen oder Behälter ─────────────────────────────
+
+    private func ablegen() {
+        switch quelle {
+        case .einstellungen:
+            einstellungenSchreiben()
+        case .zu, .gesperrt:
+            break
+        case .behaelter:
+            if let grund = behaelterSchreiben() {
+                if ungesichert == nil {
+                    beiStoerung("Die Lesezeichen ließen sich nicht versiegelt sichern (\(grund)) — sie gelten "
+                                + "für diese Sitzung; die App versucht es beim nächsten Schreiben und beim "
+                                + "nächsten Start erneut.")
+                }
+                ungesichert = grund
+            } else {
+                ungesichert = nil
+                if einstellungenNachzutragen { einstellungenLeeren() }
+            }
+        }
+    }
+
+    private func einstellungenSchreiben() {
+        guard let einstellungen else { return }
+        if eintraege.isEmpty {
+            einstellungen.removeObject(forKey: Ordnerzugriff.schluessel)
+        } else {
+            einstellungen.set(eintraege, forKey: Ordnerzugriff.schluessel)
+        }
+        if gemerkterZielordner.isEmpty {
+            einstellungen.removeObject(forKey: Einstellungen.Schluessel.autoexportOrdner)
+        } else {
+            einstellungen.set(gemerkterZielordner, forKey: Einstellungen.Schluessel.autoexportOrdner)
+        }
+    }
+
+    /// Nach dem Versiegeln: Kein Pfad bleibt im Klartext zurück.
+    private func einstellungenLeeren() {
+        einstellungenNachzutragen = false
+        guard let einstellungen else { return }
+        einstellungen.removeObject(forKey: Ordnerzugriff.schluessel)
+        einstellungen.removeObject(forKey: Einstellungen.Schluessel.autoexportOrdner)
+    }
+
+    // ── Der Behälter ──────────────────────────────────────────────────────
+
+    /// Obergrenze beim Lesen — ein Lesezeichen hat rund ein Kilobyte.
+    static let hoechstgroesse = Statusdatei.hoechstgroesse
+
+    /// Die Fassung der Nutzlast; der Behälter darum hat seine eigene.
+    static let nutzlastfassung = 1
+
+    /// Die Nutzlast: Lesezeichen (Base64) je Pfad und der Zielordner.
+    static func nutzlast(eintraege: [String: Data], zielordner: String) throws -> Data {
+        let objekt: [String: Any] = [
+            "version": nutzlastfassung,
+            "lesezeichen": eintraege.mapValues { $0.base64EncodedString() },
+            "zielordner": zielordner,
+        ]
+        return try JSONSerialization.data(withJSONObject: objekt, options: [.sortedKeys, .withoutEscapingSlashes])
+    }
+
+    static func nutzlastLesen(_ daten: Data) throws -> (eintraege: [String: Data], zielordner: String) {
+        let beschaedigt = Tresorfehler(art: .beschaedigt, text: "Die Nutzlast der Lesezeichen ist beschädigt.")
+        guard let objekt = (try? JSONSerialization.jsonObject(with: daten)) as? [String: Any],
+              let rohVersion = objekt["version"] as? NSNumber, String(cString: rohVersion.objCType) != "c",
+              Int(exactly: rohVersion.doubleValue) == nutzlastfassung,
+              let roh = objekt["lesezeichen"] as? [String: Any],
+              let zielordner = objekt["zielordner"] as? String
+        else { throw beschaedigt }
+        var eintraege: [String: Data] = [:]
+        for (pfad, wert) in roh {
+            guard !pfad.isEmpty, let text = wert as? String, let daten = Data(base64Encoded: text)
+            else { throw beschaedigt }
+            eintraege[pfad] = daten
+        }
+        return (eintraege, zielordner)
+    }
+
+    /// Den Behälter im Speicher bauen, atomar ablegen, zurücklesen und
+    /// vergleichen. `nil` heißt gelungen, sonst der Grund.
+    private func behaelterSchreiben() -> String? {
+        guard let tresor else { return "kein Schlüssel" }
+        do {
+            let klartext = try Ordnerzugriff.nutzlast(eintraege: eintraege, zielordner: gemerkterZielordner)
+            try ablage.lesezeichenSchreiben(try tresor.versiegeln(klartext, inhalt: .lesezeichen, ziel: .ablage))
+            guard case .daten(let roh) = ablage.lesezeichenLesen() else { return "nicht zurücklesbar" }
+            let gelesen = try Ordnerzugriff.nutzlastLesen(try tresor.oeffnen(roh))
+            guard gelesen.eintraege == eintraege, gelesen.zielordner == gemerkterZielordner else {
+                return "die Platte trägt einen anderen Stand"
+            }
+            return nil
+        } catch {
+            return (error as? Tresorfehler)?.text ?? error.localizedDescription
+        }
+    }
+
+    // ── Übergänge ─────────────────────────────────────────────────────────
+
+    /// Die Ablage liegt versiegelt, der Schlüssel ist noch zu: Der Vorrat
+    /// schließt sich. Was aus den Einstellungen kam, bleibt für das Entsperren
+    /// im Speicher — zu sehen ist nichts.
+    func schliessen() {
+        quelle = .zu
+        tresor = nil
+        ungesichert = nil
+    }
+
+    /// Was das Öffnen nach dem Entsperren ergab.
+    enum Oeffnungsbefund: Equatable, Sendable {
+        /// Der Behälter lag und ist offen — so viele Lesezeichen.
+        case geoeffnet(Int)
+        /// Kein Behälter: Der Vorrat aus den Einstellungen ist jetzt versiegelt.
+        case angelegt(Int, zielordner: Bool)
+        /// Beschädigt oder unter fremdem Schlüssel: beiseitegelegt unter
+        /// `rettung`; der Vorrat aus Sitzung und Einstellungen ist neu versiegelt.
+        case beiseitegelegt(String, rettung: String, versiegelt: Int)
+        /// Der Behälter ließ sich nicht schreiben — der Vorrat gilt für die
+        /// Sitzung, die App versucht es beim nächsten Anlass erneut.
+        case ungesichert(String)
+        /// Der Behälter liegt und bleibt unangetastet; der Vorrat ist gesperrt.
+        case gesperrt(String)
+    }
+
+    /// Nach dem Entsperren: den Behälter unter dem Datenschlüssel öffnen. Ohne
+    /// Behälter wandert der Klartext-Vorrat der Einstellungen hinein (der
+    /// erste Start dieser Fassung); ein beschädigter oder fremd versiegelter
+    /// wird beiseitegelegt; einer, der sich nicht lesen lässt oder aus einer
+    /// neueren Fassung stammt, bleibt liegen — nie still: Der Befund geht an
+    /// den Nutzer.
+    func oeffnen(mit tresor: Tresor, stempel: String) -> Oeffnungsbefund {
+        self.tresor = tresor
+        ungesichert = nil
+        let roh: Data
+        switch ablage.lesezeichenLesen() {
+        case .keine:
+            return versiegeln()
+        case .unlesbar(let fehler):
+            return sperren(fehler.localizedDescription)
+        case .daten(let daten):
+            roh = daten
+        }
+        let grund: String
+        let fremd: Bool
+        do {
+            guard roh.count <= Ordnerzugriff.hoechstgroesse else {
+                throw Tresorfehler(art: .beschaedigt, text: "ungewöhnlich groß (\(roh.count / 1024 / 1024) MB)")
+            }
+            guard Tresor.istBehaelter(roh) else {
+                throw Tresorfehler(art: .beschaedigt, text: "kein Behälter")
+            }
+            let kopf = try Tresor.kopfLesen(roh)
+            guard kopf.inhalt == Tresor.Inhalt.lesezeichen.rawValue else {
+                throw Tresorfehler(art: .beschaedigt, text: "Behälter mit Inhalt „\(kopf.inhalt)“")
+            }
+            guard tresor.passt(zu: kopf) else {
+                throw Tresorfehler(art: .falscherSchluessel, text: "unter einem anderen Schlüssel versiegelt")
+            }
+            let gelesen = try Ordnerzugriff.nutzlastLesen(try tresor.oeffnen(kopf: kopf))
+            eintraege.merge(gelesen.eintraege) { _, behaelter in behaelter }
+            // Die spätere Wahl gewinnt: Tragen die Einstellungen einen
+            // Zielordner, ist er nach dem Behälter gewählt worden.
+            if gemerkterZielordner.isEmpty { gemerkterZielordner = gelesen.zielordner }
+            quelle = .behaelter
+            if einstellungenNachzutragen { ablegen() }
+            return .geoeffnet(eintraege.count)
+        } catch let fehler as Tresorfehler where fehler.art == .neuereFassung {
+            return sperren(fehler.text)
+        } catch {
+            grund = (error as? Tresorfehler)?.text ?? error.localizedDescription
+            fremd = (error as? Tresorfehler)?.art == .falscherSchluessel
+        }
+        guard let rettung = ablage.lesezeichenBeiseitelegen(stempel: stempel, fremd: fremd) else {
+            return sperren(grund + "; die Rettungskopie ließ sich nicht anlegen")
+        }
+        if case .ungesichert(let schreibgrund) = versiegeln() {
+            return .ungesichert(grund + "; neu anlegen: " + schreibgrund)
+        }
+        return .beiseitegelegt(grund, rettung: rettung, versiegelt: eintraege.count)
+    }
+
+    private func sperren(_ grund: String) -> Oeffnungsbefund {
+        quelle = .gesperrt(grund)
+        tresor = nil
+        return .gesperrt(grund)
+    }
+
+    /// Den Vorrat, wie er im Speicher liegt, unter `tresor` versiegeln.
+    /// Gelingt es, sind die Einstellungen leer; sonst bleibt der Vorrat für
+    /// die Sitzung, und der nächste Anlass versucht es erneut.
+    private func versiegeln() -> Oeffnungsbefund {
+        quelle = .behaelter
+        if let grund = behaelterSchreiben() {
+            ungesichert = grund
+            return .ungesichert(grund)
+        }
+        ungesichert = nil
+        einstellungenLeeren()
+        return .angelegt(eintraege.count, zielordner: !gemerkterZielordner.isEmpty)
+    }
+
+    /// Einschalten, Erneuern, Passphrase ändern: den Vorrat unter `neu`
+    /// versiegeln — aus den Einstellungen in den Behälter, oder den Behälter
+    /// unter die neue Hülle. Zurückgelesen. Misslingt es, geht ein Vorrat aus
+    /// den Einstellungen dorthin zurück; ein Behälter behält `neu` und gilt
+    /// als ungesichert, bis der nächste Schreibvorgang gelingt — die Ablage
+    /// trägt den neuen Schlüssel dann schon. Der Grund kommt zurück.
+    func versiegeln(unter neu: Tresor) -> String? {
+        guard schreibbar else { return quelle == .zu ? "noch nicht entsperrt" : (sperrgrund ?? "gesperrt") }
+        let alteQuelle = quelle
+        tresor = neu
+        quelle = .behaelter
+        if let grund = behaelterSchreiben() {
+            if alteQuelle == .einstellungen {
+                tresor = nil
+                quelle = .einstellungen
+                ablage.lesezeichenEntfernen()
+            } else {
+                ungesichert = grund
+            }
+            return grund
+        }
+        ungesichert = nil
+        einstellungenLeeren()
+        return nil
+    }
+
+    /// Die Hülle hat gewechselt (Wicklung dieses Macs angelegt oder entfernt):
+    /// Der Behälter trägt dieselben Wicklungen wie die Ablage, also neu schreiben.
+    func neuVersiegeln() {
+        guard quelle == .behaelter else { return }
+        ablegen()
+    }
+
+    /// Aufheben: der Vorrat zurück in die Einstellungen, der Behälter weg.
+    /// `false`, wenn kein offener Behälter da war — ein gesperrter bleibt
+    /// liegen, er trägt nur Chiffrat unter einem Schlüssel, den es nicht mehr gibt.
+    @discardableResult
+    func entsiegeln() -> Bool {
+        let warOffen = quelle == .behaelter
+        guard warOffen || sperrgrund != nil else { return false }
+        quelle = .einstellungen
+        tresor = nil
+        ungesichert = nil
+        einstellungenNachzutragen = false
+        einstellungenSchreiben()
+        if warOffen { ablage.lesezeichenEntfernen() }
+        return warOffen
+    }
+
+    // ── Pfade ─────────────────────────────────────────────────────────────
+
+    /// Die Form, in der ein Pfad als Schlüssel dient und verglichen wird:
+    /// ohne `..`, ohne Endschrägstrich, Symlinks aufgelöst, soweit erreichbar.
+    static func kanonisch(_ pfad: String) -> String { Ablage.vergleichbar(pfad) }
+
+    private static func liegtUnter(_ pfad: String, _ ordner: String) -> Bool {
+        pfad == ordner || pfad.hasPrefix(ordner + "/")
+    }
+
+    /// Das Lesezeichen, das für den Pfad gilt: genau dieser Ort oder der
+    /// nächstliegende Ordner darüber. `nil` heißt: noch nie gewählt — oder
+    /// der Vorrat ist zu oder gesperrt.
+    func zustaendig(fuer pfad: String) -> String? {
+        guard schreibbar else { return nil }
+        return zustaendig(kanonisch: Ordnerzugriff.kanonisch(pfad))
+    }
+
+    private func zustaendig(kanonisch gesucht: String) -> String? {
+        var bester: String?
+        for eintrag in eintraege.keys where Ordnerzugriff.liegtUnter(gesucht, eintrag) {
+            if bester.map({ eintrag.count > $0.count }) ?? true { bester = eintrag }
+        }
+        return bester
+    }
+
+    /// Kommt die App an den Ort heran — über ein Lesezeichen, ohne Sandbox
+    /// ohnehin, oder weil er ihr offensteht (Container, Systemordner)?
+    func erreichbar(_ pfad: String) -> Bool {
+        guard Ordnerzugriff.imSandbox else { return true }
+        if zustaendig(fuer: pfad) != nil { return true }
+        return FileManager.default.isReadableFile(atPath: pfad)
+    }
+
+    var alle: [String] { schreibbar ? eintraege.keys.sorted() : [] }
+
+    // ── Anlegen und Vergessen ─────────────────────────────────────────────
+
+    private static var erzeugen: URL.BookmarkCreationOptions {
+        imSandbox ? [.withSecurityScope] : []
+    }
+
+    private static var lesen: URL.BookmarkResolutionOptions {
+        imSandbox ? [.withSecurityScope, .withoutUI, .withoutMounting] : [.withoutUI, .withoutMounting]
+    }
+
+    private func schreibsperre(_ pfad: String) -> Fehler? {
+        switch quelle {
+        case .einstellungen, .behaelter: nil
+        case .zu: Fehler(.versiegelt, pfad: pfad)
+        case .gesperrt(let grund): Fehler(.gesperrt, pfad: pfad, grund: grund)
+        }
+    }
+
+    /// Aus einer Wahl des Nutzers ein Lesezeichen anlegen. Liefert den
+    /// Schlüssel. Wirft, wenn der Ort der App nicht offensteht — dann war es
+    /// keine Wahl, sondern ein eingesetzter Pfad — oder der Vorrat zu ist.
+    @discardableResult
+    func merken(_ url: URL) throws -> String {
+        let ziel = url.standardizedFileURL
+        if let sperre = schreibsperre(ziel.path) { throw sperre }
+        let eintrag = try eintragen(ziel)
+        ablegen()
+        return eintrag
+    }
+
+    /// Mehrere Orte aus einer Wahl — ein Schreibvorgang des Behälters statt
+    /// einem je Datei. Was sich nicht merken lässt, fehlt in der Rückgabe.
+    @discardableResult
+    func merken(alle urls: [URL]) -> [String] {
+        guard schreibbar else { return [] }
+        let neu = urls.compactMap { try? eintragen($0.standardizedFileURL) }
+        if !neu.isEmpty { ablegen() }
+        return neu
+    }
+
+    private func eintragen(_ ziel: URL) throws -> String {
+        let daten: Data
+        do {
+            daten = try ziel.bookmarkData(options: Ordnerzugriff.erzeugen, includingResourceValuesForKeys: nil,
+                                          relativeTo: nil)
+        } catch {
+            throw Fehler(.keinZugriff, pfad: ziel.path, grund: error.localizedDescription)
+        }
+        let eintrag = Ordnerzugriff.kanonisch(ziel.path)
+        eintraege[eintrag] = daten
+        return eintrag
+    }
+
+    func vergessen(_ pfad: String) {
+        guard schreibbar, eintraege.removeValue(forKey: Ordnerzugriff.kanonisch(pfad)) != nil else { return }
+        ablegen()
+    }
+
+    // ── Auflösen und Arbeiten ─────────────────────────────────────────────
+
+    /// Das Lesezeichen zum Pfad und sein aufgelöstes Ziel — ein umbenannter
+    /// oder verschobener Ordner wird still nachgeführt (`bookmarkDataIsStale`).
+    /// Geliefert wird der Schlüssel, der gepasst hat: An ihm wird der Rest des
+    /// Pfades abgetrennt, auch wenn das Ziel inzwischen anders heißt.
+    private func finden(_ gesucht: String) throws -> (eintrag: String, ziel: URL) {
+        if let sperre = schreibsperre(gesucht) { throw sperre }
+        guard let eintrag = zustaendig(kanonisch: gesucht), let daten = eintraege[eintrag] else {
+            throw Fehler(.keinLesezeichen, pfad: gesucht)
+        }
+        var veraltet = false
+        let ziel: URL
+        do {
+            ziel = try URL(resolvingBookmarkData: daten, options: Ordnerzugriff.lesen, relativeTo: nil,
+                           bookmarkDataIsStale: &veraltet)
+        } catch {
+            throw Fehler(.unaufloesbar, pfad: gesucht, grund: error.localizedDescription)
+        }
+        if veraltet { erneuern(eintrag, ziel: ziel) }
+        return (eintrag, ziel)
+    }
+
+    /// Ein veraltetes Lesezeichen neu anlegen — im Bereich des alten, denn
+    /// ohne ihn stünde der Ort im Sandbox nicht offen. Der neue Ort bekommt
+    /// seinen Schlüssel, der alte bleibt als Zweitname stehen: Die
+    /// Planungsdatei kennt weiterhin den alten Pfad. Misslingt es, bleibt das
+    /// alte Lesezeichen; es löst weiterhin auf.
+    private func erneuern(_ eintrag: String, ziel: URL) {
+        let offen = ziel.startAccessingSecurityScopedResource()
+        defer { if offen { ziel.stopAccessingSecurityScopedResource() } }
+        guard let neu = try? ziel.bookmarkData(options: Ordnerzugriff.erzeugen, includingResourceValuesForKeys: nil,
+                                                relativeTo: nil)
+        else { return }
+        eintraege[eintrag] = neu
+        eintraege[Ordnerzugriff.kanonisch(ziel.path)] = neu
+        ablegen()
+    }
+
+    /// Der Pfad, wie er heute gilt: Zeigt das Lesezeichen inzwischen woanders
+    /// hin, wandert der Rest des Pfades mit. Der Pfad kommt kanonisch herein.
+    private static func verlegt(_ gesucht: String, eintrag: String, ziel: URL) -> URL {
+        URL(fileURLWithPath: kanonisch(ziel.path) + gesucht.dropFirst(eintrag.count))
+    }
+
+    /// Wo der Pfad heute liegt — über sein Lesezeichen. Ohne Lesezeichen ein
+    /// benannter Fehler.
+    func aufloesen(_ pfad: String) throws -> URL {
+        let gesucht = Ordnerzugriff.kanonisch(pfad)
+        let (eintrag, ziel) = try finden(gesucht)
+        return Ordnerzugriff.verlegt(gesucht, eintrag: eintrag, ziel: ziel)
+    }
+
+    /// Die Arbeit im Sicherheitsbereich des zuständigen Lesezeichens — nur
+    /// für genau diese Arbeit, nie über ein `await` hinweg, danach wieder
+    /// geschlossen. Die Arbeit bekommt den nachgeführten Pfad.
+    func mit<T>(_ pfad: String, _ arbeit: (URL) throws -> T) throws -> T {
+        let gesucht = Ordnerzugriff.kanonisch(pfad)
+        let (eintrag, ziel) = try finden(gesucht)
+        let offen = ziel.startAccessingSecurityScopedResource()
+        defer { if offen { ziel.stopAccessingSecurityScopedResource() } }
+        if Ordnerzugriff.imSandbox, !offen { throw Fehler(.keinZugriff, pfad: pfad) }
+        return try arbeit(Ordnerzugriff.verlegt(gesucht, eintrag: eintrag, ziel: ziel))
+    }
+}

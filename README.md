@@ -24,7 +24,7 @@ eine native **macOS-App**, in der geplant wird und Lehr- und Lernmaterialien
 kuratiert werden, und eine rein lesende **Ansicht fürs iPad**, die eine
 exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
 
-- **macOS-App** (`macOS-App/v40/`): Swift und SwiftUI, macOS 26 auf Apple
+- **macOS-App** (`macOS-App/v41/`): Swift und SwiftUI, macOS 26 auf Apple
   Silicon, ohne fremde Bibliothek. Bauen mit `./bauen.sh` (Xcode wird
   gebraucht; `./bauen.sh --dmg` schnürt zusätzlich ein Abbild), Prüfungen mit
   `PLANUNGSORDNER=$(mktemp -d) swift test`. Weitergegeben wird ein mit
@@ -33,7 +33,7 @@ exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
 - **Materialien kuratieren:** je Vorhaben Verweise auf Dateien und Ordner
   (über einen Basisordner) und Weblinks; je Klasse/Kurs eine Verwaltungs- und
   eine Curriculumdatei, aus der Kursspalte zu öffnen.
-- **Ansicht fürs iPad** (`Web-App/v40/`): eine einzige HTML-Datei, im Netz
+- **Ansicht fürs iPad** (`Web-App/v41/`): eine einzige HTML-Datei, im Netz
   unter <https://3ducation.org/upapp/>; sie ist ihr eigener Quelltext.
   Daneben die Skripte, die sie gegen die App abgleichen.
 - **Verschlüsselung:** Die Planung lässt sich mit AES-256 versiegeln — auf
@@ -48,16 +48,22 @@ exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
   Seit Version 1.4.0 liegen bei eingeschalteter Verschlüsselung auch die
   gemerkten Orte des Sandbox und der Zielordner der Sicherungskopie
   versiegelt neben der Planung (`lesezeichen.json`) — die Einstellungen
-  tragen dann keinen Pfad mehr; beim Aufheben wandern sie zurück. Nicht
-  versiegelt sind, was der Finder ohnehin zeigt (Dateinamen, der Ordner der
-  Ablage), der Schalter der Sicherungskopie und Sicherungen des Systems von
-  vor dem Einschalten.
+  tragen dann keinen Pfad mehr; beim Aufheben wandern sie zurück. Seit
+  Version 1.4.1 erreicht ein Wechsel von Passphrase, Datenschlüssel oder
+  Wicklung jede Datei, die die App verwaltet — Lesezeichen, Nebendateien,
+  Kopie und Statusdatei eingeschlossen; Schlüssel erneuern verlangt eine neue
+  Passphrase, und die Lesezeichen fallen im versiegelten Zustand nie in den
+  Klartext zurück. Kopien, die vorher jemand mitgenommen hat, erreicht keiner
+  dieser Wechsel. Nicht versiegelt sind, was der Finder ohnehin zeigt
+  (Dateinamen, der Ordner der Ablage), der Schalter der Sicherungskopie und
+  Sicherungen des Systems von vor dem Einschalten.
 - **App Sandbox:** Von sich aus liest und schreibt die App seit Version 1.3.0 ihre 
   eigenen Dateien. Auf Materialien, Kursdateien und den Ordner der 
   Sicherungskopie darf sie erst zugreifen, wenn sie ihr einmal gezeigt wurden 
   — über den Auswahldialog oder durch Ziehen; die Wahl merkt sie sich, ein 
   Ordner gilt für alles darin — seit Version 1.4.0 bei eingeschalteter 
-  Verschlüsselung versiegelt neben der Planung. Nach einem Update fragt sie 
+  Verschlüsselung versiegelt neben der Planung; ein Behälter, der sich nicht 
+  lesen lässt, bleibt seit 1.4.1 unangetastet. Nach einem Update fragt sie 
   einmal nach den Ordnern, die sie bisher benutzt hat.
 - **Updates:** Auf Wunsch sieht die App seit Version 1.2.5 beim Öffnen nach, 
   ob unter **Releases** eine neuere Fassung liegt — nur mit Einwilligung (Frage 
@@ -70,13 +76,13 @@ exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
 **Lizenzen.** Freie Software: die macOS-App und alles Übrige unter der GNU
 General Public License, Version 3 oder neuer ([`LICENSE`](LICENSE)), die
 Ansicht unter der GNU Affero General Public License, Version 3 oder neuer
-([`Web-App/v40/LICENSE.txt`](Web-App/v40/LICENSE.txt)). Die Zuordnung je Datei
+([`Web-App/v41/LICENSE.txt`](Web-App/v41/LICENSE.txt)). Die Zuordnung je Datei
 steht in [`REUSE.toml`](REUSE.toml), die Lizenztexte liegen in
 [`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code
 (Opus 5 & Fable 5/5.1).
 
-**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v40/`,
-`Web-App/v40/`; ältere Fassungen bleiben daneben stehen); die Nummer im
+**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v41/`,
+`Web-App/v41/`; ältere Fassungen bleiben daneben stehen); die Nummer im
 Ordnernamen ist der Build der Version. Was sich je Fassung ändert, steht in
 [`CHANGELOG.md`](CHANGELOG.md). Oberfläche und
 Dokumentation sind deutsch.
