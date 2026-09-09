@@ -16,6 +16,85 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.4.2 (42)] - 2026-09-09
+
+Format, Grenzen, Ansicht, Werkzeuge, Struktur — Phase B der Nachbesserung
+nach den Reviews an v40: Beide Leser sind gleich streng, jede Datei wird vor
+dem Lesen gemessen, Schlüsselarbeit läuft abseits des Hauptstrangs, die
+Werkzeuge halten Geheimnisse von der Kommandozeile fern, und die Ansicht fürs
+iPad ist als Release-Asset prüfbar.
+
+### Security
+
+- **Formatstrenge beider Leser** — Kennungen in Planung und Status müssen
+  einem Muster genügen (ASCII-Buchstaben und Ziffern, dazu `-` `_` `.` `:`,
+  höchstens 64 Zeichen); leere, doppelte und unpassende bekommen eine neue,
+  gezählt — jetzt auch bei Ferien und Sperrzeiten, deren doppelte Kennungen
+  bisher Löschen und Ändern durcheinanderbrachten. Steuer- und Bidi-Zeichen
+  fallen aus Titeln, Texten und Kommentaren heraus, gezählt; die App schreibt
+  sie auch beim Eingeben nicht. Ein Nicht-Objekt in `klassen` wird verworfen
+  statt als leere Zeile nachgebildet. Zwei Fachfarben-Schlüssel, die sich nur
+  in der Unicode-Form unterscheiden, sind einer (NFC). Doppelte JSON-Schlüssel
+  bleiben Sache der Parser: Die App liest den ersten, die Ansicht den letzten
+  Wert — dokumentiert und in `abzug_pruefen.py` festgehalten; die App schreibt
+  nie welche.
+- **Grenzen vor dem Lesen** — Ablage, Vorgängerfassung und der Behälter der
+  Lesezeichen werden gemessen, bevor ein Byte gelesen wird (`Planungsdatei.
+  hoechstgroesse` 32 MB, `Statusdatei.hoechstgroesse` 8 MB, geteilt mit den
+  Lesezeichen). Übergroßes wird beiseitegelegt und benannt; keine reguläre
+  Datei und eine gescheiterte Größenabfrage sind ein Fehler, keine Null — beim
+  Öffnen von außen, an der Statusdatei, an der Ablage. Der Behälter der
+  Lesezeichen wird vor dem Ablegen geprüft und über denselben Weg zurückgelesen
+  wie beim Öffnen. Ein Behälterkopf trägt höchstens vier Wicklungen mit
+  begrenzter Tiefe, Breite und Textlänge — in App und Ansicht; die Ansicht
+  nimmt in einen Statusbehälter nur Passphrase und Wiederherstellung mit.
+  Export und Sicherungskopie sagen, wenn die geschriebene Datei über der
+  Lesegrenze liegt.
+- **Werkzeuge** — `tresor_pruefen.py` nimmt Passphrase und
+  Wiederherstellungsschlüssel verdeckt oder von stdin entgegen und reicht sie
+  per Pipe weiter, nie über die Kommandozeile; `--kopf --ziel` unterscheidet
+  Ablage (Enklave erlaubt) von Kopie und Export; die Fassung muss genau die
+  Zahl 1 sein; die Probeseite schreibt über das Dokumentmodell.
+  `csp_hashes.py` sichert in einen privaten Temporärordner, schreibt über eine
+  unvorhersagbar benannte Nachbardatei, hasht mit den Zeilenenden des Browsers
+  (CR LF → LF) und lässt fremde Quellen einer Direktive stehen.
+  `beglaubigen.sh --probe` bleibt ohne Netz; das Profil belegt `--online` oder
+  der Lauf vor `--ja`. `bauen.sh` und `beglaubigen.sh` lesen die Berechtigungen
+  als XML-Plist.
+
+### Changed
+
+- **Schlüsselarbeit abseits des Hauptstrangs** — Einrichten, Passphrase ändern
+  und Schlüssel erneuern rechnen wie das Entsperren in einer abgesetzten
+  Aufgabe; die Blätter zeigen einen Kreisel und sperren ihre Knöpfe, ein
+  zweites Absenden ist wirkungslos, Abbrechen verwirft das Ergebnis.
+- **Ansicht fürs iPad** — Teilen-Blatt und Download laufen synchron in der
+  Geste (der Behälter liegt seit dem letzten Haken bereit); scheitert das
+  Herausgeben, bleibt der Stand offen, und die Meldung sagt es. Das
+  Passphrase-Blatt nimmt eine Datei zur Zeit. Die Prüfungsliste sortiert nach
+  Codepunkten wie die App. Das Info-Blatt sagt, wie sich die Echtheit der
+  Seite prüfen lässt.
+- **Zusatzdaten nach dem Kopf** — Die App beglaubigt einen Behälter mit der
+  Fassung aus seinem Kopf, wie die Ansicht; heute byteweise dasselbe.
+  Rettungskopien tragen ihren Zeitstempel in Ortszeit.
+- **Struktur** — Der Schlüssel eines gemerkten Ortes ist rein lexikalisch:
+  Ein Ort hinter einem Symlink bleibt unter dem gewählten Namen gemerkt — das
+  Auflösen bräuchte Zugriff, den der nächste Start noch nicht hat.
+  `Ordnerzugriff.zugang(fuer:)` ist die eine Frage der Nachwahl; alle Dienste
+  melden über eine Senke; ein Einstellungsspeicher mit einer
+  Prüfstand-Schranke; eine Ganzzahl-Hilfe je Übersetzungseinheit.
+  `pruefhilfen.py` bündelt die zeichenketten- und kommentarfeste
+  Blockextraktion der vier Prüfskripte; `symbole_bauen.py` nimmt das Symbol
+  der eigenen Fassung; `schulwochen_pruefen.py` legt seine Probe im
+  Temporärordner ab.
+
+### Documentation
+
+- **Was die Verschlüsselung verspricht** und das **Vertrauensmodell der
+  Ansicht** in LIESMICH und README: Die Hash-CSP schützt vor eingeschleustem
+  Code, nicht vor einem ersetzten Server — darum liegt die Ansicht jedem
+  Release als Datei mit SHA-256-Prüfsumme bei, samt Anleitung zum Abgleich.
+
 ## [1.4.1 (41)] - 2026-09-09
 
 Die Nachbesserung des Schlüssellebenszyklus: Ein Wechsel von Passphrase,
