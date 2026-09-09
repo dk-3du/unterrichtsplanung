@@ -24,7 +24,7 @@ eine native **macOS-App**, in der geplant wird und Lehr- und Lernmaterialien
 kuratiert werden, und eine rein lesende **Ansicht fürs iPad**, die eine
 exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
 
-- **macOS-App** (`macOS-App/v42/`): Swift und SwiftUI, macOS 26 auf Apple
+- **macOS-App** (`macOS-App/v43/`): Swift und SwiftUI, macOS 26 auf Apple
   Silicon, ohne fremde Bibliothek. Bauen mit `./bauen.sh` (Xcode wird
   gebraucht; `./bauen.sh --dmg` schnürt zusätzlich ein Abbild), Prüfungen mit
   `PLANUNGSORDNER=$(mktemp -d) swift test`. Weitergegeben wird ein mit
@@ -33,7 +33,7 @@ exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
 - **Materialien kuratieren:** je Vorhaben Verweise auf Dateien und Ordner
   (über einen Basisordner) und Weblinks; je Klasse/Kurs eine Verwaltungs- und
   eine Curriculumdatei, aus der Kursspalte zu öffnen.
-- **Ansicht fürs iPad** (`Web-App/v42/`): eine einzige HTML-Datei, im Netz
+- **Ansicht fürs iPad** (`Web-App/v43/`): eine einzige HTML-Datei, im Netz
   unter <https://3ducation.org/upapp/>; sie ist ihr eigener Quelltext.
   Daneben die Skripte, die sie gegen die App abgleichen. Ihre
   Sicherheitsrichtlinie lässt nur den eigenen Skript- und Stilblock zu — das
@@ -64,7 +64,10 @@ exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
   Sicherungen des Systems von vor dem Einschalten. Seit Version 1.4.2 lesen App
   und Ansicht gleich streng (Kennungen nach Muster, keine Steuerzeichen, jede
   Datei vor dem Lesen gemessen), und Einrichten, Ändern und Erneuern rechnen
-  abseits des Hauptstrangs — das Fenster bleibt bedienbar.
+  abseits des Hauptstrangs — das Fenster bleibt bedienbar. Seit Version 1.4.3
+  schreibt die Autosicherung nichts über der Lesegrenze — der letzte gute
+  Stand bleibt, die App sagt es und zeigt die Größe neben der Grenze —, und
+  Verweise folgen einer ersetzten Kennung in App und Ansicht.
 - **App Sandbox:** Von sich aus liest und schreibt die App seit Version 1.3.0 ihre 
   eigenen Dateien. Auf Materialien, Kursdateien und den Ordner der 
   Sicherungskopie darf sie erst zugreifen, wenn sie ihr einmal gezeigt wurden 
@@ -84,13 +87,13 @@ exportierte Planung anzeigt und Haken und Kommentare zur App zurückreicht.
 **Lizenzen.** Freie Software: die macOS-App und alles Übrige unter der GNU
 General Public License, Version 3 oder neuer ([`LICENSE`](LICENSE)), die
 Ansicht unter der GNU Affero General Public License, Version 3 oder neuer
-([`Web-App/v42/LICENSE.txt`](Web-App/v42/LICENSE.txt)). Die Zuordnung je Datei
+([`Web-App/v43/LICENSE.txt`](Web-App/v43/LICENSE.txt)). Die Zuordnung je Datei
 steht in [`REUSE.toml`](REUSE.toml), die Lizenztexte liegen in
 [`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code
 (Opus 5 & Fable 5/5.1).
 
-**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v42/`,
-`Web-App/v42/`; ältere Fassungen bleiben daneben stehen); die Nummer im
+**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v43/`,
+`Web-App/v43/`; ältere Fassungen bleiben daneben stehen); die Nummer im
 Ordnernamen ist der Build der Version. Was sich je Fassung ändert, steht in
 [`CHANGELOG.md`](CHANGELOG.md). Oberfläche und
 Dokumentation sind deutsch.

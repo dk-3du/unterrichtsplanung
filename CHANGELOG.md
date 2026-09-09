@@ -16,6 +16,58 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.4.3 (43)] - 2026-09-10
+
+Grenzen, Verweise, Sparsamkeit — der Feinschliff nach der Code-Review an v42:
+Was die App nicht liest, schreibt sie auch nicht; ein Leser, der eine Kennung
+ersetzt, zieht die Verweise darauf nach; die Ansicht rechnet nur, wenn sich
+etwas geändert hat; kein Blatt behält ein Geheimnis, und die letzten Lesewege
+ohne Schranke bekommen eine.
+
+### Fixed
+
+- **Schreibgrenze der Autosicherung** — Die Autosicherung schrieb jede Größe,
+  der nächste Start las aber nur bis 32 MB und legte die eigene Planung als
+  beschädigt beiseite. Jetzt schreibt sie nichts über der Lesegrenze: Der
+  letzte gute Stand bleibt auf der Platte, die Werkzeugleiste zeigt
+  „Sicherung liegt still“, eine Meldung nennt Größe, Grenze und den Weg hinaus
+  (Beschreibungen und Kommentare kürzen, Vorhaben entfernen), und das Beenden
+  fragt zurück, solange die Platte nicht den Stand der Sitzung trägt. Eine
+  eigene Ablage aus früheren Fassungen wird bis zu einer Decke von 128 MB noch
+  geladen; unter „Einstellungen → Stand“ steht die Größe der Autosicherung
+  neben ihrer Grenze.
+- **Verweise folgen einer ersetzten Kennung** — Bekam eine Zeile beim Lesen
+  eine neue Kennung, verloren ihre Vorhaben, freien Zellen und die Kurse eines
+  Sperrzeitraums den Anschluss. Jetzt folgen sie ihr — in App und Ansicht
+  gleich, gezählt bleibt die ersetzte Kennung; bei einer doppelten bleiben sie
+  bei der ersten Zeile.
+- **Passphrase ändern: Abbrechen leert die Felder** — Bisherige, neue und
+  wiederholte Passphrase blieben im Blatt stehen und erschienen beim nächsten
+  Öffnen wieder; auch nach „Weiter“ bleibt keine Passphrase mehr im Blatt.
+
+### Changed
+
+- **Ansicht fürs iPad: Merken nur bei Änderung** — Der Stand wurde alle fünf
+  Sekunden neu versiegelt und in den Browserspeicher geschrieben, auch ohne
+  Änderung. Jetzt nur, wenn seit dem letzten Merken ein Haken oder Kommentar
+  dazukam; der Behälter fürs Teilen-Blatt liegt weiter bereit.
+- **Schlüsselarbeit gegen Schlüsselwechsel** — Ein Ergebnis von „Passphrase
+  ändern“, das für einen inzwischen abgelösten Sitzungsschlüssel gerechnet
+  wurde (Aufheben, Einschalten, Erneuern oder Entsperren dazwischen), wird
+  verworfen; eine Wicklung kommt nur in den Tresor, für dessen Kennung sie
+  gerechnet wurde.
+- **Gebunden gelesen** — Die Nebendateien des Registers (Vorgängerfassung,
+  Rettungskopien) werden beim Versiegeln und Entsiegeln wie die Ablage
+  gemessen, bevor ein Byte gelesen wird; Übergroßes und Nicht-Reguläres bleibt
+  benannt liegen. Die Antwort der Update-Prüfung ist auf 1 MiB begrenzt — an
+  `Content-Length` und an der Bytezahl; mehr ist unlesbar und wird nicht
+  gemerkt.
+- **Struktur** — Jeder Lesezugriff auf Einstellungen geht über die eine
+  Schranke (`Einstellungen.wert`): Ein Prüflauf erbt nichts, Prüfstände und
+  Abbilder laufen mit Vorgabewerten. `Tresor.entwickeln` nimmt Kennung und
+  Wicklungen statt eines Attrappen-Kopfes; eine Durchreichung im Speicher
+  entfällt.
+
 ## [1.4.2 (42)] - 2026-09-09
 
 Format, Grenzen, Ansicht, Werkzeuge, Struktur — Phase B der Nachbesserung
