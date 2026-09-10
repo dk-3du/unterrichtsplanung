@@ -16,6 +16,51 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.4.6 (46)] - 2026-09-10
+
+Fehlerpfade — nach einem externen Prüfbericht zu 1.4.5: Wenn ein Schritt
+scheitert, steht danach nichts, was niemand benennt. Der Behälter der
+Lesezeichen kehrt beim Erneuern des Schlüssels auf den geltenden Schlüssel
+zurück, die Ansicht hält einen Stand erst für gemerkt, wenn er im Speicher
+liegt, eine liegen gebliebene Fassung davor wird benannt, jede Datei wird an
+dem Objekt gemessen, das gelesen wird, und die Prüfskripte wachen über die
+ganze Policy.
+
+### Fixed
+
+- **Lesezeichen beim Erneuern des Schlüssels** — Scheiterte beim Erneuern das
+  Versiegeln des Lesezeichen-Behälters, blieb der Behälter auf dem abgewiesenen
+  Schlüssel, während Ablage und Sitzung beim alten blieben; der nächste
+  Schreibvorgang legte ihn unter dem falschen Schlüssel hin, und der nächste
+  Start legte die Lesezeichen beiseite — jeder Ort war neu zu wählen. Jetzt
+  kehrt der Behälter bei jedem Fehlschlag auf den geltenden Schlüssel zurück,
+  ein schon abgelegter wird einmal nachgeschrieben, und scheitert die Rücknahme
+  nach einer gescheiterten Ablage, steht es in der Meldung.
+- **Ansicht: gemerkt heißt gespeichert** — Ein gescheitertes Ablegen im
+  Speicher des Browsers (voll, gesperrt, privater Modus) galt seit 1.4.3 als
+  erledigt; der Stand blieb bis zur nächsten Änderung unpersistiert. Jetzt gilt
+  ein Stand erst als gemerkt, wenn er im Speicher liegt; die Uhr holt einen
+  Fehlschlag nach, ohne neu zu versiegeln, und die Warnung wird nach jedem
+  Erfolg wieder scharf.
+- **Fassung davor** — Ließ sich `planung-vorher.json` nicht fortschreiben
+  (etwa unveränderbar), blieb die ältere still liegen. Jetzt sagt es die App
+  einmal je Wechsel und zeigt den Grund unter „Einstellungen → Stand“; die
+  Autosicherung selbst läuft weiter.
+
+### Changed
+
+- **Gebundenes Lesen** — Ablage, Fassung davor, Lesezeichen, Nebendateien,
+  Import und Statusdatei werden auf einem Weg gelesen: Datei öffnen, Art und
+  Größe am geöffneten Objekt messen, höchstens die Grenze plus ein Byte lesen.
+  Eine Datei, die zwischen Messen und Lesen wächst oder ersetzt wird, geht
+  nicht mehr ganz in den Speicher; ein Symlink führt zu seinem Ziel, eine Pipe
+  blockiert nicht.
+- **Werkzeuge** — `bauen.sh --installieren` legt die neue App neben die alte,
+  prüft ihre Signatur und tauscht erst dann; `csp_hashes.py` prüft die ganze
+  Policy gegen ihr Soll (`--selbsttest`); `pruefhilfen.py` kennt Regex-Literale
+  (Selbsttest per Aufruf) und verlangt Python 3.10 oder neuer mit einem Satz
+  statt eines `TypeError`; `leser_pruefen.py` prüft das Merken der Ansicht.
+
 ## [1.4.5 (45)] - 2026-09-10
 
 Nachfassen nach der Code-Review an v43 und dessen Nachprüfung: Die Grenzen der
