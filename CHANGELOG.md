@@ -16,6 +16,55 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.4.5 (45)] - 2026-09-10
+
+Nachfassen nach der Code-Review an v43 und dessen Nachprüfung: Die Grenzen der
+eigenen Ablage stehen an einer Stelle, ein Übergang der Verschlüsselung beginnt
+nur, wenn die Ablage geschrieben werden kann, und gilt erst, wenn sie ihn trägt;
+beide Leser folgen einer Verweisregel und lesen Textfelder gleich. (1.4.4 (44)
+blieb eine interne Zwischenfassung.)
+
+### Fixed
+
+- **Eine Decke für die eigene Ablage** — Der Start las die eigene Ablage bis
+  128 MB, das Rücklesen nach einem Übergang der Verschlüsselung nur bis 32 MB.
+  Ein Bestand dazwischen ließ Sitzung und Platte auseinanderlaufen: die
+  Sitzung versiegelt, die Ablage im Klartext, die Lesezeichen verwaist. Jetzt
+  gilt eine Decke auf jedem Leseweg. Dazu liest die Ablage Größe und Art einer
+  Datei frisch statt aus dem Vorrat des URL-Werts.
+- **Verschlüsselung nur bei schreibbarer Ablage** — „Passphrase ändern“ und
+  der Schalter „Mit Touch ID öffnen“ übernahmen die neue Wicklung, bevor die
+  Ablage geschrieben war; lag die Planung über der Schreibgrenze, trugen
+  Kopie, Lesezeichen und Statusdatei die neue Hülle, die Ablage die alte — und
+  die Meldung versprach das Gegenteil. Jetzt beginnt kein Übergang, solange
+  die Sicherung wegen der Größe still liegt (das Blatt nennt den Grund und
+  sperrt Knöpfe und Schalter), und die neue Wicklung gilt erst, wenn die
+  Ablage sie trägt: Scheitert das Schreiben, bleibt alles bei der alten.
+  Auch die Ersteinrichtung nennt den Grund und schaltet dann nichts ein.
+
+### Changed
+
+- **Verweisregel** — Ein Verweis auf eine ersetzte Kennung folgt ihr, wenn der
+  Wert nach dem Stutzen nicht leer ist, nicht Kennung einer früheren Zeile ist
+  und noch keiner Zeile gehört. Die leere Kennung wird nie mehr Verweis (bisher
+  hingen Vorhaben ohne `klasseId` an der ersten Zeile ohne Kennung); ein
+  Duplikat mit Leerraum („ k1“ neben „k1“) zieht seine Verweise nach. In App
+  und Ansicht gleich; die Ansicht nimmt ein führendes U+FEFF vor einer
+  Zeilen-Kennung nur noch einmal ab, wie die App.
+- **Texte sind Zeichenketten** — Eine Zahl, ein Wahrheitswert oder ein Objekt
+  in einem Textfeld gilt in beiden Lesern als leer; bisher schrieben sie
+  `1e16` und `1e-7` verschieden, und dieselbe Datei zeigte auf Mac und iPad
+  Verschiedenes. `abzug_pruefen.py` erzeugt solche Felder.
+- **Eine Prüfung der Passphrase-Wicklung** — Öffnen, das Belegen der
+  bisherigen Passphrase („Passphrase ändern“, „Schlüssel erneuern“) und das
+  Neuwickeln prüfen den Kopf gleich (`kdf`, Rundenzahl, Salt); ein beschädigter
+  Kopf heißt auf jedem Weg beschädigt, nicht „passt nicht“.
+- **Struktur** — Ein Schreibfehler im Übergang wird einmal gesprochen (kurzer
+  Grund in der Meldung, ein Systemfehler in Klammern, der ganze Satz nur an
+  der Werkzeugleiste); die Grenze der Autosicherung heißt überall
+  Schreibgrenze (zugleich die Lesegrenze von App und Ansicht); ein Ort, den
+  die Wahl im Dialog schon gemerkt hat, bekommt kein zweites Lesezeichen.
+
 ## [1.4.3 (43)] - 2026-09-10
 
 Grenzen, Verweise, Sparsamkeit — der Feinschliff nach der Code-Review an v42:
