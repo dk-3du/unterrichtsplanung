@@ -16,6 +16,33 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.4.7 (47)] - 2026-09-12
+
+Hausaufgaben — Ein Vorhaben kann eine Hausaufgabe tragen: ein Schalter im
+Dialog, dazu eine freiwillige Zeile, was aufgegeben ist. Das Zeichen dafür
+steht an der Kachel, in der Tagesliste, im Ausdruck und in der Ansicht fürs
+iPad.
+
+### Added
+
+- **Hausaufgabe je Vorhaben** — „Hausaufgabe hinzufügen“ im Dialog und im
+  Rechtsklickmenü der Kachel: ein Merkmal am Vorhaben, dazu eine Zeile („S. 42,
+  Nr. 3–5“, freiwillig, höchstens 500 Zeichen). Im Raster trägt die Kachel den
+  Ranzen rechts neben dem Titel; die Zeile steht in der Tagesliste
+  („Hausaufgabe: …“), im Ausdruck („Hausaufgabe · …“) und in der Ansicht fürs
+  iPad (Kachel, Detail, Tagesliste, Ausdruck). Die Suche findet sie.
+- **Dateiformat** — zwei Felder je Vorhaben, `hausaufgabe` und
+  `hausaufgabenText`; die Fassung der Datei bleibt 2. Ältere Fassungen der App
+  und der Ansicht lesen die Datei weiter; eine ältere App lässt beide Felder
+  beim Sichern fallen.
+
+### Changed
+
+- **Prüfstände und Skripte** — `--klicktest` schaltet die Hausaufgabe an und
+  aus; `--abbild` legt mit `ABBILD_ENDE=1` ein langes Blatt ans Ende gerollt
+  ab; `leser_pruefen.py` mit vier Fällen zur Hausaufgabe, `abzug_pruefen.py`
+  erzeugt und vergleicht beide Felder.
+
 ## [1.4.6 (46)] - 2026-09-10
 
 Fehlerpfade — nach einem externen Prüfbericht zu 1.4.5: Wenn ein Schritt
