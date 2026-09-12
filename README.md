@@ -33,7 +33,9 @@ eingetragen. Ein Vorhaben besteht aus Titel und Beschreibung und kann einen
 Wochentag oder ein Datum, eine Dringlichkeit, einen Prüfungstermin oder eine
 Hausaufgabe tragen. Seit 1.4.8 kann jede Klasse und jeder Kurs einen Sitzplan
 tragen — Namen als Liste, Tische frei verschiebbar, eine Seite DIN A4 quer,
-seit 1.4.9 auf Wunsch mit Kennwort geschützt.
+seit 1.4.9 auf Wunsch mit Kennwort geschützt. Seit 1.5.0 stehen
+Verwaltungsdatei, Curriculum und Sitzplan direkt in der Zeile der Klasse —
+hinterlegt oder als Angebot; ein Klick wählt die Datei oder öffnet den Sitzplan.
 Eine Suche, eine Liste der heute anstehenden Vorhaben und ein blattweiser
 Ausdruck ergänzen das Raster.
 

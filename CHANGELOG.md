@@ -16,6 +16,74 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.5.0 (50)] - 2026-09-12
+
+Die Kurszelle: Was an einer Klasse oder einem Kurs hängt — Verwaltungsdatei,
+Curriculum, Sitzplan —, steht in der Zeile des Rasters, hinterlegt oder als
+Angebot. Dazu die Behebungen nach der zweiten externen Review (an 1.4.9): die
+Rücknahme nach einem gescheiterten Aufheben, Klartext-Sitzpläne neben der
+versiegelten Planung, die Grenzen des PDF-Kennworts, die Ansicht beim
+Planungswechsel, die Sitzplandatei und der Prüfvermerk.
+
+### Fixed
+
+- **Rücknahme nach dem Aufheben:** Scheitert das Aufheben der Verschlüsselung,
+  nachdem die Sitzpläne vorab im Klartext lagen, gilt für sie der versiegelte
+  Zustand weiter — auch wenn das erneute Versiegeln scheitert: Der Stand gilt
+  für die Sitzung, die App versiegelt beim nächsten Schreiben, beim Beenden
+  und beim nächsten Start, die Klartextdatei wird entfernt, und die Meldung
+  nennt die Sitzpläne. Bisher fiel der Dienst in den Klartext-Modus zurück und
+  schrieb bis zum nächsten Start Klartext, ohne es zu sagen. (B17)
+- **PDF-Kennwort:** Der Sichern-Dialog weist ein Kennwort mit Zeichen außerhalb
+  von ASCII oder mit mehr als 32 Zeichen ab und sagt warum — der
+  Kennwortschutz des PDF-Formats nimmt nichts anderes; bisher scheiterte die
+  PDF ohne Grund oder das Kennwort galt nur bis zum 32. Zeichen. (B18, E45)
+- **Ansicht fürs iPad:** Die Wiederaufnahme aus dem Browserspeicher gehört der
+  Planung, für die sie begann — eine zweite Datei, während sie wartete, bekommt
+  nichts davon; ein Schreiben in die verbundene Datei, das während des
+  Schreibens überholt wurde, wird verworfen statt abgeschlossen. (B22)
+- **Sitzplandatei:** Ein Plan, dessen Tischliste keine Liste ist, wird
+  verworfen und gezählt, nicht still zum leeren Plan; scheitert die
+  Rettungskopie eines verlustbehaftet gelesenen Originals, geht nichts
+  darüber, bis die Kopie liegt — der Stand gilt für die Sitzung, der
+  Beenden-Wächter greift. (B23, E46)
+- **Prüfvermerk:** `pruefen.sh` benennt den Vermerk erst nach dem letzten
+  Schritt und trägt Profil und Ergebniszeile; `beglaubigen.sh --probe` nennt
+  einen abgebrochenen oder verkürzten Lauf beim Namen, und `--ja` reicht nur
+  mit vollständigem Vermerk ohne Befund zum Stand der Quellen ein —
+  `--ohne-pruefung` umgeht das ausdrücklich und wird protokolliert. (B19, B24,
+  E44)
+
+### Added
+
+- **Kurszelle mit drei Zeilen, immer:** Unter Klasse, Fach und Notiz stehen
+  Verwaltungsdatei, Curriculum und Sitzplan — hinterlegt mit Symbol und Name,
+  sonst als Angebot „+ Verwaltungsdatei“, „+ Curriculum“, „+ Sitzplan“ in
+  leiser Schrift. Ein Klick auf ein Angebot öffnet den Dateiwähler bzw. den
+  Sitzplan-Editor; ein Klick auf „Sitzplan“ öffnet den Editor, das
+  Rechtsklickmenü sichert die PDF oder entfernt den Plan mit Rückfrage; das
+  Rechtsklickmenü einer hinterlegten Datei kann jetzt auch eine andere Datei
+  wählen. Der Weg über „Klassen/Kurse und Fächer“ (⌘K) bleibt. (E34, E35, E36)
+- **Tour:** eine siebte Karte „Die Kurszelle“ nach „Die Planung einrichten“,
+  am ersten Klassenkopf des Rasters; findet die Tour keinen, hängt die Karte
+  am Werkzeug „Klassen/Kurse“.
+- **Klartext-Sitzpläne neben der versiegelten Planung** übernimmt die App
+  nicht mehr stillschweigend: Beim Entsperren fragt sie, ob sie versiegelt
+  oder beiseitegelegt werden; Beiseitegelegtes liegt als
+  `sitzplaene-unerwartet-<Stempel>.json` neben der Planung. (B21, E43)
+
+### Changed
+
+- Die Zeile einer Klasse ohne hinterlegte Dateien wird höher: Drei Zeilen zu
+  22 pt kommen zum Kopf hinzu, bei zehn Klassen bis zu 660 pt mehr Rollweg —
+  die Folge der drei Zeilen, immer (E34).
+- Prüfstände: `--klicktest` klickt „+ Sitzplan“ in der Kurszelle und prüft die
+  Rückfrage beim Entfernen, `--tourtest` zählt sieben Karten; Abbilder der
+  Kurszelle hell und dunkel und der siebten Karte; 529 Prüfungen in 53
+  Suiten, `leser_pruefen.py` mit vier weiteren jsc-Fällen.
+- Ein abgebrochener Schutzübergang bleibt das benannte Restrisiko aus 1.4.9
+  (E37, E42); ein Übergabestand mit Generationen ist für 1.5.1 vorgemerkt.
+
 ## [1.4.9 (49)] - 2026-09-12
 
 Behebungen nach den beiden Reviews an 1.4.8 — der internen (B01–B08) und der
