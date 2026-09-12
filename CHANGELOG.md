@@ -16,6 +16,57 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.4.8 (48)] - 2026-09-12
+
+Sitzplan — Jede Klasse und jeder Kurs kann einen Sitzplan tragen: Namen als
+Liste eingeben, Tische entstehen in Reihen und lassen sich frei verschieben,
+die Tafel steht unten, eine PDF DIN A4 quer kommt heraus. Nur in der
+macOS-App; die Ansicht fürs iPad zeigt keine Sitzpläne und zieht nur in der
+Nummer mit.
+
+### Added
+
+- **Sitzplan je Klasse und Kurs** — in „Klassen/Kurse und Fächer“ (⌘K) als
+  dritte Spalte neben Verwaltungsdatei und Curriculum (der Stuhl): anlegen,
+  bearbeiten, als PDF sichern, entfernen. Der Editor ist ein breites Blatt:
+  Zuerst die Namensliste (eine Zeile je Name, höchstens 35, je Name höchstens
+  100 Zeichen), dann die Fläche — Tische in Reihen zu acht von der Tafel weg,
+  ab dem 33. Namen eine fünfte Reihe, dazu ein Lehrertisch vorn seitlich neben
+  der Tafel. Das Raster fasst zehn Plätze je Reihe, die Anfangsanordnung belegt
+  die mittleren acht — so lassen sich bis zu zwei Gänge aussparen. Ziehen verschiebt einen Tisch oder alle angewählten, die rechte
+  Maustaste zieht eine Bereichsauswahl auf und öffnet kurz gedrückt das Menü
+  (Umbenennen, Entfernen), Doppelklick benennt um, Pfeiltasten verschieben um
+  8 Punkt (⇧ um 1), „Tisch hinzufügen“ setzt einen an eine freie Stelle,
+  „Namen neu eingeben …“ erzeugt die Anordnung neu. Die Tische rasten an einem
+  unsichtbaren 8-Punkt-Raster ein; ⌥ beim Ziehen hebt das auf. „Übernehmen“
+  schreibt, „Abbrechen“ verwirft alles seit dem Öffnen; „Sitzplan entfernen“
+  fragt vor dem endgültigen Löschen nach — im Editor wie in ⌘K.
+- **PDF und Druck** — „Als PDF sichern …“ (⇧⌘P) und „Drucken …“ (⌘P) im
+  Editor: eine Seite DIN A4 quer mit der Kopfzeile „Klasse/Kurs · Fach ·
+  Sitzplan · Stand“, die Fläche 1:1 wie im Editor, die Tafel unten. Bei
+  eingeschalteter Verschlüsselung fragt die App vorher: Die PDF trägt die
+  Namen im Klartext.
+- **Ablage und Schutz** — Die Sitzpläne liegen als `sitzplaene.json` neben der
+  Planung im Container und tragen denselben Schutz wie sie: Klartext, solange
+  die Planung Klartext ist; versiegelt unter dem Datenschlüssel, sobald die
+  Verschlüsselung eingeschaltet ist (Einschalten versiegelt, Aufheben legt
+  wieder Klartext hin, Passphrase ändern und Schlüssel erneuern nehmen die
+  Datei mit — mit derselben Rücknahme wie bei den Lesezeichen). Solange die
+  Verschlüsselung aus ist, empfiehlt der Editor sie beim Öffnen. Sitzpläne
+  gehen nie in den Export, die Sicherungskopie oder die Ansicht fürs iPad;
+  eine gesicherte PDF ist ihre dauerhafte Form. Wird eine Klasse entfernt,
+  geht ihr Sitzplan mit (die Rückfrage nennt ihn); bei „Neue Planung“ folgen
+  Sitzpläne nur den übernommenen Klassen.
+
+### Changed
+
+- Prüfstände und Skripte: `--sitzplantest` führt den Editor am Fenster durch
+  (tippen, anordnen, ziehen, Bereichsauswahl, Rückfrage, übernehmen, Datei,
+  PDF), `--abbild --dialog sitzplan` bildet ihn ab (`ABBILD_SITZPLAN=namen`
+  für die Liste, `ABBILD_DUNKEL=1` für die dunkle Darstellung);
+  `leser_pruefen.py` belegt, dass die Ansicht einen Behälter mit Inhalt
+  `sitzplaene` abweist.
+
 ## [1.4.7 (47)] - 2026-09-12
 
 Hausaufgaben — Ein Vorhaben kann eine Hausaufgabe tragen: ein Schalter im

@@ -31,7 +31,8 @@ Das Raster zeigt die Kalenderwochen des Schuljahres als Spalten und die Klassen
 und Kurse als Zeilen; Ferien, freie Tage und Sperrzeiträume sind darin
 eingetragen. Ein Vorhaben besteht aus Titel und Beschreibung und kann einen
 Wochentag oder ein Datum, eine Dringlichkeit, einen Prüfungstermin oder eine
-Hausaufgabe tragen.
+Hausaufgabe tragen. Seit 1.4.8 kann jede Klasse und jeder Kurs einen Sitzplan
+tragen — Namen als Liste, Tische frei verschiebbar, eine Seite DIN A4 quer.
 Eine Suche, eine Liste der heute anstehenden Vorhaben und ein blattweiser
 Ausdruck ergänzen das Raster.
 
@@ -41,13 +42,13 @@ Enclave), überall sonst über eine Passphrase, für den Notfall über einen
 gedruckten Wiederherstellungsschlüssel. Die App läuft im App Sandbox von macOS
 und erreicht Dateien und Ordner nur dort, wo sie ihr einmal gezeigt wurden; bei
 eingeschalteter Verschlüsselung liegen auch diese Lesezeichen versiegelt neben
-der Planung. Eine freiwillige, wöchentliche Prüfung auf Updates gegen die
+der Planung, ebenso die Sitzpläne der Klassen. Eine freiwillige, wöchentliche Prüfung auf Updates gegen die
 Releases dieses Repositorys überträgt nur die IP-Adresse, die Versionsnummer
 der App und ein ETag und lädt oder installiert nie etwas von selbst.
 
 ## Bauen, prüfen, weitergeben
 
-Die macOS-App (`macOS-App/v47/`) ist in Swift und SwiftUI geschrieben, für
+Die macOS-App (`macOS-App/v48/`) ist in Swift und SwiftUI geschrieben, für
 macOS 26 auf Apple Silicon und ohne fremde Bibliothek. `./bauen.sh` baut sie
 (Xcode wird gebraucht; `--dmg` schnürt zusätzlich ein Abbild),
 `PLANUNGSORDNER=$(mktemp -d) swift test` prüft sie. Weitergegeben wird ein mit
@@ -62,13 +63,13 @@ sich je Fassung ändert, steht in [`CHANGELOG.md`](CHANGELOG.md).
 **Lizenzen.** Freie Software: die macOS-App und alles Übrige unter der GNU
 General Public License, Version 3 oder neuer ([`LICENSE`](LICENSE)), die
 Ansicht unter der GNU Affero General Public License, Version 3 oder neuer
-([`Web-App/v47/LICENSE.txt`](Web-App/v47/LICENSE.txt)). Die Zuordnung je Datei
+([`Web-App/v48/LICENSE.txt`](Web-App/v48/LICENSE.txt)). Die Zuordnung je Datei
 steht in [`REUSE.toml`](REUSE.toml), die Lizenztexte liegen in
 [`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code
 (Opus 5 & Fable 5/5.1).
 
-**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v47/`,
-`Web-App/v47/`; ältere Fassungen bleiben daneben stehen); die Nummer im
+**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v48/`,
+`Web-App/v48/`; ältere Fassungen bleiben daneben stehen); die Nummer im
 Ordnernamen ist der Build der Version. Was sich je Fassung ändert, steht in
 [`CHANGELOG.md`](CHANGELOG.md). Oberfläche und
 Dokumentation sind deutsch.
