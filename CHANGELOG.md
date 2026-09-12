@@ -16,6 +16,62 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.5.1 (51)] - 2026-09-12
+
+Der Übergabestand mit Generationen: Jeder Übergang des Schutzes — Einschalten,
+Erneuern, Passphrase ändern, Wicklung dieses Macs, Aufheben — gilt in einem
+einzigen Moment, und ein Neustart vollendet oder verwirft, was ein Abbruch
+offen ließ. Damit entfällt das Restrisiko, das 1.4.9 und 1.5.0 benannten
+(E37, E42).
+
+### Changed
+
+- **Übergänge in einem Stand:** Ein Übergang schreibt nichts mehr über das,
+  was gilt. Er legt jede Datei der Generation — Ablage, Vorgängerfassung,
+  Register, Lesezeichen, Sitzpläne — unter dem neuen Schutz als Zwilling
+  (`<name>.uebergang`) daneben und liest sie zurück, schreibt dann atomar die
+  Marke `uebergang.json` (Art, Stempel, Kennung des neuen Schlüssels, je Datei
+  Name und SHA-256 — kein Schlüsselmaterial) und tauscht danach jeden Zwilling
+  atomar über sein Original. Vor der Marke hat sich nichts geändert, danach
+  gilt der neue Stand; die Sitzung wechselt erst mit der Marke. (E47, E48)
+- **Wiederanlauf beim Start:** Liegt eine Marke, setzt die App ein, was ihre
+  Prüfsummen bestätigen — ohne Schlüssel — und sagt es; Zwillinge ohne Marke
+  werden entfernt. Fehlt ein Zwilling oder weicht er ab, bleibt der alte
+  Stand, Marke und Zwillinge kommen gestempelt ins Register, und die App
+  bittet, den Übergang zu wiederholen. Lesezeichen sind nicht neu zu wählen,
+  Sitzpläne nicht neu einzugeben. (E50)
+- **Kopie außer Haus und Statusdatei** bleiben Außenstellen: nach dem
+  Einsetzen nachgezogen, gemeldet wie bisher. (E51)
+- Was sich nach der Marke nicht ersetzen ließe — eine unveränderbare Datei,
+  ein Ordner an ihrer Stelle —, weist der Übergang vorher ab; nichts hat sich
+  dann geändert.
+
+### Removed
+
+- Die Vorab- und Rücknahmepfade der Übergänge aus 1.4.9 und 1.5.0 (Lesezeichen
+  und Sitzpläne vorab versiegeln, Rücknahme auf den alten Schlüssel, die
+  Rücknahme nach dem Aufheben) und die Meldung „trug noch eine ältere Hülle
+  und ist neu versiegelt“: In der Generation kann kein Behälter unter älterer
+  Hülle mehr entstehen; einen aus einer früheren Fassung versiegelt die App
+  beim Öffnen still neu. Die Rückfrage zu Klartext-Sitzplänen neben der
+  versiegelten Planung (E43) und das Nachholen gewöhnlicher Schreibvorgänge
+  bleiben. (E49)
+- Der Hinweis „womöglich aus einem Übergang, der nicht zu Ende kam“ in den
+  Meldungen zu beiseitegelegten Lesezeichen und Sitzplänen — der Fall entsteht
+  nicht mehr.
+
+### Added
+
+- Prüfstand `--uebergangstest einschalten|erneuern|passphrase|wicklung|aufheben|pruefen`
+  am gebauten Paket, mit `UEBERGANG_ABBRUCH=vorbereitet|uebergeben|einsetzen`
+  als hartem Abbruch nach dem Schritt; der zweite Start mit `pruefen` zeigt den
+  Wiederanlauf. (E52)
+- Suite „Übergang“ (16 Prüfungen: jeder Schritt, jeder Abbruch, Prüfsummen,
+  Register, gesperrter Ordner) und für jeden Übergang der Abbruch nach dem
+  Vorbereiten, nach dem Übergeben und mitten im Einsetzen mit einem zweiten
+  Start — 543 Prüfungen in 54 Suiten. Die Ansicht fürs iPad zieht in der
+  Nummer mit.
+
 ## [1.5.0 (50)] - 2026-09-12
 
 Die Kurszelle: Was an einer Klasse oder einem Kurs hängt — Verwaltungsdatei,
