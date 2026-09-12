@@ -16,6 +16,80 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.4.9 (49)] - 2026-09-12
+
+Behebungen nach den beiden Reviews an 1.4.8 — der internen (B01–B08) und der
+externen (F01–F08, nachgeprüft als B09–B16): die Übergänge des Schutzes rund
+um die Sitzpläne symmetrisch und ehrlich, das Beenden wachsam, die Lesebilanz
+sichtbar, Tastatur und Werkzeuge nachgezogen. Dazu der Kennwortschutz der
+Sitzplan-PDF.
+
+### Fixed
+
+- **Aufheben der Verschlüsselung** legt die Sitzpläne zuerst im Klartext hin;
+  scheitert das, bleibt alles, wie es ist — Schlüssel, Behälter, Sitzung.
+  Bisher blieb ein Behälter, der nicht in den Klartext kam, unter einem
+  Schlüssel liegen, den es danach nicht mehr gab, und der nächste Start legte
+  ihn als „fremd“ beiseite. Sind die Sitzpläne gerade nicht lesbar, wird das
+  Aufheben abgewiesen und auf einen Neustart verwiesen. (B02, E38)
+- **Rücknahmen** beim Ein- und Ausschalten nennen die Sitzpläne, wenn ihr
+  Rückweg in den Klartext scheitert; die Meldung nach einem gescheiterten
+  Schreiben verspricht den nächsten Start nur, wenn die Datei auf der Platte
+  dazu passt. (B02)
+- **Einschalten aus dem Klartext** wird von gesperrten Sitzplänen oder
+  Lesezeichen nicht mehr abgewiesen: Die Datei bleibt liegen und wird beim
+  nächsten Start versiegelt; beim Erneuern bleibt die Abweisung. (B03)
+- **„Nachgeholt“** meldet das Versiegeln nur, wenn es gelang. (B05)
+- **Nebendateien unter einer älteren Hülle** (Passphrase geändert, während
+  ihr Schreiben scheiterte) werden beim nächsten Start nachgezogen —
+  Lesezeichen und Sitzpläne; bis dahin sagt die Meldung, dass die bisherige
+  Passphrase die Datei noch öffnet. (B09, extern F01)
+- **Beenden:** Ein Sitzplan, den die Platte nicht trägt, hält das Beenden auf
+  wie eine ungesicherte Planung; „Jetzt sichern“ und das Beenden holen ihn
+  nach. (B10, extern F02)
+- **Namensliste:** Jeder Zeilenwechsel trennt (auch `\r` und U+2028); ein
+  eingesetzter Absatz wird beim Umbenennen eine Zeile. (B01)
+- **Lesen der Sitzplandatei:** Was das Lesen wegnimmt oder kürzt, wird
+  gemeldet, und das Original liegt als `sitzplaene-bereinigt-<Stempel>.json`
+  daneben; ein unlesbarer Zeitstempel wird geleert. (B14, extern F06; H01)
+- **Editor:** ⏎ übernimmt verlässlich (über die Fläche, nicht über die
+  Responder-Kette), ⌫/⌦ entfernt die Auswahl, ⌥⏎ benennt um; ein Tisch über
+  dem Lehrertisch ist das, was der Klick trifft; in der Listenphase sagen ⌘P
+  und ⇧⌘P, dass noch nichts zu drucken ist. (B06, B07, B08, H04)
+- **Ansicht fürs iPad:** Das Schreiben in die verbundene Statusdatei und das
+  Versiegeln für den Browserspeicher gehören der Planung, dem Schlüssel und
+  der Verbindung, mit denen sie begannen — ein Planungswechsel oder eine
+  Neuverbindung währenddessen bleibt unberührt. (B13, extern F05)
+- Die Meldung im Vorhaben-Dialog, wenn nichts eingetragen ist, passt zur
+  Regel: Titel, Beschreibung, Material oder Link. (H03)
+
+### Added
+
+- **Kennwortschutz der Sitzplan-PDF:** Im Sichern-Dialog lässt sich die PDF
+  mit einem Kennwort schützen — Kennwort und Wiederholung, vorgewählt bei
+  eingeschalteter Verschlüsselung; der Standard-Kennwortschutz des
+  PDF-Formats, den Vorschau und andere Leser abfragen. (E40)
+- **Verwaiste Sitzpläne** — Pläne, deren Klasse die Planung nicht kennt —
+  räumt die App beim Laden einer Planung auf und bewahrt sie als
+  `sitzplaene-verwaist-<Stempel>.json` im Register der Nebendateien. (B04, E41)
+- **`pruefen.sh`:** alle Prüfungen vor dem Bau in einem Lauf — `swift test` im
+  eigenen Prüfordner, die Skripte der Ansicht — mit Vermerk
+  `Paket/Pruefung-<Stempel>.txt` und dem Stand der Quellen; `beglaubigen.sh
+  --probe` weist hin, wenn der Vermerk fehlt, nicht zum Stand passt oder
+  einen Befund trägt. (B16, extern F08; E39)
+
+### Changed
+
+- Die Prüfskripte der Ansicht geben jedem Kindprozess eine Frist (jsc,
+  swiftc) — ein hängender Lauf hält die Prüfung nicht ewig. (B15, extern F07)
+- Prüfstand `--sitzplantest` prüft ⌫, ⌥⏎ und ⏎ — ein Rückfall über den
+  Speicher ist ein Befund; `leser_pruefen.py` mit Fällen zum Schreiben in die
+  Zieldatei und zum Planungswechsel; 520 Prüfungen in 53 Suiten.
+- Ein abgebrochener Schutzübergang — die App stirbt zwischen zwei
+  Schreibvorgängen — bleibt ein benanntes Restrisiko (E37): Die Planung bleibt
+  heil, die Nebendateien werden beim nächsten Start beiseitegelegt, und die
+  Meldung nennt den Fall samt Rettungskopie. Dokumentiert unter „Datenschutz“.
+
 ## [1.4.8 (48)] - 2026-09-12
 
 Sitzplan — Jede Klasse und jeder Kurs kann einen Sitzplan tragen: Namen als
