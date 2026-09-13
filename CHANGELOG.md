@@ -16,6 +16,61 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.5.3 (53)] - 2026-09-13
+
+Behebungen nach der vierten externen Code-Review an 1.5.2 (52): Ein
+Wiederanlauf, der die Marke nicht mehr deuten kann, rührt nichts mehr an,
+statt den Weg zurück zu verschütten; der Einsetzweg prüft jede Datei vor und
+nach dem Tausch; die Schreibsperre eines offenen Übergangs gilt jetzt für
+jede Änderung an der Ablage, nicht nur für die drei Hauptwege; Zwillinge und
+Marke werden auf die Platte gezwungen; und der Stand der Quellen bricht ab,
+statt unvollständig zu gelten.
+
+### Fixed
+
+- **Unbrauchbare Marke nach halbem Einsetzen (N52-01):** Eine Marke, die sich
+  nicht deuten ließ, kam mit den Zwillingen ins Register, und die Meldung
+  sagte „es gilt der bisherige Stand“ — auch wenn ein Teil der Dateien schon
+  den neuen trug. Der nächste Start fand dann keine Marke mehr und entfernte
+  die Vorgänger als Rest eines vollendeten Einsetzens: der einzige Weg zurück
+  war fort. Jetzt bleibt alles liegen, solange ein Vorgänger da ist; es wird
+  nichts geladen und nichts geschrieben, und die Meldung sagt, was zu prüfen
+  ist. Ist eine schon eingesetzte Datei beschädigt, geht der Rückweg trotzdem
+  über ihren Vorgänger.
+- **Nachholen ohne Prüfung (N52-02):** Das Einsetzen prüfte die Prüfsumme nur,
+  wenn kein Zwilling lag. Ein Zwilling, den eine Wiederherstellung, ein
+  Abgleichdienst oder ein Datenträgerfehler nach der Marke verändert hatte,
+  wurde im laufenden Programm ungeprüft übergetauscht. Jetzt prüft derselbe
+  Weg vor dem Tausch und liest danach zurück — beim ersten Versuch, beim
+  Nachholen und beim Wiederanlauf gleich; ein Vorgänger fällt erst, wenn
+  belegt ist, dass sein Nachfolger richtig liegt.
+- **Schreibwege um die Sperre herum (N52-03):** Die Sperre eines offenen
+  Übergangs hing an drei Diensten. Das Nachziehen der Nebendateien nach dem
+  Entsperren, das Beiseitelegen eines beschädigten Stands, das Entfernen und
+  Beiseitelegen von Lesezeichen und Sitzplänen sowie die Rettungskopien
+  änderten Dateien der Generation daran vorbei. Jetzt fragt die Ablage selbst,
+  an jeder Stelle, die etwas ändert.
+- **Stand der Quellen ohne Abbruch (N52-04):** Scheiterte eine Aufzählung oder
+  eine Prüfsumme, kam trotzdem eine Kennung heraus, und `./pruefen.sh --stand`
+  endete stets erfolgreich — ein unvollständiger Stand hätte als vollständige
+  Herkunft gegolten. Jetzt zählt jede Stufe: kein Stand, kein Prüfvermerk,
+  kein Paket.
+
+### Changed
+
+- **Dauerhaftigkeit des Übergangs:** Zwillinge und Marke werden vor dem
+  jeweils nächsten Schritt auf die Platte gezwungen. Der Moment, ab dem der
+  neue Stand gilt, übersteht damit auch einen Stromausfall, nicht nur das Ende
+  des Prozesses. Nur im Übergang, nicht bei jeder Sicherung.
+- **Aufräumen vor der Marke:** Das vollendete Einsetzen entfernt erst die
+  Vorgänger, dann die Marke. Ein Vorgänger ohne Marke stammt damit aus keinem
+  sauberen Abschluss mehr; er wird gestempelt neben der Planung verwahrt
+  (`…-vorgaenger-<Stempel>.json`) und folgt jedem weiteren Wechsel des
+  Schutzes, statt gelöscht zu werden.
+- **Der Wiederanlauf sagt, was er getan hat:** „zurückgenommen“, „beiseite­
+  gelegt“, „verwahrt“, „blockiert“ und „zwei Stände“ sind fünf verschiedene
+  Meldungen statt einer.
+
 ## [1.5.2 (52)] - 2026-09-13
 
 Behebungen nach der dritten externen Code-Review an 1.5.1 (51): Der
