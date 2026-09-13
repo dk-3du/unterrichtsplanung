@@ -16,6 +16,94 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.5.5 (55)] - 2026-09-13
+
+Behebungen nach der sechsten externen Code-Review an 1.5.4 (54). Ein
+Ablageordner, den es noch nicht gibt, ist kein unlesbarer: Die erste
+Inbetriebnahme läuft wieder an. Der Weg aus einer gesperrten Ablage liest den
+bisherigen Stand danach neu ein, statt eine leere Sitzung darüber schreiben zu
+lassen. Und kein Schreibweg ersetzt mehr eine versiegelte Datei durch Klartext.
+
+1.5.4 (54) wurde am Tag der Veröffentlichung zurückgenommen; seine Behebungen
+sind hier enthalten.
+
+### Fixed
+
+- **Der erste Start sperrte die Ablage (N54-02):** Seit 1.5.4 galt ein
+  Ablageordner, der sich nicht auflisten ließ, als unbekannt — und ein Ordner,
+  den es noch gar nicht gibt, ließ sich ebenso wenig auflisten. Eine frisch
+  eingerichtete App sperrte darum beim ersten Start ihre eigene, leere Ablage,
+  und der Ausweg scheiterte an derselben Stelle. Jetzt wird die Lage des
+  Ordners vor dem Auflisten festgestellt: Fehlt er, läuft der Start gewöhnlich
+  an und die erste Sicherung legt ihn an; jeder andere Grund sperrt weiterhin.
+- **Der Ausweg ließ die Sitzung leer zurück (N54-01):** „Unterbrochenen
+  Übergang beiseitelegen“ nahm die Sperre, las aber nichts nach — die Sitzung
+  blieb ohne Planung und ohne Schlüssel und hätte über den bewahrten Stand
+  geschrieben. Jetzt verhält sich der Ausweg wie ein Neustart: Wiederanlauf,
+  Lesen, nötigenfalls Entsperren, Lesezeichen und Sitzpläne; erst dieser Weg
+  gibt die Ablage wieder frei. Eine Meldung nennt, was beiseitegelegt wurde
+  und was danach gilt.
+- **Ein gelungenes Einsetzen gab sich als Sperre aus (N54-03):** Hatte die
+  Zweitschrift für eine fehlende Marke getragen, scheiterte das Aufräumen
+  daran, dass die Marke nicht mehr zu entfernen war — obwohl alles eingesetzt
+  und geprüft war. Was schon fort ist, gilt jetzt als fort.
+- **Ein Zwilling ohne Marke wurde stillschweigend entfernt (N53-02):** Ob eine
+  Marke nie geschrieben wurde oder nur nicht mehr liegt, sagt der Ordner
+  nicht, und eine neu angelegte Datei hinterlässt keinen Vorgänger. Jede Spur
+  eines Übergangs ohne deutbare Marke sperrt jetzt; entfernt wird nichts, und
+  der Ausweg im Menü führt heraus.
+
+### Added
+
+- **Formwächter:** Kein unmittelbarer Schreibweg ersetzt eine versiegelte
+  Datei durch Klartext oder durch einen fremden Schlüssel. Geprüft wird am
+  Kopf der liegenden Datei, der Übergang des Schutzes bleibt ausgenommen.
+  Trifft der Wächter zu, ruht die Autosicherung und nennt den Grund.
+
+## [1.5.4 (54)] - 2026-09-13
+
+**Zurückgenommen am 13.09.2026.** Diese Fassung sperrt beim ersten Start in
+einem noch nicht angelegten Ablageordner die Ablage und lässt sich dann nicht
+in Betrieb nehmen; wer sie schon benutzt, ist davon nicht betroffen. Release
+und Tag sind aus dem Repository entfernt, veröffentlicht ist wieder 1.5.3 (53).
+Die Behebungen unten gehen in der nächsten Fassung auf.
+
+Behebungen nach der fünften externen Code-Review an 1.5.3 (53): Eine Sperre,
+die der Start setzt, gilt jetzt für jeden Weg in die Ablage und nicht nur für
+die Autosicherung; dafür gibt es einen ausdrücklichen Weg zurück. Fehlt die
+Marke eines unterbrochenen Übergangs oder lässt sie sich nicht einsehen, wird
+nichts mehr angenommen und nichts mehr angerührt. Und die Marke wird doppelt
+geschrieben.
+
+### Fixed
+
+- **Die Sperre erreichte nicht jeden Schreiber (N53-01):** Konnte der Start
+  keinen stimmigen Stand feststellen, ruhte die Autosicherung — Sitzpläne,
+  Lesezeichen, Rettungskopien und das Nachziehen der Nebendateien liefen
+  trotzdem. Eine neue Sitzung ohne Schlüssel hätte dabei einen versiegelten
+  Sitzplan durch einen unverschlüsselten ersetzt, und zwar in genau dem
+  Ordner, für den die Meldung zusagte, es werde nichts angerührt. Die Lage der
+  Ablage liegt jetzt an einer Stelle, an der alle fragen; sie beginnt gesperrt
+  und wird erst frei, wenn der Wiederanlauf es belegt. In einer gesperrten
+  Ablage wird auch keine Planung mehr angelegt oder geöffnet.
+- **Fehlende Beweislage galt als heiler Ordner (N53-02):** Eine fehlende Marke
+  neben liegenden Vorgängern führte ins gewöhnliche Laden; ein Ordner, der
+  sich nicht auflisten ließ, sah aus wie ein leerer; und aus dem Fehlen von
+  Vorgängern wurde geschlossen, dass nichts eingesetzt sei — obwohl eine neu
+  angelegte Datei keinen hinterlässt. Jede Spur eines Übergangs ohne deutbare
+  Marke sperrt jetzt, ein Fehler beim Auflisten wird gemeldet statt verschluckt.
+
+### Added
+
+- **Ein Weg aus der Sperre:** „Ablage → Unterbrochenen Übergang beiseitelegen“
+  zählt in einer Rückfrage auf, was im Weg liegt, und legt es unter
+  Stempelnamen neben die Planung. Gelöscht wird nichts; erst wenn alles
+  umgezogen ist, schreibt die App wieder.
+- **Eine Zweitschrift der Marke:** Der Moment, ab dem der neue Stand gilt,
+  steht doppelt auf der Platte. Ist eine der beiden nicht mehr zu deuten,
+  trägt die andere — eine Sperre kostet Arbeitszeit, und ein doppelter Fehler
+  ist seltener als ein einfacher.
+
 ## [1.5.3 (53)] - 2026-09-13
 
 Behebungen nach der vierten externen Code-Review an 1.5.2 (52): Ein
