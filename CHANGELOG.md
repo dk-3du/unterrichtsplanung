@@ -16,6 +16,58 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.5.2 (52)] - 2026-09-13
+
+Behebungen nach der dritten externen Code-Review an 1.5.1 (51): Der
+Übergabestand bekommt einen Rückweg und eine Schreibsperre, die Marke wird
+geprüft statt geglaubt, die Rückfrage zu Klartext-Sitzplänen ist eine Grenze
+der Platte, die Bewahrungskopie gehört zur Generation, die Ansicht hält
+fremde Fehlerpfade von der Sitzung fern, und das Paket trägt den Stand seiner
+Quellen.
+
+### Fixed
+
+- **Übergeben, nicht eingesetzt (N51-01):** Blieb ein Übergang nach der Marke
+  unvollendet, schrieben Autosicherung, Sitzpläne und Lesezeichen daran
+  vorbei — ein liegengebliebener Zwilling hätte beim nächsten Start Jüngeres
+  ersetzt, und ein Wiederanlauf, der nicht vollenden konnte, meldete „es gilt
+  der bisherige Stand“, obwohl schon getauschte Dateien den neuen trugen.
+  Jetzt ruht jedes Schreiben, bis der Übergang eingesetzt ist; jeder
+  Schreibanlass holt das Einsetzen zuerst nach, die Werkzeugleiste nennt den
+  Grund. Das Einsetzen behält jedes ersetzte Original als
+  `<name>.vorgaenger`, bis die Marke fort ist; kann der nächste Start nicht
+  vollenden, stellt er die Vorgänger zurück — der alte Stand gilt dann
+  wirklich —, und fehlt ein Vorgänger, lässt er alles liegen und sagt, dass
+  zwei Stände liegen (E53, E54).
+- **Die Marke wird geprüft, nicht geglaubt (N51-02):** Der Wiederanlauf setzt
+  nur Einträge ein, die Namen der Generation sind — kein Pfad, nicht die
+  Marke, kein Zwilling, kein Vorgänger —, einmalig, mit einer Prüfsumme aus
+  64 Hexziffern oder ohne; sonst kommt die Marke beiseite wie eine unlesbare,
+  ehe etwas angerührt wird.
+- **Die Bewahrungskopie gehört zur Generation (N51-03):** Ein Übergang fragt
+  zuerst die Sitzpläne an — ihr Dienst holt dabei eine ausstehende Kopie des
+  Originals nach — und zählt dann das Register; die Kopie lag sonst außerhalb
+  der Generation, beim Erneuern unter dem alten Schlüssel (E56).
+- **Die Rückfrage zu Klartext-Sitzplänen ist eine Grenze der Platte (F04):**
+  Solange die Frage offen ist, geht der Klartext in keine Generation, und das
+  Angleichen der Wicklung dieses Macs nach dem Entsperren wartet auf die
+  Antwort (E55). Bisher konnte es die unbestätigten Pläne versiegeln, ehe die
+  Frage beantwortet war.
+- **Ansicht — fremde Fehlerpfade (F05):** Das Lesen aus dem Gerätespeicher
+  ändert keinen Zustand mehr; die Wiederaufnahme setzt Sperre und Meldung erst,
+  wenn die Planung noch ihre ist, und der Fehlerpfad des Merkens prüft die
+  Zugehörigkeit wie der Erfolgspfad. Eine inzwischen geöffnete Planung verlor
+  sonst das Merken bis zum Neuladen und bekam eine fremde Warnung.
+
+### Changed
+
+- **Das Paket trägt den Stand seiner Quellen (N51-04):** `bauen.sh` schreibt
+  ihn als `UPQuellenstand` in die `Info.plist`, mitsigniert; `beglaubigen.sh`
+  verlangt, dass er der aktuelle ist — und damit der des Prüfvermerks —, und
+  hält in der Zusammenfassung Quellenstand und CDHash fest (E57).
+- Der Prüfhaken des Übergangs feuert nach jedem Tausch, nicht nur nach dem
+  ersten; die Prüfungen halten jede Tauschgrenze fest.
+
 ## [1.5.1 (51)] - 2026-09-12
 
 Der Übergabestand mit Generationen: Jeder Übergang des Schutzes — Einschalten,
