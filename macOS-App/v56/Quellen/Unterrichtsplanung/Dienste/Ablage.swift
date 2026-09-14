@@ -1,0 +1,793 @@
+// SPDX-FileCopyrightText: 2026 Dominik Kluge
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import Foundation
+
+/// Die laufende Sicherung auf der Festplatte — geschrieben atomar, die vorige
+/// Fassung bleibt als `planung-vorher.json` liegen. Bewusst kein Akteur,
+/// sondern eine Sperre: Ein `await` beim Beenden ließe die App hängen.
+///
+/// Hier wird die Planung versiegelt: Jeder Schreibvorgang bekommt den
+/// Schlüssel der Sitzung mit und geht damit als Behälter auf die Platte —
+/// hereingereicht wird Klartext, den Schlüssel hält der Speicher
+/// (`Planungssitzung`), nicht die Ablage. Lesezeichen und Sitzpläne versiegeln
+/// ihre Dienste selbst; die Ablage liest und schreibt sie nur roh. Gelesen wird
+/// roh — das Öffnen braucht unter Umständen eine Freigabe, also entscheidet
+/// der Aufrufer.
+final class Ablage: @unchecked Sendable {
+    static let shared = Ablage()
+
+    let ordner: URL
+    let datei: URL
+    let vorherigeFassung: URL
+    /// Der Behälter der Lesezeichen neben der Planung — nur bei eingeschalteter
+    /// Verschlüsselung. Ihn schreibt der Ordnerzugriff; `nebendateien()`
+    /// erfasst nur seine Rettungskopien.
+    let lesezeichen: URL
+    /// Die Sitzpläne neben der Planung — Klartext oder Behälter, wie die
+    /// Planung selbst. Sie schreibt der Sitzplandienst; `nebendateien()`
+    /// erfasst nur die Rettungskopien.
+    let sitzplaene: URL
+
+    private let sperre = NSLock()
+
+    // ── Das Tor der Schreibsperre (E62) ───────────────────────────────────
+    // Ein übergebener Übergang, dessen Einsetzen nicht zu Ende kam, lässt
+    // nichts an sich vorbeischreiben (E54). Die Frage hing bisher an drei
+    // Diensten; die Ablage ändert daneben selbst Dateien, die in der
+    // Generation stehen können — Rettungskopien, Beiseitelegen, Entfernen,
+    // das Nachziehen der Nebendateien (N52-03, B25). Sie fragt jetzt selbst,
+    // an jeder Stelle, die etwas ändert.
+    //
+    // Eine Ausnahme: `schreiben` fragt nicht. Dort hat die Sicherungsfolge
+    // schon nachgeholt und hält ihre eigene Sperre — eine zweite Frage liefe
+    // in sie hinein. Gefragt wird stets vor `sperre.withLock`: Das Nachholen
+    // greift auf denselben Ordner zu.
+    private let torsperre = NSLock()
+    private var tor: (@Sendable () -> String?)?
+
+    /// Vor jeder Änderung gefragt: Ein offener Übergang wird zuerst nachgeholt;
+    /// bleibt er offen, nennt sie den Grund, und nichts wird angerührt.
+    /// Gesetzt vom Sicherungsdienst.
+    var schreibsperre: (@Sendable () -> String?)? {
+        get { torsperre.withLock { tor } }
+        set { torsperre.withLock { tor = newValue } }
+    }
+
+    /// `nil`, wenn geändert werden darf — sonst der Grund.
+    private func gesperrt() -> String? { schreibsperre?() }
+
+    /// Nichts geändert, weil ein Übergang übergeben, aber nicht eingesetzt ist.
+    struct Uebergangssperre: LocalizedError {
+        let grund: String
+        var errorDescription: String? { grund }
+    }
+
+    /// Läuft die App an einem verlegten Ablageort, also in einem Prüflauf?
+    /// Ein Prüflauf darf nichts außerhalb seines Ordners hinterlassen — weder in
+    /// der Planung noch in den Einstellungen des Nutzers. Das Prüfziel von
+    /// `swift test` zählt immer dazu, auch ohne `PLANUNGSORDNER`.
+    static let istPruefstand: Bool = {
+        let eigener = ProcessInfo.processInfo.environment["PLANUNGSORDNER"] ?? ""
+        return !eigener.isEmpty || imPruefziel
+    }()
+
+    /// Läuft dieser Prozess als Prüfziel (`swift test`, Xcode)? Dann gibt es
+    /// ohne `PLANUNGSORDNER` einen eigenen Ordner je Prozess — nie die echte
+    /// Ablage in Application Support.
+    static let imPruefziel: Bool = {
+        let prozess = ProcessInfo.processInfo
+        let programm = (prozess.arguments.first as NSString?)?.lastPathComponent ?? ""
+        // `swift test` läuft über den swiftpm-testing-helper, Xcode über xctest.
+        return programm == "swiftpm-testing-helper" || programm == "xctest"
+            || Bundle.main.bundleURL.pathExtension == "xctest"
+            || prozess.environment["XCTestConfigurationFilePath"] != nil
+            || prozess.environment["XCTestBundlePath"] != nil
+    }()
+
+    /// Der Ablageort aus seinen zwei Quellen, damit die Regel prüfbar ist.
+    static func ablageort(umgebung: String, imPruefziel: Bool) -> URL {
+        if !umgebung.isEmpty { return URL(fileURLWithPath: umgebung, isDirectory: true) }
+        if imPruefziel {
+            return URL.temporaryDirectory.appending(
+                component: "Unterrichtsplanung-Pruefziel-\(ProcessInfo.processInfo.processIdentifier)",
+                directoryHint: .isDirectory)
+        }
+        return URL.applicationSupportDirectory
+            .appending(component: "Unterrichtsplanung", directoryHint: .isDirectory)
+    }
+
+    /// Der Container der App im App Sandbox — `nil`, wenn die App ohne Sandbox
+    /// läuft (das Prüfziel von `swift test`, ein ungesiegelter Bau). Im Sandbox
+    /// ist das Benutzerverzeichnis des Prozesses der Container.
+    static let container: URL? = {
+        let heimat = NSHomeDirectory()
+        guard ProcessInfo.processInfo.environment["APP_SANDBOX_CONTAINER_ID"] != nil
+                || heimat.contains("/Library/Containers/")
+        else { return nil }
+        return URL(fileURLWithPath: heimat, isDirectory: true)
+    }()
+
+    /// Im Sandbox darf ein Prüflauf nur im Container arbeiten — anderswo käme
+    /// er nicht an seine Ablage, und ein leerer Ordner öffnete „Neue Planung“.
+    static let pruefordnerZulaessig: Bool = pruefordnerZulaessig(
+        ProcessInfo.processInfo.environment["PLANUNGSORDNER"] ?? "", container: container)
+
+    /// Die Regel ohne ihre zwei Quellen, damit sie prüfbar ist.
+    static func pruefordnerZulaessig(_ pfad: String, container: URL?) -> Bool {
+        guard !pfad.isEmpty, let container else { return true }
+        let ordner = vergleichbar(pfad)
+        let wurzel = vergleichbar(container.path)
+        return ordner == wurzel || ordner.hasPrefix(wurzel + "/")
+    }
+
+    /// Ein Pfad in der Form, in der er sich mit anderen vergleichen lässt:
+    /// ohne `..`, ohne Endschrägstrich, Symlinks aufgelöst — und ohne das
+    /// `/private`, das Foundation je nachdem, ob der Ort existiert, vor
+    /// `/var`, `/tmp` und `/etc` stehen lässt oder nicht.
+    static func vergleichbar(_ pfad: String) -> String {
+        var p = URL(fileURLWithPath: pfad).standardizedFileURL.resolvingSymlinksInPath().path
+        for kurz in ["/var", "/tmp", "/etc"] where p == "/private" + kurz || p.hasPrefix("/private" + kurz + "/") {
+            p = String(p.dropFirst("/private".count))
+        }
+        while p.count > 1, p.hasSuffix("/") { p.removeLast() }
+        return p
+    }
+
+    /// Die Enklave auch im Prüfstand — nur für `--entsperrtest enklave|tot`
+    /// (`ENTSPERRPROBE_ENKLAVE`) und für Prüfungen, die eine absichtlich
+    /// unbrauchbare Wicklung vorlegen. Kein `swift test` darf je in einen
+    /// Touch-ID-Dialog laufen.
+    static let enklaveImPruefstand: Bool =
+        ProcessInfo.processInfo.environment["ENTSPERRPROBE_ENKLAVE"] != nil
+
+    convenience init() {
+        // Ohne `PLANUNGSORDNER` arbeiten Prüfstände am gebauten Paket an der
+        // echten Planung — darum die Schranke vor jedem; das Prüfziel bekommt
+        // seinen eigenen Ordner.
+        self.init(ordner: Ablage.ablageort(
+            umgebung: ProcessInfo.processInfo.environment["PLANUNGSORDNER"] ?? "",
+            imPruefziel: Ablage.imPruefziel))
+    }
+
+    /// Für Prüfungen, die den Schreibweg untersuchen, ohne `shared` zu berühren.
+    init(ordner: URL) {
+        self.ordner = ordner
+        datei = ordner.appendingPathComponent("planung.json", isDirectory: false)
+        vorherigeFassung = ordner.appendingPathComponent("planung-vorher.json", isDirectory: false)
+        lesezeichen = ordner.appendingPathComponent("lesezeichen.json", isDirectory: false)
+        sitzplaene = ordner.appendingPathComponent("sitzplaene.json", isDirectory: false)
+    }
+
+    /// Was am Schreiben scheitert, bevor ein Byte auf der Platte ist: Die Datei
+    /// läge über der Grenze, die der Aufrufer hereinreicht — Byte, die sie hätte.
+    struct Schreibfehler: LocalizedError {
+        let groesse: Int
+        let grenze: Int
+        var errorDescription: String? {
+            "Die Planung ist mit \(groesse / 1024 / 1024) MB größer als die Lesegrenze "
+                + "(\(grenze / 1024 / 1024) MB) und wurde nicht geschrieben."
+        }
+    }
+
+    /// Nimmt Klartext entgegen — versiegelt unter `tresor`; `nil` heißt Klartext.
+    /// Über `grenze` wird nicht geschrieben (`Schreibfehler`): Was diese App
+    /// nicht mehr liest, legt sie auch nicht hin — der letzte Stand bleibt
+    /// liegen. Liefert die Byte auf der Platte.
+    @discardableResult
+    func schreiben(_ daten: Data, tresor: Tresor?, hoechstens grenze: Int = .max) throws -> Int {
+        try sperre.withLock {
+            let auszuschreiben = try tresor.map {
+                try $0.versiegeln(daten, inhalt: .planung, ziel: .ablage)
+            } ?? daten
+            guard auszuschreiben.count <= grenze else {
+                throw Schreibfehler(groesse: auszuschreiben.count, grenze: grenze)
+            }
+            if let sperre = Ablage.formwaechter(datei, tresor: tresor) { throw sperre }
+            let dateiverwaltung = FileManager.default
+            try dateiverwaltung.createDirectory(at: ordner, withIntermediateDirectories: true)
+
+            letzteVorgaengerStoerung = dateiverwaltung.fileExists(atPath: datei.path)
+                ? vorigeFassungFortschreiben(dateiverwaltung) : nil
+            try auszuschreiben.write(to: datei, options: [.atomic])
+            return auszuschreiben.count
+        }
+    }
+
+    /// Warum die Vorgängerfassung beim letzten Schreiben nicht fortgeschrieben
+    /// wurde — `nil`, wenn sie es wurde oder nichts fortzuschreiben war. Die
+    /// Hauptdatei ist davon unberührt; der Sicherungsdienst sagt es einmal.
+    var vorgaengerStoerung: String? { sperre.withLock { letzteVorgaengerStoerung } }
+    private var letzteVorgaengerStoerung: String?
+
+    /// Erst in eine Nebendatei kopieren, dann atomar darübertauschen: Beim
+    /// Löschen-dann-Kopieren stand zwischendurch keine Vorgängerfassung da, und
+    /// ein voller Datenträger ließ sie ersatzlos verschwinden. Liefert den
+    /// Grund, wenn es nicht ging — die ältere Fassung davor bleibt dann liegen.
+    private func vorigeFassungFortschreiben(_ verwaltung: FileManager) -> String? {
+        let nebendatei = ordner.appendingPathComponent("planung-vorher.json.neu",
+                                                       isDirectory: false)
+        try? verwaltung.removeItem(at: nebendatei)
+        do {
+            try verwaltung.copyItem(at: datei, to: nebendatei)
+            if verwaltung.fileExists(atPath: vorherigeFassung.path) {
+                _ = try verwaltung.replaceItemAt(vorherigeFassung, withItemAt: nebendatei)
+            } else {
+                try verwaltung.moveItem(at: nebendatei, to: vorherigeFassung)
+            }
+        } catch {
+            try? verwaltung.removeItem(at: nebendatei)
+            return error.localizedDescription
+        }
+        return nil
+    }
+
+    enum Bestand {
+        case keine
+        case daten(Data)
+        /// Liegt da, ist aber größer als die Lesegrenze — nicht gelesen; die
+        /// Größe in Byte. Was so groß ist, hat diese App nicht geschrieben.
+        case zuGross(Int)
+        /// Liegt da, ließ sich aber nicht lesen — darf nicht überschrieben werden.
+        case unlesbar(any Error)
+    }
+
+    /// Was am Lesen scheitert, bevor ein Byte gelesen ist.
+    struct Lesefehler: LocalizedError {
+        let text: String
+        var errorDescription: String? { text }
+    }
+
+    /// Roh, wie es auf der Platte liegt — Klartext oder Behälter. Die Grenze
+    /// reicht der Aufrufer herein (`Planungsdatei.hoechstgroesse`): Diese
+    /// Datei wird von `tresor_pruefen.py` allein mit `Tresor.swift` übersetzt
+    /// und kennt das Modell nicht.
+    func lesen(hoechstens grenze: Int) -> Bestand {
+        sperre.withLock { bestand(datei, hoechstens: grenze) }
+    }
+
+    private func bestand(_ url: URL, hoechstens grenze: Int) -> Bestand {
+        Ablage.gebundenLesen(url, hoechstens: grenze)
+    }
+
+    /// Der eine Leseweg für alles mit Grenze — Ablage, Fassung davor,
+    /// Lesezeichen, Nebendateien, Import, Statusdatei: Die Datei wird geöffnet,
+    /// Art und Größe am geöffneten Deskriptor gemessen (nicht am Pfad, der
+    /// zwischen Messen und Lesen ein anderes Objekt bekommen kann), dann
+    /// höchstens `grenze + 1` Byte gelesen. Wächst die Datei nach dem Messen,
+    /// endet das Lesen an der Grenze. Ein Symlink führt zu seinem Ziel, und
+    /// gemessen wird das Ziel; eine Pipe blockiert nicht und ist keine reguläre
+    /// Datei. `nachDemMessen` ist der Haken der Prüfungen.
+    static func gebundenLesen(_ url: URL, hoechstens grenze: Int,
+                              nachDemMessen: () -> Void = {}) -> Bestand {
+        let name = url.lastPathComponent
+        let deskriptor = Darwin.open(url.path, O_RDONLY | O_NONBLOCK | O_CLOEXEC)
+        guard deskriptor >= 0 else {
+            if errno == ENOENT { return .keine }
+            return .unlesbar(Lesefehler(text: "„\(name)“ ließ sich nicht öffnen (\(String(cString: strerror(errno)))."))
+        }
+        let griff = FileHandle(fileDescriptor: deskriptor, closeOnDealloc: false)
+        defer { try? griff.close() }
+        var status = stat()
+        guard fstat(deskriptor, &status) == 0 else {
+            return .unlesbar(Lesefehler(text: "Die Größe von „\(name)“ ließ sich nicht bestimmen."))
+        }
+        guard (status.st_mode & S_IFMT) == S_IFREG else {
+            return .unlesbar(Lesefehler(text: "„\(name)“ ist keine reguläre Datei."))
+        }
+        let gemessen = Int(status.st_size)
+        guard gemessen <= grenze else { return .zuGross(gemessen) }
+        nachDemMessen()
+        let hoechstens = grenze < .max ? grenze + 1 : .max
+        var daten = Data(capacity: gemessen)
+        do {
+            while daten.count < hoechstens {
+                guard let stueck = try griff.read(upToCount: min(1 << 20, hoechstens - daten.count)),
+                      !stueck.isEmpty else { break }
+                daten.append(stueck)
+            }
+        } catch {
+            return .unlesbar(error)
+        }
+        guard daten.count <= grenze else {
+            // Nach dem Messen gewachsen: so groß, wie sie jetzt ist.
+            let jetzt = fstat(deskriptor, &status) == 0 ? Int(status.st_size) : 0
+            return .zuGross(max(jetzt, daten.count))
+        }
+        return .daten(daten)
+    }
+
+    // ── Der Formwächter (E72, E75, E76) ───────────────────────────────────
+    // Was auf der Platte liegt, hat eine Form: Klartext oder Behälter unter
+    // einer Schlüsselkennung. Wer sie ersetzt, muss dieselbe Form mitbringen —
+    // sonst schriebe eine Sitzung ohne Schlüssel Klartext über einen Behälter,
+    // und der Schutz wäre fort, ohne dass jemand ihn aufgehoben hätte. Der
+    // Übergang des Schutzes ist ausgenommen: Er schreibt Zwillinge und tauscht
+    // sie, er ersetzt nichts unmittelbar (N53-01, N54-01).
+    //
+    // Zwei Regeln aus N55-01, beide teuer gelernt:
+    // 1. Der Wächter deutet nach derselben Regel wie der Leser. In v55 erkannte
+    //    er den Behälter am Byte-Vorsatz, der Leser am Feld `typ` — ein
+    //    umformatierter Behälter galt dem einen als Schutz, dem anderen als
+    //    Klartext. Zwei Erkenner derselben Sache laufen auseinander; das ist
+    //    dieselbe Klasse wie N54-02 („gibt es den Ordner?“).
+    // 2. Unsicherheit heißt nicht schreiben. Ein Fehlschlag beim Öffnen, Messen
+    //    oder Lesen ist kein „da liegt nichts“ — in v55 war er genau das, und
+    //    eine nicht einsehbare Datei wurde ersetzt.
+
+    /// Nicht geschrieben, weil die Platte eine andere Form trägt als die Sitzung
+    /// — oder weil sich nicht feststellen ließ, welche sie trägt (N55-01).
+    struct Formsperre: LocalizedError {
+        enum Anlass: Equatable {
+            /// Dort liegt Schutz, den diese Sitzung nicht mitbringt.
+            case fremderSchutz
+            /// Was dort liegt, war nicht einzusehen. Unsicherheit heißt nicht schreiben.
+            case ungewiss
+        }
+        let anlass: Anlass
+        let grund: String
+        var errorDescription: String? { grund }
+    }
+
+    /// So viel vom Kopf, wie der Wächter zuerst liest: Typ und Schlüsselkennung
+    /// stehen am Anfang des Behälters, der Regelfall ist damit entschieden.
+    /// Entscheidet der Kopf nicht, liest der Wächter weiter — die Abkürzung
+    /// darf ihn nicht zu einer eigenen Regel verleiten (N55-01).
+    static let formkopf = 4096
+
+    /// So weit deutet der Wächter eine Datei, wenn der Kopf nicht entscheidet.
+    /// Darüber sperrt er, statt zu raten — was so groß ist, hat diese App nicht
+    /// geschrieben. Die Zahl muss mindestens die Decke erreichen, bis zu der die
+    /// App ihre eigene Ablage noch liest (`Sicherungsdienst.lesedecke`, das
+    /// Vierfache der Schreibgrenze): Einen Stand, den die App gerade geladen
+    /// hat, darf der Wächter nicht für ungewiss halten — `deutgrenzeDecktDieLesedecke`
+    /// hält beide zusammen. (Die Zahl steht hier und nicht im Modell:
+    /// `tresor_pruefen.py` übersetzt diese Datei allein mit `Tresor.swift`.)
+    static let formgrenze = 4 * 32 * 1024 * 1024
+
+    /// Die Form auf der Platte — `nil` als Kennung heißt: ein Behälter, dessen
+    /// Kennung nicht zu lesen war. Dann wird nicht geschrieben.
+    enum Form: Equatable {
+        case nichts
+        case klartext
+        case behaelter(String?)
+        /// Es ließ sich nicht feststellen, was dort liegt — mit dem Grund im
+        /// Klartext. Der Wächter sperrt dann (E76): Ein Lesefehlschlag ist kein
+        /// „da liegt nichts“ (N55-01).
+        case unklar(String)
+    }
+
+    /// Was der Kopf einer Datei hergibt.
+    enum Kopfbefund {
+        /// An der Stelle liegt nichts (ENOENT) — wie `Bestand.keine`.
+        case nichts
+        /// Die ersten Byte; `ganz`, wenn die Datei damit zu Ende war.
+        case kopf(Data, ganz: Bool)
+        /// Öffnen, Messen oder Lesen schlug fehl, oder es ist keine reguläre Datei.
+        case unklar(String)
+    }
+
+    /// Die ersten Byte einer Datei, am geöffneten Deskriptor gemessen wie in
+    /// `gebundenLesen` — und mit derselben Unterscheidung: „liegt nicht“ ist
+    /// ENOENT, alles andere bleibt ungewiss.
+    static func kopf(_ url: URL, byte: Int = formkopf) -> Kopfbefund {
+        let deskriptor = Darwin.open(url.path, O_RDONLY | O_NONBLOCK | O_CLOEXEC)
+        guard deskriptor >= 0 else {
+            if errno == ENOENT { return .nichts }
+            return .unklar(String(cString: strerror(errno)))
+        }
+        let griff = FileHandle(fileDescriptor: deskriptor, closeOnDealloc: false)
+        defer { try? griff.close() }
+        var status = stat()
+        guard fstat(deskriptor, &status) == 0 else { return .unklar("die Art ließ sich nicht bestimmen") }
+        guard (status.st_mode & S_IFMT) == S_IFREG else { return .unklar("keine reguläre Datei") }
+        let gelesen: Data
+        do { gelesen = try griff.read(upToCount: byte) ?? Data() }
+        catch { return .unklar(error.localizedDescription) }
+        return .kopf(gelesen, ganz: gelesen.count < byte)
+    }
+
+    /// Was auf der Platte liegt — nach derselben Regel, nach der der Leser es
+    /// öffnen würde (E75). Der Kopf ist die Abkürzung, nicht die Regel: Er
+    /// entscheidet den Regelfall (eigener Vorsatz, oder gar kein Objektanfang),
+    /// sonst deutet dieselbe Regel wie beim Lesen die ganze Datei. Ein zweites
+    /// Lesen kostet weniger als ein zweiter Erkenner (N55-01, nachgemessen:
+    /// 0,3 ms bei 1 MB).
+    static func formAufDerPlatte(_ url: URL) -> Form {
+        switch kopf(url) {
+        case .nichts:
+            return .nichts
+        case .unklar(let grund):
+            return .unklar("„\(url.lastPathComponent)“ ließ sich nicht einsehen (\(grund))")
+        case .kopf(let kopf, let ganz):
+            if let ausDemKopf = ausDemKopf(kopf) { return ausDemKopf }
+            if ganz { return gedeutet(kopf) }
+            switch gebundenLesen(url, hoechstens: formgrenze) {
+            case .keine: return .nichts
+            case .daten(let roh): return gedeutet(roh)
+            case .zuGross(let groesse):
+                return .unklar("„\(url.lastPathComponent)“ ist mit \(groesse / 1024 / 1024) MB größer, "
+                               + "als diese App liest")
+            case .unlesbar(let fehler):
+                return .unklar("„\(url.lastPathComponent)“ ließ sich nicht einsehen "
+                               + "(\(fehler.localizedDescription))")
+            }
+        }
+    }
+
+    /// Was der Kopf **allein** belegt — sonst `nil`, dann entscheidet die Regel
+    /// des Lesers an der ganzen Datei. „Allein belegt“ heißt: der eigene
+    /// Vorsatz **samt** Kennung, oder ein Anfang, der gar kein Objekt ist. Ein
+    /// Behälter, dessen Kennung nicht im Kopf steht, ist damit nicht beantwortet
+    /// — ihn deshalb zu sperren, hieße die Abkürzung zur Regel machen und
+    /// spräche die Sitzung mit dem richtigen Schlüssel schuldig (nachgemessen).
+    private static func ausDemKopf(_ kopf: Data) -> Form? {
+        guard Tresor.kopfIstBehaelter(kopf) else {
+            return Tresor.kopfKoennteBehaelter(kopf) ? nil : .klartext
+        }
+        return Tresor.kennungImKopf(kopf).map(Form.behaelter)
+    }
+
+    /// Die Regel des Lesers, auf vollständige Daten angewandt — die Kennung
+    /// kommt aus dem gedeuteten Kopf, nicht aus einer Zeichensuche. Bleibt sie
+    /// auch dann unbestimmt, wird nicht geschrieben.
+    private static func gedeutet(_ roh: Data) -> Form {
+        guard Tresor.istBehaelter(roh) else { return .klartext }
+        return .behaelter((try? Tresor.kopfLesen(roh))?.kennungHex)
+    }
+
+    /// `nil`, wenn geschrieben werden darf — sonst die Sperre mit ihrem Grund
+    /// (E72, E75, E76).
+    static func formwaechter(_ ziel: URL, tresor: Tresor?) -> Formsperre? {
+        let name = ziel.lastPathComponent
+        switch formAufDerPlatte(ziel) {
+        case .nichts, .klartext:
+            return nil
+        case .unklar(let grund):
+            return Formsperre(anlass: .ungewiss, grund: grund + " — geschrieben wird nichts, solange "
+                              + "nicht feststeht, ob dort Schutz liegt")
+        case .behaelter(let kennung):
+            guard let tresor else {
+                return Formsperre(anlass: .fremderSchutz,
+                                  grund: "„\(name)“ liegt verschlüsselt, und diese Sitzung hat keinen "
+                                         + "Schlüssel dafür — geschrieben wird nichts")
+            }
+            guard let kennung, kennung == tresor.kennungHex else {
+                return Formsperre(anlass: .fremderSchutz,
+                                  grund: "„\(name)“ liegt unter einem anderen Schlüssel als dem der "
+                                         + "Sitzung — geschrieben wird nichts")
+            }
+            return nil
+        }
+    }
+
+    /// Verschieben statt löschen; `nil`, wenn danach noch etwas im Weg liegt.
+    private func beiseitelegen(_ quelle: URL, als name: String) -> String? {
+        let verwaltung = FileManager.default
+        guard verwaltung.fileExists(atPath: quelle.path) else { return name }
+        let ziel = ordner.appendingPathComponent(name, isDirectory: false)
+        try? verwaltung.removeItem(at: ziel)
+        try? verwaltung.moveItem(at: quelle, to: ziel)
+        return verwaltung.fileExists(atPath: quelle.path) ? nil : name
+    }
+
+    /// `nil`, wenn keine liegt, sie zu groß ist oder sich nicht lesen lässt.
+    func vorigeFassungLesen(hoechstens grenze: Int) -> Data? {
+        sperre.withLock {
+            if case .daten(let daten) = bestand(vorherigeFassung, hoechstens: grenze) { daten } else { nil }
+        }
+    }
+
+    /// Klartext aus dem, was auf der Platte liegt: Ein Behälter wird mit
+    /// `tresor` geöffnet, Klartext geht durch. Ohne Tresor fragt der
+    /// Aufrufer nach der Freigabe, nicht diese Klasse.
+    func entsiegelt(_ roh: Data, tresor: Tresor?) throws -> Data {
+        guard Tresor.istBehaelter(roh) else { return roh }
+        guard let tresor else {
+            throw Tresorfehler(art: .abgebrochen,
+                               text: "Die Ablage ist verschlüsselt und noch nicht entsperrt.")
+        }
+        return try tresor.oeffnen(roh)
+    }
+
+    /// Zeitpunkt und Byte der Ablage auf der Platte — `nil`, wenn keine liegt.
+    func stand() -> (zeitpunkt: Date?, groesse: Int?) {
+        sperre.withLock {
+            let werte = try? Ablage.frisch(datei).resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey])
+            return (werte?.contentModificationDate, werte?.fileSize)
+        }
+    }
+
+    /// Ein `URL`-Wert merkt sich seine Ressourcenwerte: Wer nach dem Schreiben
+    /// über denselben Wert die Größe fragt, bekommt die alte (nachgemessen).
+    /// `datei` und `vorherigeFassung` leben so lange wie die Ablage — darum
+    /// vor jeder Abfrage der Vorrat weg.
+    private static func frisch(_ url: URL) -> URL {
+        var frisch = url
+        frisch.removeAllCachedResourceValues()
+        return frisch
+    }
+
+    /// `true`, wenn danach keine `planung.json` mehr im Weg liegt — erst dann
+    /// darf wieder geschrieben werden.
+    @discardableResult
+    func beschaedigtenStandBeiseitelegen(stempel: String) -> Bool {
+        guard gesperrt() == nil else { return false }
+        // Der Zeitanteil trennt zwei Störungen desselben Tages.
+        return sperre.withLock { beiseitelegen(datei, als: "planung-beschaedigt-\(stempel).json") != nil }
+    }
+
+    // ── Die Lesezeichen als Behälter ──────────────────────────────────────
+    // Roh gelesen und geschrieben; versiegelt und geöffnet wird im
+    // Ordnerzugriff, der den Datenschlüssel der Sitzung bekommt.
+
+    func lesezeichenLesen(hoechstens grenze: Int) -> Bestand {
+        sperre.withLock { bestand(lesezeichen, hoechstens: grenze) }
+    }
+
+    func lesezeichenSchreiben(_ behaelter: Data) throws {
+        if let grund = gesperrt() { throw Uebergangssperre(grund: grund) }
+        try sperre.withLock {
+            try FileManager.default.createDirectory(at: ordner, withIntermediateDirectories: true)
+            try behaelter.write(to: lesezeichen, options: [.atomic])
+        }
+    }
+
+    /// Beim Aufheben der Verschlüsselung: Der Behälter trägt nur Chiffrat,
+    /// er darf weg.
+    @discardableResult
+    func lesezeichenEntfernen() -> String? {
+        if let grund = gesperrt() { return grund }
+        sperre.withLock { try? FileManager.default.removeItem(at: lesezeichen) }
+        return nil
+    }
+
+    /// Der Name der Rettungskopie — `fremd` für einen Behälter unter einem
+    /// anderen Schlüssel, der nicht beschädigt ist; `nil`, wenn der Behälter
+    /// noch im Weg liegt.
+    func lesezeichenBeiseitelegen(stempel: String, fremd: Bool) -> String? {
+        guard gesperrt() == nil else { return nil }
+        return sperre.withLock {
+            beiseitelegen(lesezeichen, als: "lesezeichen-\(fremd ? "fremd" : "beschaedigt")-\(stempel).json")
+        }
+    }
+
+    // ── Die Sitzpläne ─────────────────────────────────────────────────────
+    // Roh gelesen und geschrieben; Klartext oder Behälter entscheidet der
+    // Sitzplandienst, der den Datenschlüssel der Sitzung bekommt.
+
+    func sitzplaeneLesen(hoechstens grenze: Int) -> Bestand {
+        sperre.withLock { bestand(sitzplaene, hoechstens: grenze) }
+    }
+
+    func sitzplaeneSchreiben(_ daten: Data) throws {
+        if let grund = gesperrt() { throw Uebergangssperre(grund: grund) }
+        try sperre.withLock {
+            try FileManager.default.createDirectory(at: ordner, withIntermediateDirectories: true)
+            try daten.write(to: sitzplaene, options: [.atomic])
+        }
+    }
+
+    /// Ohne Sitzpläne liegt keine Datei — beim letzten Entfernen und bei der
+    /// Rücknahme eines Behälters.
+    @discardableResult
+    func sitzplaeneEntfernen() -> String? {
+        if let grund = gesperrt() { return grund }
+        sperre.withLock { try? FileManager.default.removeItem(at: sitzplaene) }
+        return nil
+    }
+
+    /// Der Name der Rettungskopie — `fremd` für einen Behälter unter einem
+    /// anderen Schlüssel oder neben einer Klartext-Planung; `nil`, wenn die
+    /// Datei noch im Weg liegt.
+    func sitzplaeneBeiseitelegen(stempel: String, fremd: Bool) -> String? {
+        sitzplaeneBeiseitelegen(als: "sitzplaene-\(fremd ? "fremd" : "beschaedigt")-\(stempel).json")
+    }
+
+    /// Beiseitelegen unter eigenem Namen — Klartext neben der versiegelten
+    /// Planung, den der Nutzer nicht übernehmen will (E43).
+    func sitzplaeneBeiseitelegen(als name: String) -> String? {
+        guard gesperrt() == nil else { return nil }
+        return sperre.withLock { beiseitelegen(sitzplaene, als: name) }
+    }
+
+    /// Eine Kopie der Sitzplandatei, wie sie liegt — bevor eine
+    /// verlustbehaftete Bereinigung beim nächsten Schreiben darüber geht
+    /// (B14). `nil`, wenn keine liegt oder das Kopieren scheitert.
+    func sitzplaeneKopieren(als name: String) -> String? {
+        guard gesperrt() == nil else { return nil }
+        return sperre.withLock {
+            let verwaltung = FileManager.default
+            guard verwaltung.fileExists(atPath: sitzplaene.path) else { return nil }
+            let ziel = ordner.appendingPathComponent(name, isDirectory: false)
+            try? verwaltung.removeItem(at: ziel)
+            do {
+                try verwaltung.copyItem(at: sitzplaene, to: ziel)
+                return name
+            } catch {
+                return nil
+            }
+        }
+    }
+
+    /// Verwaiste Pläne in eine eigene Rettungskopie im Register — Klartext
+    /// oder Behälter, wie der Dienst sie reicht (E41).
+    func sitzplaeneRettungSchreiben(_ daten: Data, als name: String) throws -> String {
+        if let grund = gesperrt() { throw Uebergangssperre(grund: grund) }
+        return try sperre.withLock {
+            try FileManager.default.createDirectory(at: ordner, withIntermediateDirectories: true)
+            try daten.write(to: ordner.appendingPathComponent(name, isDirectory: false), options: [.atomic])
+            return name
+        }
+    }
+
+    // ── Altbestände: überschreiben, nie löschen ───────────────────────────
+    // Löschen ließe den Klartext im Papierkorb liegen.
+
+    /// Was beim Versiegeln oder Entsiegeln der Nebendateien herauskam. Was
+    /// übrig blieb, wird benannt — die Meldung soll nicht mehr versprechen, als
+    /// auf der Platte liegt.
+    struct Nebendateienbilanz: Sendable, Equatable {
+        struct Uebrig: Sendable, Equatable {
+            let name: String
+            let grund: String
+        }
+        var umgestellt: [String] = []
+        var uebrig: [Uebrig] = []
+        var vollstaendig: Bool { uebrig.isEmpty }
+        var beschreibung: String {
+            uebrig.map { "\($0.name) (\($0.grund))" }.joined(separator: ", ")
+        }
+    }
+
+    /// Das Register dessen, was neben der Ablage versiegelt liegt und keinen
+    /// eigenen Schreiber hat: die Vorgängerfassung, ihre gestempelten Kopien,
+    /// die Rettungskopien der Planung, der Lesezeichen und der Sitzpläne —
+    /// darunter, was ein nicht vollendbarer Übergang beiseitelegte
+    /// (`…-uebergang-<Stempel>.json`) und was er an Vorgängern hinterließ
+    /// (`…-vorgaenger-<Stempel>.json`, E60). Jeder Wechsel der Hülle geht über
+    /// diese Liste — nichts daneben wird von Hand nachgezogen.
+    /// Ein Ordner, der sich nicht lesen lässt, ist ein Fehler, keine leere Liste.
+    func nebendateien() throws -> [URL] {
+        let namen = try FileManager.default.contentsOfDirectory(atPath: ordner.path)
+        return namen.filter {
+            $0.hasSuffix(".json") && ($0.hasPrefix("planung-vorher") || $0.hasPrefix("planung-beschaedigt-")
+                                      || $0.hasPrefix("planung-uebergang-") || $0.hasPrefix("planung-vorgaenger-")
+                                      || $0.hasPrefix("lesezeichen-") || $0.hasPrefix("sitzplaene-"))
+        }.sorted().map { ordner.appendingPathComponent($0, isDirectory: false) }
+    }
+
+    /// Eine Nebendatei, gebunden gelesen wie die Ablage selbst — oder der
+    /// Grund, warum nicht: zu groß oder keine reguläre Datei heißt übrig, nie gelesen.
+    private func nebendatei(_ url: URL, hoechstens grenze: Int) throws -> Data {
+        switch bestand(url, hoechstens: grenze) {
+        case .daten(let roh): return roh
+        case .keine: throw Lesefehler(text: "nicht mehr da")
+        case .zuGross(let groesse): throw Lesefehler(text: "ungewöhnlich groß (\(groesse / 1024 / 1024) MB), nicht gelesen")
+        case .unlesbar(let fehler): throw fehler
+        }
+    }
+
+    /// Versiegelt jede Nebendatei unter `tresor` an Ort und Stelle — das
+    /// Nachholen beim Start: Klartext neben einer versiegelten Ablage oder ein
+    /// Behälter unter einer älteren Hülle. Mit `nurAbweichende` bleibt liegen,
+    /// was schon Schlüssel und Hülle der Sitzung trägt — und nur das: Klartext
+    /// wird versiegelt, ein Behälter unter fremdem Schlüssel oder älterer Hülle
+    /// ebenso angefasst und, wenn er sich nicht öffnen lässt, als übrig gezählt.
+    /// (Der frühere Name `nurKlartext` versprach mehr Ruhe, als der Schalter
+    /// hält — N52-03.) Kein Fehler wird verschluckt: Jede Datei, die nicht
+    /// umgestellt wurde, steht in der Bilanz. Die Übergänge selbst schreiben
+    /// nicht hier — sie nehmen die Nebendateien in ihre Generation
+    /// (`generationErzeugen`); und solange einer offen ist, wird hier nichts
+    /// angefasst (E62).
+    @discardableResult
+    func altbestaendeVersiegeln(mit tresor: Tresor, nurAbweichende: Bool = false,
+                                hoechstens grenze: Int) -> Nebendateienbilanz {
+        if let grund = gesperrt() {
+            var gesperrteBilanz = Nebendateienbilanz()
+            gesperrteBilanz.uebrig.append(.init(name: ordner.lastPathComponent, grund: grund))
+            return gesperrteBilanz
+        }
+        return sperre.withLock {
+            var bilanz = Nebendateienbilanz()
+            let dateien: [URL]
+            do { dateien = try nebendateien() } catch {
+                bilanz.uebrig.append(.init(name: ordner.lastPathComponent,
+                                           grund: "Ordner nicht lesbar: " + error.localizedDescription))
+                return bilanz
+            }
+            for url in dateien {
+                let name = url.lastPathComponent
+                do {
+                    let roh = try nebendatei(url, hoechstens: grenze)
+                    if nurAbweichende, Tresor.istBehaelter(roh), let kopf = try? Tresor.kopfLesen(roh),
+                       tresor.passt(zu: kopf), tresor.huelleGleich(kopf, ziel: .ablage) { continue }
+                    guard let neu = try umgestellt(roh, name: name, neu: tresor, alter: nil) else { continue }
+                    try neu.write(to: url, options: [.atomic])
+                    bilanz.umgestellt.append(name)
+                } catch {
+                    bilanz.uebrig.append(.init(name: name, grund: error.localizedDescription))
+                }
+            }
+            return bilanz
+        }
+    }
+
+    // ── Die Generation eines Übergangs (E47) ──────────────────────────────
+    // Nichts wird hier geschrieben: Die Inhalte gehen als Zwillinge an den
+    // Übergangsdienst, der sie neben die Originale legt und nach der Marke
+    // einsetzt.
+
+    /// Die Ablage unter `tresor` (Klartext bei `nil`), wie `schreiben` sie
+    /// hinlegte — als Data, ohne zu schreiben. Über `grenze`: `Schreibfehler`.
+    func planungErzeugen(_ daten: Data, tresor: Tresor?, hoechstens grenze: Int) throws -> Data {
+        let auszuschreiben = try tresor.map { try $0.versiegeln(daten, inhalt: .planung, ziel: .ablage) } ?? daten
+        guard auszuschreiben.count <= grenze else {
+            throw Schreibfehler(groesse: auszuschreiben.count, grenze: grenze)
+        }
+        return auszuschreiben
+    }
+
+    /// Eine Datei unter dem neuen Schutz: Ein Behälter wird mit `neu` oder
+    /// `alter` geöffnet und unter `neu` neu versiegelt, Klartext versiegelt;
+    /// beim Aufheben (`neu == nil`) kommt ein Behälter in den Klartext, und
+    /// Klartext bleibt, wie er ist (`nil`: nichts zu tun).
+    private func umgestellt(_ roh: Data, name: String, neu: Tresor?, alter: Tresor?) throws -> Data? {
+        if Tresor.istBehaelter(roh) {
+            let kopf = try Tresor.kopfLesen(roh)
+            let oeffner: Tresor
+            if let neu, neu.passt(zu: kopf) {
+                oeffner = neu
+            } else if let alter, alter.passt(zu: kopf) {
+                oeffner = alter
+            } else {
+                throw Tresorfehler(art: .falscherSchluessel, text: "unter einem anderen Schlüssel versiegelt")
+            }
+            let klartext = try oeffner.oeffnen(kopf: kopf)
+            guard let neu else { return klartext }
+            return try neu.versiegeln(klartext, inhalt: Tresor.Inhalt(rawValue: kopf.inhalt) ?? .rohdaten, ziel: .ablage)
+        }
+        guard let neu else { return nil }
+        let inhalt: Tresor.Inhalt = name == "planung-vorher.json" ? .planung : .rohdaten
+        return try neu.versiegeln(roh, inhalt: inhalt, ziel: .ablage)
+    }
+
+    /// Die Nebendateien des Registers und die Vorgängerfassung für die
+    /// Generation eines Übergangs: je Name der Inhalt unter `neu` (Klartext
+    /// bei `nil`). Die Vorgängerfassung entsteht aus der Ablage selbst — so,
+    /// wie `schreiben` sie beim nächsten Schreiben fortschriebe —, sofern eine
+    /// `planung.json` liegt. Was nicht umzustellen ist (fremder Schlüssel,
+    /// unlesbar, zu groß), bleibt außerhalb der Generation und steht in der
+    /// Bilanz; Klartext beim Aufheben braucht nichts.
+    func generationErzeugen(neu: Tresor?, alter: Tresor?, hoechstens grenze: Int)
+        -> (dateien: [String: Data], bilanz: Nebendateienbilanz) {
+        sperre.withLock {
+            var dateien: [String: Data] = [:]
+            var bilanz = Nebendateienbilanz()
+            var quellen: [(name: String, url: URL)]
+            do {
+                quellen = try nebendateien().map { ($0.lastPathComponent, $0) }
+            } catch {
+                bilanz.uebrig.append(.init(name: ordner.lastPathComponent,
+                                           grund: "Ordner nicht lesbar: " + error.localizedDescription))
+                return ([:], bilanz)
+            }
+            let vorher = vorherigeFassung.lastPathComponent
+            if FileManager.default.fileExists(atPath: datei.path) {
+                quellen.removeAll { $0.name == vorher }
+                quellen.append((vorher, datei))
+            }
+            for (name, url) in quellen {
+                do {
+                    let roh = try nebendatei(url, hoechstens: grenze)
+                    guard let neuerInhalt = try umgestellt(roh, name: name, neu: neu, alter: alter) else { continue }
+                    dateien[name] = neuerInhalt
+                    bilanz.umgestellt.append(name)
+                } catch {
+                    bilanz.uebrig.append(.init(name: name, grund: error.localizedDescription))
+                }
+            }
+            return (dateien, bilanz)
+        }
+    }
+}

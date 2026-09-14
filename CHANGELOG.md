@@ -16,6 +16,39 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.5.6 (56)] - 2026-09-14
+
+Behebungen nach der siebten externen Code-Review an 1.5.5 (55). Die vier
+Befunde der sechsten Review sind dort geschlossen; neu ist ein Befund am
+Formwächter, der mit 1.5.5 hinzugekommen war: Er erkannte nicht jede
+verschlüsselte Datei als solche, und was er nicht einsehen konnte, hielt er
+für gar nichts.
+
+### Fixed
+
+- **Der Formwächter erkannte nicht jede verschlüsselte Datei (N55-01):** Er
+  hat einen Behälter allein an seinen ersten Byte erkannt, der Leser der App
+  dagegen am Feld `typ` in der Datei. Eine verschlüsselte Planung, die ein
+  fremdes Werkzeug umformatiert hat — etwa nach einer Wiederherstellung —,
+  galt dem einen als Schutz und dem anderen als Klartext; der Wächter hätte
+  sie ersetzen lassen. Jetzt deutet er nach derselben Regel wie der Leser: Der
+  Kopf entscheidet den Regelfall, sonst wird die ganze Datei gelesen und
+  gedeutet.
+- **Was sich nicht einsehen ließ, galt als gar nichts (N55-01):** Scheiterte
+  das Öffnen, Messen oder Lesen einer Datei, nahm der Wächter an, dort liege
+  nichts — und ließ schreiben. Eine verschlüsselte Planung, die sich nicht
+  mehr lesen ließ, wurde so ersetzt, ohne Rettungskopie. Jetzt sperrt jeder
+  Fehlschlag; die Meldung nennt die Datei und den Weg hinaus. Die
+  Autosicherung ruht dabei, überschrieben wird nichts.
+
+### Changed
+
+- Die Deutung einer liegenden Datei steht an einer Stelle. Wächter und Leser
+  teilen dieselbe Vorprüfung, und eine Prüfung hält beide über eine Tabelle
+  von Fällen gegeneinander: Was der Leser für einen Behälter hält, darf der
+  Wächter nie für Klartext halten, und ein Lesefehlschlag nie für
+  „darf ersetzt werden“.
+
 ## [1.5.5 (55)] - 2026-09-13
 
 Behebungen nach der sechsten externen Code-Review an 1.5.4 (54). Ein

@@ -49,10 +49,17 @@ der App und ein ETag und lädt oder installiert nie etwas von selbst.
 
 ## Bauen, prüfen, weitergeben
 
-Die macOS-App (`macOS-App/v55/`) ist in Swift und SwiftUI geschrieben, für
+Die macOS-App (`macOS-App/v56/`) ist in Swift und SwiftUI geschrieben, für
 macOS 26 auf Apple Silicon und ohne fremde Bibliothek. `./bauen.sh` baut sie
 (Xcode wird gebraucht; `--dmg` schnürt zusätzlich ein Abbild),
-`PLANUNGSORDNER=$(mktemp -d) swift test` prüft sie. Weitergegeben wird ein mit
+`PLANUNGSORDNER=$(mktemp -d) swift test` prüft sie. Dazu kommen Prüfstände am
+gebauten Paket, darunter der erste Start in einem Ablageordner, den es noch
+nicht gibt — einmal über `PLANUNGSORDNER`, einmal am voreingestellten Ort in
+einem Probepaket. **Nicht** abgedeckt ist damit die Erstinstallation des
+ausgelieferten, beglaubigten Abbilds in einem frischen Benutzerkonto: Das
+Probepaket trägt eine eigene Kennung, ist ad hoc signiert und hat kein
+Umzugsmanifest, und Gatekeeper und Quarantäne bleiben außen vor. Diese Probe
+bleibt Handarbeit. Weitergegeben wird ein mit
 Developer ID signiertes und von Apple beglaubigtes Abbild (`./beglaubigen.sh`)
 unter **Releases**. Dort liegt auch die Ansicht als Datei mit ihrer
 SHA-256-Prüfsumme, damit sich die Seite im Netz prüfen lässt:
@@ -64,13 +71,13 @@ sich je Fassung ändert, steht in [`CHANGELOG.md`](CHANGELOG.md).
 **Lizenzen.** Freie Software: die macOS-App und alles Übrige unter der GNU
 General Public License, Version 3 oder neuer ([`LICENSE`](LICENSE)), die
 Ansicht unter der GNU Affero General Public License, Version 3 oder neuer
-([`Web-App/v55/LICENSE.txt`](Web-App/v55/LICENSE.txt)). Die Zuordnung je Datei
+([`Web-App/v56/LICENSE.txt`](Web-App/v56/LICENSE.txt)). Die Zuordnung je Datei
 steht in [`REUSE.toml`](REUSE.toml), die Lizenztexte liegen in
 [`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code
 (Opus 5 & Fable 5/5.1).
 
-**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v55/`,
-`Web-App/v55/`; ältere Fassungen bleiben daneben stehen); die Nummer im
+**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v56/`,
+`Web-App/v56/`; ältere Fassungen bleiben daneben stehen); die Nummer im
 Ordnernamen ist der Build der Version. Was sich je Fassung ändert, steht in
 [`CHANGELOG.md`](CHANGELOG.md). Oberfläche und
 Dokumentation sind deutsch.
