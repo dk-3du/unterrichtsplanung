@@ -16,6 +16,45 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.6.0 (58)] - 2026-09-14
+
+Widerrufen und Wiederholen — für die Planung und für die Sitzpläne. Dazu die
+Behebungen nach der neunten externen Code-Review an 1.5.7 (57).
+
+### Added
+
+- **„Widerrufen“ und „Wiederholen“ im Menü „Bearbeiten“ (⌘Z, ⇧⌘Z).** Bisher
+  standen die beiden Einträge blass da: Die App hat nie eine Rücknahme
+  angemeldet. Jetzt lässt sich jeder Handgriff zurücknehmen — Vorhaben
+  verschieben, einsetzen, löschen, kennzeichnen, Kurse und Fächer ändern,
+  Farben wählen, Ferien und Sperrzeiten pflegen. Der Eintrag nennt, was er
+  zurücknimmt: „Widerrufen: Vorhaben entfernen“. Der Verlauf reicht fünfzig
+  Schritte zurück und gilt für die Sitzung.
+- **Auch im Sitzplan.** Das Blatt führt seinen eigenen Verlauf: Umbenennen,
+  Hinzufügen und Entfernen eines Tisches je ein Schritt, ein Zug mit der Maus
+  ebenfalls einer — und wer die Pfeiltasten hält, nimmt den ganzen Weg auf
+  einmal zurück. Solange das Blatt steht, gehört ⌘Z ihm; ein Textfeld mit
+  Schreibmarke behält seine eigene Rücknahme.
+- **Ein entfernter Sitzplan kommt zurück.** Wird ein Kurs samt Sitzplan
+  entfernt, holt „Widerrufen“ beides zurück; ebenso nach „Sitzplan entfernen“.
+  Ist die Ablage der Sitzpläne gerade nicht zu haben, wird der Schritt gar
+  nicht erst genommen und die App sagt, warum — ein halbes Zurück gibt es
+  nicht.
+
+### Fixed
+
+- **Erkennen ist nicht Erlauben (N57-01):** Der Schutz vor dem Überschreiben
+  gab eine verschlüsselte Datei schon dann zum Ersetzen frei, wenn ihr Anfang
+  die Kennung der Sitzung nannte — auch dann, wenn die App sie gar nicht
+  öffnen kann, etwa weil sie aus einer neueren Fassung stammt oder
+  abgeschnitten ist. Jetzt gibt allein die Regel des Lesers frei. Und die
+  Meldung sagt, was wirklich los ist („stammt aus einer neueren Fassung“)
+  statt „liegt unter einem anderen Schlüssel“.
+- **Veraltete Rückmeldungen der Autosicherung (N57-02):** Geschrieben wurde
+  schon immer in fester Reihenfolge; gemeldet wurde, wer zuletzt fertig war.
+  Ein alter Erfolg konnte damit einen frischen Fehlschlag löschen. Jetzt trägt
+  jede Rückmeldung ihre Nummer, und ältere gelten nicht mehr.
+
 ## [1.5.7 (57)] - 2026-09-14
 
 Behebungen nach der achten externen Code-Review an 1.5.6 (56). Der Schutz vor
