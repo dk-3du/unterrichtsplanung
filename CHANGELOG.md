@@ -16,6 +16,34 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.5.7 (57)] - 2026-09-14
+
+Behebungen nach der achten externen Code-Review an 1.5.6 (56). Der Schutz vor
+dem Überschreiben erkennt jetzt in jedem Fall denselben Schlüssel wie der
+Leser, und die Autosicherung unterscheidet ihre Fassungen am Inhalt statt am
+Zeitstempel.
+
+### Fixed
+
+- **Der Schutz konnte den falschen Schlüssel ablesen (N56-01):** Er hat die
+  Schlüsselkennung im Kopf der Datei gesucht, statt sie an ihrer Stelle zu
+  lesen. Stand in der Datei ein eingebettetes Objekt mit einer zweiten
+  Kennung — etwa nachdem ein fremdes Werkzeug sie angefasst hat —, nahm er
+  diese; der Leser der App nimmt dagegen immer die oberste. Damit hätte eine
+  Sitzung mit dem falschen Schlüssel schreiben dürfen, während die mit dem
+  richtigen abgewiesen wurde. Jetzt liest der schnelle Weg den Anfang der
+  Datei Feld für Feld: Nur wenn er genau so beginnt, wie diese App ihn
+  schreibt, gilt die Kennung — sonst wird die ganze Datei gedeutet wie beim
+  Lesen.
+- **Zwei Änderungen in derselben Millisekunde (N56-02):** Die Autosicherung
+  hat am Zeitstempel der Planung erkannt, ob der Stand schon auf der Platte
+  liegt. Der Stempel sagt aber, *wann* zuletzt geändert wurde, nicht *was*:
+  Zwei Änderungen unmittelbar nacheinander tragen denselben. Die zweite galt
+  dann als längst gesichert und wurde stillschweigend übergangen — auch die
+  Nachfrage beim Beenden hätte sie nicht bemerkt. Jetzt vergleicht die
+  Sicherung den Inhalt selbst, und die Sitzung zählt ihre Änderungen mit;
+  der Zeitstempel bleibt, was er ist: die Angabe, wann zuletzt geändert wurde.
+
 ## [1.5.6 (56)] - 2026-09-14
 
 Behebungen nach der siebten externen Code-Review an 1.5.5 (55). Die vier
