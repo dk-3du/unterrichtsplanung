@@ -16,6 +16,54 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.7.1 (60)] - 2026-09-15
+
+Behebungen nach der zehnten externen Code-Review an 1.6.0 (58). Der Schutz vor
+dem Überschreiben erkennt einen verschlüsselten Behälter jetzt nach derselben
+Regel wie die Ansicht fürs iPad, das Widerrufen legt Inhalt zurück, aber keine
+veraltete Autorität, und ein wiederholtes Löschen nimmt den Sitzplan mit, der
+dann da ist.
+
+### Fixed
+
+- **Eine Deutungsregel für alle (N57-01, Rest):** Ob eine Datei ein
+  verschlüsselter Behälter ist, entschied die App an Byte — am Anfang, in einem
+  Fenster von 64 Byte, an einer Zeichenfolge irgendwo in der Datei. Ein
+  umformatierter und abgeschnittener Behälter fiel damit durch und galt als
+  Klartext, der ersetzt werden darf; ein unversehrter Behälter mit
+  Byte-Reihenfolgemarke, Ausweichschreibung im Typnamen oder mehr Leerraum
+  davor ebenso, obwohl die App ihn öffnete. Jetzt gilt an allen siebzehn
+  Stellen die Regel, die die Ansicht seit je hat: deuten, dann das Feld `typ`
+  lesen. Und was sich nicht deuten lässt, ist kein Klartext: Der Schutz sperrt
+  dann und sagt es („lässt sich nicht deuten — weder als Planung noch als
+  Behälter“); nur eine leere Datei darf beschrieben werden. Dasselbe gilt für
+  die Sitzplandatei und die Statusdatei der Ansicht.
+- **Widerrufen legt Inhalt zurück, keine Autorität (N58-01):** Haken und
+  Kommentar eines Vorhabens tragen einen Zeitstempel, an dem sich der Stand
+  vom iPad misst. Ein Widerrufen setzte die ganze Momentaufnahme zurück, mit
+  dem alten Stempel — ein liegengebliebener iPad-Stand, älter als das
+  Widerrufen, gewann dann gegen die jüngere Entscheidung und wurde
+  geschrieben. Jetzt trägt jedes Vorhaben, dessen Haken oder Kommentar sich
+  durch Widerrufen oder Wiederholen ändert, einen frischen Stempel, nie einen
+  älteren; alles andere behält seinen — auch ein Vorhaben, das ein Widerrufen
+  nur zurückholt.
+- **Wiederholtes Löschen nimmt den Sitzplan, der da ist (N58-02):** Wer einen
+  Kurs samt Sitzplan löschte, das Löschen widerrief, den Sitzplan neu
+  anlegte und dann Wiederholen und Widerrufen drückte, bekam den alten
+  Sitzplan zurück; der neue war fort. Der Löschschritt hatte den Sitzplan beim
+  Löschen festgehalten. Jetzt greift das Wiederholen den Sitzplan, der dann
+  liegt, und das Widerrufen bringt genau den zurück — beim Kurs wie beim
+  eigenständigen „Sitzplan löschen“. Und ein Kurs ohne Sitzplan trägt den
+  Schritt genauso: Ein nach dem Widerrufen angelegter Sitzplan reist beim
+  Wiederholen mit, statt verwaist liegenzubleiben.
+
+### Changed
+
+- **Benannt, nicht gebaut:** Die Rettung „Fassung davor“ (`planung-vorher.json`)
+  hält genau eine Sicherung; ⌘Z, während das Vorhaben-Blatt offen steht,
+  ändert die Planung hinter dem Blatt. Beides steht in der LIESMICH; das
+  Zweite wird in 1.7.2 gebaut.
+
 ## [1.7.0 (59)] - 2026-09-15
 
 Die Anpassung an Xcode 27 und Swift 6.4. Keine neue Funktion, keine
