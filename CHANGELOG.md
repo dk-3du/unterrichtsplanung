@@ -16,6 +16,31 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.7.0 (59)] - 2026-09-15
+
+Die Anpassung an Xcode 27 und Swift 6.4. Keine neue Funktion, keine
+Behebung an der Sache — dieselbe App, mit der neuen Werkzeugkette gebaut.
+
+### Changed
+
+- **Gebaut mit Xcode 27.0 (Swift 6.4, SDK macOS 27).** Programm und Prüfungen
+  übersetzen ohne eine einzige Warnung; die vierzehn Stellen, die die neue
+  Werkzeugkette an 1.6.0 (58) anmerkte, sind bereinigt (Hauptakteur-Isolation
+  an örtlichen Funktionen eines Prüfstands, eine veraltete Überladung von
+  `withValue`, zwei Prüfzeilen). Das **Mindestsystem bleibt macOS 26.0**: gebaut
+  gegen das SDK 27, lauffähig ab 26 — und das Paket benennt beides getrennt
+  (`-platform_version macos 26.0 27.0`), weil der neue `swift build` sonst das
+  Mindestsystem als Bau-SDK eintrüge. Die Nummer hebt MINOR, weil ein Sprung
+  der Werkzeugkette einer ist.
+- **`pruefen.sh` zählt die Warnungen.** Der Prüflauf übersetzt Programm und
+  Prüfungen frisch und schreibt „Warnungen (…): 0“ in den Vermerk; jede Warnung
+  ist ein Befund, und `beglaubigen.sh` verlangt die Zählung.
+- **Eine Prüfsuite ohne Uhr.** „Entprellte Eingaben“ wartete mit `Task.sleep`
+  darauf, dass eine Aufgabe auf dem Hauptakteur drankommt — unter Swift 6.4
+  kam sie im vollen Parallellauf zufällig nicht dran, und die Prüfung kippte,
+  ohne dass etwas falsch war. Jetzt wird erzwungen, was fällig ist, und
+  geprüft, was dabei geschieht.
+
 ## [1.6.0 (58)] - 2026-09-14
 
 Widerrufen und Wiederholen — für die Planung und für die Sitzpläne. Dazu die
