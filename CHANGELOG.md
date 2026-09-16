@@ -16,6 +16,31 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.7.8 (67)] - 2026-09-16
+
+Die Runde in der VM: Der Treiber der Prüfstandsrunde gehört jetzt zur Fassung
+und packt ein Rundenpaket, mit dem dieselben 26 Läufe auf einem zweiten Mac
+ohne Xcode laufen. Am Verhalten der App ändert sich nichts.
+
+### Added
+
+- **`runde.py` — der Treiber der Prüfstandsrunde liegt im Fassungsordner und im
+  Quellenstand:** `python3 runde.py` fährt die 26 Läufe am Paket dieses Ordners
+  an einer Probe-Kopie mit eigener Kennung (das Paket selbst startet nie),
+  erzeugt die Prüfdaten selbst und legt ein Protokoll je Lauf samt Bilanz ab;
+  `pruefen.sh` prüft die Form des Treibers mit, und eine Änderung an ihm
+  entwertet den Prüfvermerk wie eine an den Bauskripten. Bisher lebte der
+  Treiber nur im Arbeitsbereich einer Sitzung.
+- **Das Rundenpaket:** `python3 runde.py --packen ZIEL` legt einen Ordner mit
+  der fertigen, ad hoc gesiegelten Probe-Kopie, den Prüfdaten, dem Skript, einer
+  Anleitung und den Prüfsummen an. Auf dem anderen Mac genügt
+  `python3 runde.py --laufen` — ohne Xcode; im Gast wird nichts signiert, nur
+  die Quarantäne des Ordners entfernt. Es gelten dieselben Läufe und
+  Erwartungen wie hier; Rechner, Touch ID und die Bedingung der Wicklung dieses
+  Macs stehen in der Bilanz, und die Erwartung an die Bedingung folgt dem
+  Gerät: ohne angelernte Finger „Anmeldepasswort“, sonst „Touch ID oder
+  Anmeldepasswort“.
+
 ## [1.7.7 (66)] - 2026-09-16
 
 Das Prüfwerk ohne Rest: Der Entsperr-Prüfstand sagt, was er sieht, jeder
