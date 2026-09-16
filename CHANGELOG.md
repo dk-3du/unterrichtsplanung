@@ -16,6 +16,35 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.7.7 (66)] - 2026-09-16
+
+Das Prüfwerk ohne Rest: Der Entsperr-Prüfstand sagt, was er sieht, jeder
+Prüfstand nennt sein Paket als erste Zeile, und die Prüfungen warten auf
+Signale statt auf die Uhr. Am Verhalten der App ändert sich nichts.
+
+### Changed
+
+- **Der Entsperr-Prüfstand misst das Verhalten, nicht einen Knopf, den er
+  nicht sehen kann:** Die Knöpfe des Freigabeblatts sind SwiftUI-Knöpfe und
+  erscheinen im Bedienungshilfen-Baum des eigenen Prozesses nur als Geometrie
+  ohne Rolle und Namen. Seit 1.4.9 suchte der Prüfstand dort einen Knopf
+  „Entsperren“ und meldete ihn dreimal je Lauf als nicht gefunden, ohne dass
+  etwas falsch war. Jetzt prüft er, was zählt: ⏎ bei leerem Feld löst nichts
+  aus, ⏎ nach dem Tippen löst aus — und sagt in einer Hinweiszeile, warum der
+  Knopf selbst nicht gelesen wird. Die Prüfstandsrunde meldet damit kein
+  „bekanntes ✗“ mehr.
+- **Die Paketzeile steht vor der Schranke:** Jeder Prüfstand nennt Kennung,
+  Fassung, Quellenstand und Werkzeugstand seines Pakets als erste Zeile — auch
+  der Lauf, den die Schranke abweist, und der erste Start ohne eigenen Ordner,
+  vor dem bisher die Schranke sprach.
+- **Die Prüfungen warten ohne Uhr:** Zwölf Wartestellen in acht Suiten warteten
+  feste Zeit oder liefen in Schleifen still aus. Jetzt erzwingen sie, was
+  fällig ist (der entprellte Sicherungsweg auf Zuruf, verschiedene Stempel über
+  die angehaltene Prüfuhr, Fortsetzungen statt Schleifen an der Naht der
+  Rückmeldungen), oder sie warten mit einer gemeinsamen Hilfe, die bei Ablauf
+  benennt, was nicht eingetreten ist. Eine Prüfung misst die Entprell-Frist
+  bewusst mit der Uhr und behält sie.
+
 ## [1.7.6 (65)] - 2026-09-16
 
 Die Behebungen nach der zwölften externen Code-Review an 1.7.5 (64): Die
