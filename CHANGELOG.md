@@ -16,7 +16,38 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
-## [1.7.2 (61)] - 2026-09-15
+## [1.7.3 (62)] - 2026-09-16
+
+Behebungen nach der elften externen Code-Review an 1.7.2 (61): Der Stand vom
+iPad und die Entscheidungen am Mac messen sich an einem Zeitstempel je
+Vorhaben — kein Widerrufen setzt ihn mehr zurück, und das Vorhaben-Blatt
+schreibt nur, was darin geändert wurde.
+
+### Fixed
+
+- **Kein Widerrufen senkt einen Statusstempel (N58-01, Rest):** Seit 1.7.1
+  trägt ein Vorhaben, dessen Haken oder Kommentar ein Widerrufen ändert,
+  einen frischen Stempel. Ein Vorhaben, das dabei gleich blieb, kam aber mit
+  dem Stempel der Momentaufnahme zurück — auch wenn es inzwischen einen
+  jüngeren trug. Wer einen Haken setzte, ihn widerrief und dann ein zweites
+  Mal widerrief (etwa eine Titeländerung davor), setzte den Stempel damit auf
+  den alten Stand zurück, und ein liegengebliebener Stand vom iPad gewann
+  wieder gegen die jüngere Entscheidung. Jetzt behält, was gleich bleibt, den
+  jüngeren seiner Stempel; als neu entschieden gilt weiterhin nur, was sich
+  ändert. Eine Eigenschaftsprüfung über zweihundert zufällige Folgen aus
+  Handlungen und Rücknahmen bezeugt: Kein Zurücklegen senkt den Stempel eines
+  Vorhabens, das bleibt.
+- **Das Vorhaben-Blatt schreibt nur, was darin geändert wurde:** „Übernehmen“
+  schrieb Haken und Kommentar aus dem Blatt immer zurück — auch unberührt —
+  und stempelte sie frisch, sobald sie vom Bestand abwichen. Ein Stand vom
+  iPad, der die Planung erreicht, während das Blatt offen steht, wäre damit
+  überschrieben worden. Jetzt gelten für die beiden Felder, die sich App und
+  Ansicht teilen, dieselbe Regel wie für den Prüfungstermin: Geschrieben wird
+  nur, was das Blatt gegenüber seinem Ausgangsstand geändert hat. Ein Weg, auf
+  dem das bisher geschah, ist nicht bekannt; die Schranke steht für jeden, der
+  kommt.
+
+## [1.7.2 (61)] - 2026-09-16
 
 Dialoge, die aus einem Blatt aufgehen, sind jetzt Bögen an diesem Blatt; und
 solange ein Blatt offen ist, ruht das Widerrufen im Hauptfenster.
