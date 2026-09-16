@@ -16,6 +16,32 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.7.2 (61)] - 2026-09-15
+
+Dialoge, die aus einem Blatt aufgehen, sind jetzt Bögen an diesem Blatt; und
+solange ein Blatt offen ist, ruht das Widerrufen im Hauptfenster.
+
+### Fixed
+
+- **Druck- und Dateidialoge aus einem Blatt als Bögen.** Der Druckdialog des
+  Sitzplan-Editors ging als freies Fenster über dem Blatt auf, größer als das
+  Blatt und auf einer anderen Fensterebene; sein durchscheinender Rand lag auf
+  zwei verschieden hellen Untergründen und flackerte. Dasselbe galt für jeden
+  Sichern- und Öffnen-Dialog aus einem Blatt: Sitzplan als PDF, Kursdatei im
+  Klassen-Blatt, Material im Vorhaben-Blatt, das Wiederherstellungsblatt, die
+  Nachwahl. Jetzt gilt eine Regel: Ist das vorderste Fenster ein Blatt, hängt
+  der Dialog als Bogen daran; aus dem Hauptfenster bleibt er, was er war.
+  Liegt gerade eine Rückfrage auf dem Blatt, wartet der Dialog, bis sie zu ist.
+  Ein Öffnen-Dialog behält seine Mindestbreite und steht dann mittig über
+  einem schmaleren Blatt — das ist das Verhalten des Systems.
+- **Widerrufen bei offenem Blatt.** Das Vorhaben-Blatt puffert seinen Entwurf;
+  ⌘Z änderte derweil die Planung dahinter, und „Übernehmen“ schrieb den
+  Entwurf über den zurückgelegten Stand. Jetzt ruht das Widerrufen und
+  Wiederholen des Hauptfensters, solange ein Blatt offen ist — der Verlauf
+  bleibt stehen und gilt wieder, sobald das Blatt zu ist. Der Sitzplan-Editor
+  führt weiterhin seinen eigenen Verlauf; ein Textfeld mit Schreibmarke behält
+  seine Rücknahme.
+
 ## [1.7.1 (60)] - 2026-09-15
 
 Behebungen nach der zehnten externen Code-Review an 1.6.0 (58). Der Schutz vor
