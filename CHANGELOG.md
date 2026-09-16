@@ -16,6 +16,39 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.7.5 (64)] - 2026-09-16
+
+Die Verschlüsselung lässt sich jetzt auch auf einem Mac ohne eingerichtete
+Touch ID einschalten — MacBook Neo ohne Touch ID, Mac mini und Mac Studio mit
+einer Tastatur ohne Sensor, eine virtuelle Maschine.
+
+### Fixed
+
+- **Verschlüsselung ohne Touch ID (B32):** Beim Einschalten legt die App
+  neben Passphrase und Wiederherstellungsschlüssel eine Wicklung für diesen
+  Mac in der Secure Enclave an. Ihre Zugriffsbedingung verlangte bisher die
+  angelernten Finger oder das Anmeldepasswort — und ließ sich ohne
+  eingerichtete Touch ID gar nicht anlegen. Weil die Einrichtung daran
+  scheiterte, blieb das Blatt mit „Fehler bei der Authentifizierung.“ stehen;
+  ein Weg ohne die Wicklung fehlte. Jetzt folgt die Zugriffsbedingung dem
+  Gerät: mit eingerichteter Touch ID wie bisher, ohne sie das Anmeldepasswort
+  allein. Und die Wicklung dieses Macs ist keine Bedingung mehr: Gelingt sie
+  nicht, wird ohne sie eingerichtet, das Blatt sagt vorher den Grund und den
+  Weg („Beim Start ist die Passphrase fällig; unter Verschlüsselung → Dieser
+  Mac lässt sie sich später einschalten“), die Meldung nach dem Einschalten
+  wiederholt ihn. Die Wörter folgen dem Gerät: Auf einem Mac ohne Touch ID
+  heißt der Schalter „Mit dem Anmeldepasswort öffnen“, und nirgends wird
+  Touch ID versprochen, wo es keines gibt. Gemessen in einer virtuellen
+  Maschine mit macOS 27.0 ohne Touch ID; dort scheiterte die bisherige
+  Zugriffsbedingung, die neue legt an.
+- **Die Einrichtung sagt, womit dieser Mac beim Start öffnet:** Ein eigener
+  Abschnitt „Dieser Mac“ in der Frage der Ersteinrichtung und in Schritt 2
+  vor dem Einschalten nennt es unmissverständlich — auf einem Mac ohne
+  eingerichtete Touch ID: „Beim Start öffnet deshalb das Anmeldepasswort
+  dieses Macs die Planung — dasselbe Passwort wie bei der Anmeldung am Mac“ —,
+  und die Meldung nach dem Einschalten wiederholt es. Bisher stand das nur in
+  einem Nebensatz.
+
 ## [1.7.4 (63)] - 2026-09-16
 
 Bauidentität nach der elften externen Code-Review an 1.7.2 (61): Prüfvermerk,
