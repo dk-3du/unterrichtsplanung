@@ -16,6 +16,30 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.7.4 (63)] - 2026-09-16
+
+Bauidentität nach der elften externen Code-Review an 1.7.2 (61): Prüfvermerk,
+Paket und Beglaubigung tragen jetzt denselben Werkzeugstand, der Prüfbau ist
+gebunden wie das Paket, und jeder Prüfstand nennt das Paket, an dem er läuft.
+
+### Changed
+
+- **Prüfung und Paket tragen den Werkzeugstand (N61-01):** Der Stand der
+  Quellen band bisher, *welche* Quellen geprüft und gebaut wurden — nicht,
+  *womit*. Ein Wechsel von Xcode, Swift oder SDK zwischen Prüfung und Bau
+  entwertete den Prüfvermerk nicht, und der Prüfbau lief ohne die
+  Linkerargumente des Pakets. Jetzt liegt die Bauumgebung an einer Stelle
+  (`bauumgebung.sh`, von den drei Skripten eingelesen): Prüfbau und Paket
+  bekommen dieselben Linkerargumente, der Prüfvermerk nennt Werkzeugstand
+  (Xcode, Swift, SDK, Mindestsystem, Ziel, Linker) und die Bindung des
+  geprüften Programms, das Paket trägt den Werkzeugstand mitsigniert in seiner
+  Info.plist (`UPWerkzeugstand`), und die Beglaubigung verlangt, dass Vermerk,
+  Paket und der bauende Rechner denselben tragen — sonst wird nichts
+  eingereicht.
+- **Jeder Prüfstand nennt sein Paket:** Die erste Zeile eines Prüfstandslaufs
+  sagt Kennung, Fassung, Quellenstand und Werkzeugstand des laufenden Pakets.
+  Im Releasebericht steht damit, welches Paket die Prüfstandsrunde bekam.
+
 ## [1.7.3 (62)] - 2026-09-16
 
 Behebungen nach der elften externen Code-Review an 1.7.2 (61): Der Stand vom
