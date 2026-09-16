@@ -16,6 +16,45 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.7.6 (65)] - 2026-09-16
+
+Die Behebungen nach der zwölften externen Code-Review an 1.7.5 (64): Die
+Bauidentität kennt Debug und Release, die Einrichtung sagt, welche Wicklung
+dieses Macs wirklich entstand, und ob Touch ID eingerichtet ist, wird im
+Augenblick bestimmt — die Wicklung trägt ihre Bedingung.
+
+### Fixed
+
+- **Die Bauidentität unterscheidet Debug von Release (N61-01, Rest):** Der
+  Werkzeugstand nannte als Ziel immer „release“, auch für ein mit `--debug`
+  gebautes Paket; ein solches Paket trug denselben Quellen- und Werkzeugstand
+  und dieselbe Bindung wie das Release und hätte die Vorprüfung der
+  Beglaubigung bestanden. Jetzt gehört die Konfiguration zum Werkzeugstand,
+  das Paket trägt sie mitsigniert (`UPKonfiguration`), `beglaubigen.sh`
+  verlangt „release“ und benennt einen Debug-Bau, und `bauen.sh` schnürt einen
+  Debug-Bau weder signiert noch als Abbild noch zur Installation. Nachgewiesen
+  am nicht gestarteten Debug-Paket: vorher bestanden, jetzt abgewiesen.
+- **Schritt 2 sagt, welche Wicklung dieses Macs wirklich entstand (N64-02):**
+  Wurde die Wicklung gar nicht versucht — keine Secure Enclave, oder der
+  Prüfstand meidet sie —, galt „kein Grund“ als „Wicklung da“, und das Blatt
+  versprach das Anmeldepasswort; die Meldung nach dem Einschalten ebenso.
+  Jetzt liefert die Vorbereitung ein Ergebnis mit drei Fällen — angelegt (mit
+  Touch ID oder mit dem Anmeldepasswort), nicht verfügbar, gescheitert mit
+  Grund —, und Blatt wie Meldung lesen daraus: Ohne Wicklung heißt es „Beim
+  Start ist deshalb die Passphrase fällig.“
+- **Ob Touch ID eingerichtet ist, wird im Augenblick bestimmt (N64-01):** Der
+  Wert wurde einmal je Start gemerkt. Wer Touch ID nach dem Start einrichtete
+  und die Wicklung unter „Dieser Mac“ aus- und wieder einschaltete, bekam die
+  Bedingung „Anmeldepasswort allein“ noch einmal — entgegen dem Fußtext des
+  Schalters. Jetzt wird die Fähigkeit bei jedem Anlegen frisch gefragt (rund
+  eine Millisekunde); eine Sperre nach zu vielen Fehlversuchen oder eine
+  getrennte Tastatur mit Touch ID gilt dabei als eingerichtet. Und die Wicklung
+  dieses Macs trägt ihre Bedingung als Feld: Schalter, Wicklungsliste,
+  Entsperr-Knopf und Fußtext beschreiben die liegende Wicklung — bleibt sie
+  hinter dem Gerät zurück, sagt der Fuß, dass Aus und wieder An sie umstellt.
+  Dateien aus früheren Fassungen ohne das Feld öffnen unverändert; dort gilt
+  weiter, was das Gerät kann.
+
 ## [1.7.5 (64)] - 2026-09-16
 
 Die Verschlüsselung lässt sich jetzt auch auf einem Mac ohne eingerichtete
