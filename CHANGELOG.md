@@ -16,6 +16,38 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.8.1 (70)] - 2026-09-17
+
+Behebungen nach der fünfzehnten externen Code-Review an 1.8.0 und der eigenen
+Review: Die Gegenprobe des Rundentreibers beweist ihr Szenario, und der Leser
+beider Fassungen behandelt Sonderzeilen aus fremden Dateien stimmig. Am
+Verhalten der App im gewöhnlichen Gebrauch ändert sich nichts. Ein zunächst
+geplanter „Entfall von Vorhaben“ mit Kette wurde vor der Umsetzung in der App
+verworfen: Vorhaben sind verschiedenartig, nicht jedes ist eine
+Unterrichtsstunde.
+
+### Fixed
+
+- **Gegenprobe des Rundentreibers (N69-01):** Der Lauf mit frühem Ausstieg
+  gilt nur noch als bestanden, wenn er sein Szenario beweist — Paketzeile, eine
+  Zusicherung vor der Hakenzeile, die Hakenzeile genau einmal, Rückgabe 0,
+  „ABGEBROCHEN“ genau einmal und als letzte Zeile des Prüfstands, kein „ENDE“,
+  keine weitere ✗-Zeile — und die gewöhnliche Bewertung ihn abweist. Die Bilanz
+  nennt jede Voraussetzung und den Ausgang in Worten; der Selbsttest führt die
+  Fälle des Berichts.
+- **Dateiverweise an Sonderzeilen (B34):** Ein Verwaltungs- oder
+  Curriculumverweis, den die Art einer Sonderzeile nicht vorsieht, fällt beim
+  Lesen — in App und Ansicht gleich — und wird im Ladehinweis genannt
+  („1 Dateiverweis“). Bisher blieb er unsichtbar in der Planung und ließ sich
+  nicht entfernen; erreichbar war das nur über von Hand bearbeitete Dateien.
+- **Doppelte Sonderzeilen (B35):** Zwei Sonderzeilen derselben Art aus einer
+  fremden Datei bleiben beide — fester Titel, Reihenfolge, Vorhaben —; das ist
+  jetzt in Prüfungen beider Fassungen festgeschrieben.
+- **Titel einer Sonderzeile (B36):** Der Speicher lässt den festen Titel auch
+  dann stehen, wenn ein Aufrufer einen Namen reicht.
+- **Höchstzahl (B37):** Die Meldung sagt „Mehr als 75 Zeilen sind nicht
+  vorgesehen“ — die Höchstzahl gilt für Klassen/Kurse und Sonderzeilen zusammen.
+
 ## [1.8.0 (69)] - 2026-09-17
 
 Sonderzeilen „Klassenleitung“, „Weiteres“ und „Vertretungen“ unterhalb der
