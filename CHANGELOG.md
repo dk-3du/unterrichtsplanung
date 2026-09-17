@@ -16,6 +16,45 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.7.9 (68)] - 2026-09-17
+
+Das Prüfwerk beweist Start und Ende: Ein Lauf der Prüfstandsrunde gilt erst als
+bestanden, wenn er sein Ende bewiesen hat, und das Rundenpaket beweist auf dem
+zweiten Mac, dass es das gepackte ist. Am Verhalten der App ändert sich nichts.
+Die Behebungen nach der dreizehnten externen Code-Review an 1.7.8 — die erste
+Fassung nach dem Fassungsvertrag.
+
+### Fixed
+
+- **N67-01 — ein Lauf ohne Ende galt als bestanden:** Der Rundentreiber nahm
+  einen Lauf an, sobald Rückgabe und Paketzeile stimmten und keine rote Zeile
+  fiel; ein Ende verlangte er nicht, und zehn Prüfstände endeten bei fehlender
+  Planung oder fehlendem Fenster still mit Rückgabe 0 — im leeren Ordner hing
+  der Ausstieg bis zur Frist am Blatt „Neue Planung“. Jetzt druckt jeder
+  regulär beendete Prüfstand als Letztes „ENDE <Name>“, die Frühausstiege sagen
+  ✗ und enden ordentlich, und `runde.py` verlangt das Ende und wenigstens eine
+  Zusicherung; ein gewollter Abbruch (Exit 3) beweist sich mit der Zeile des
+  Dienstes. Der Treiber prüft seine Bewertung selbst an synthetischen Ausgaben
+  (`python3 runde.py --selbsttest`), und `pruefen.sh` ruft ihn statt der
+  bloßen Formprüfung.
+- **N67-02 — das Rundenpaket prüfte seine Unversehrtheit nicht:** Es trug nur
+  die Prüfsumme des Programms von vor dem Umsignieren, die im Gast nicht zu
+  vergleichen ist, und startete ungeprüft. Jetzt schreibt `runde.py --packen`
+  nach dem Siegeln `MANIFEST.txt` mit der SHA-256-Prüfsumme jeder Datei;
+  `--laufen` prüft jede Datei dagegen und die Signatur der Probe, bevor es die
+  Quarantäne entfernt oder einen Prüfstand startet, und nennt die Prüfsumme des
+  Manifests — sie muss der Zeile „Manifest:“ im Packprotokoll auf dem Mac
+  gleichen. Beim Anlegen der Probe brechen Byteverschiedenheit und ein
+  verify-Fehler ab.
+
+### Added
+
+- **`Anleitung-VM.txt` und `Terminalbefehl.txt` im Rundenpaket:** `--packen`
+  legt die Schritte für eine frische virtuelle Maschine bei — Manifest-Abgleich,
+  die Probe einmal öffnen, „Lokales Netzwerk“ in den Systemeinstellungen
+  erlauben, den Container der Probe löschen, dann starten — und den Befehl zum
+  Kopieren.
+
 ## [1.7.8 (67)] - 2026-09-16
 
 Die Runde in der VM: Der Treiber der Prüfstandsrunde gehört jetzt zur Fassung
