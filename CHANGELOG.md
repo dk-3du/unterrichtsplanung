@@ -16,6 +16,58 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.8.0 (69)] - 2026-09-17
+
+Sonderzeilen „Klassenleitung“, „Weiteres“ und „Vertretungen“ unterhalb der
+Klassen/Kurse — und das Prüfwerk beweist den Abschluss jedes Prüfstands (die
+Behebungen nach der vierzehnten externen Code-Review an 1.7.9). Geplant und
+entschieden nach dem Fassungsvertrag, je Fassung eine eigene Datei.
+
+### Added
+
+- **Sonderzeilen:** „Klassenleitung“, „Weiteres“ und „Vertretungen“ stehen als
+  eigene Zeilen unterhalb der Klassen/Kurse — in fester Reihenfolge, mit festem
+  Titel; Vorhaben, Termine, Sperren, Farbe und Notiz wie an jeder Zeile. Die
+  Klassenleitung trägt ihre Klasse als Fach (etwa „7a“), Weiteres und
+  Vertretungen tragen kein Fach. Klassenleitung und Weiteres
+  tragen dazu eine Verwaltungsdatei, aber kein Curriculum und keinen Sitzplan;
+  Vertretungen keines von dreien — nicht Vorgesehenes ist abgeblendet und nicht
+  klickbar. Die Zähler „Klassen/Kurse“ nennen nur die Klassen/Kurse. Wählbar
+  per Kästchen im Blatt „Neue Planungsdatei“ unterhalb der freien
+  Eingabe und nachträglich per „+ Klassenleitung hinzufügen“, „+ Weiteres
+  hinzufügen“, „+ Vertretungen hinzufügen“ im Blatt „Klassen/Kurse und Fächer“
+  — je Art höchstens eine. Eine kräftigere Trennlinie über der ersten
+  Sonderzeile zeigt die Zweiteilung im Raster; der Druck bleibt unverändert.
+  In der Datei trägt jede Zeile ihre Art (`art`); Dateien früherer Fassungen
+  laden unverändert, und eine ältere Ansicht zeigt eine neue Datei weiter
+  richtig, nur ohne Linie.
+- **Ansicht fürs iPad:** liest die Art, setzt den Titel einer Sonderzeile fest,
+  ordnet wie die App, zeigt die Trennlinie und nennt Sonderzeilen im
+  Klassen-Blatt als solche — derselbe Paritätsfall in `leser_pruefen.py` und
+  `DateiPruefungen.swift`; die Prüfsaat der Runde trägt eine Klassenleitung.
+
+### Removed
+
+- **„Standardliste ergänzen“** im Blatt „Klassen/Kurse und Fächer“ — an ihrer
+  Stelle stehen die drei Knöpfe der Sonderzeilen. Die Liste selbst bleibt als
+  Saat der Prüfungen.
+
+### Fixed
+
+- **N67-01, Rest — die Ende-Zeile bewies das Beenden, nicht den Abschluss:**
+  Seit 1.7.9 druckt der Delegat beim Beenden „ENDE <Name>“; die vierzehnte
+  Review zeigte, dass ein Prüfstand, der nach seiner ersten Zusicherung regulär
+  beendet wird, dieselbe Zeile bekam und bestand — am Lauf nachgestellt. Jetzt
+  meldet sich jeder Prüfstand an seiner Endstelle selbst ab; ENDE steht nur
+  danach, sonst „ABGEBROCHEN <Name> ✗ — beendet vor dem Abschluss“, und der
+  Treiber weist das ab. Die Runde führt dafür eine Gegenprobe: Der Klicktest
+  endet mit `PRUEFSTAND_FRUEHES_ENDE` absichtlich früh und darf nicht
+  bestehen — 27 Läufe statt 26.
+- **N68-01 — der Abbruch-Lauf wurde nicht an der verlangten Stelle gemessen:**
+  Die Bewertung nahm jede Zeile „harter Abbruch nach …“; jetzt verlangt sie
+  genau die verlangte Stelle, die Bilanz nennt verlangt und beobachtet, und der
+  Selbsttest führt die vier Fälle des Berichts.
+
 ## [1.7.9 (68)] - 2026-09-17
 
 Das Prüfwerk beweist Start und Ende: Ein Lauf der Prüfstandsrunde gilt erst als

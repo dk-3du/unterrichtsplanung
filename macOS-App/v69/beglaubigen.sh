@@ -1,0 +1,359 @@
+#!/bin/bash
+# SPDX-FileCopyrightText: 2026 Dominik Kluge
+# SPDX-License-Identifier: GPL-3.0-or-later
+# ──────────────────────────────────────────────────────────────────────────
+#  Unterrichtsplanung — bei Apple beglaubigen lassen und das Ticket anheften
+#
+#     ./beglaubigen.sh --probe     prüfen, ob alles bereitliegt — nichts
+#                                  verlässt den Rechner, auch ohne Netz
+#     ./beglaubigen.sh --probe --online   dazu das Profil bei Apple belegen
+#                                  (notarytool history: nur lesend)
+#     ./beglaubigen.sh --ja        App einreichen und Ticket anheften; Abbild
+#                                  schnüren und signieren (./bauen.sh --nur-dmg),
+#                                  einreichen, Ticket anheften; Gatekeeper-Probe
+#     ./beglaubigen.sh --app --ja  nur die App
+#     ./beglaubigen.sh --dmg --ja  nur das Abbild (die App trägt ihr Ticket schon)
+#     ./beglaubigen.sh --ja --ohne-pruefung   einreichen, obwohl kein vollständiger
+#                                  Prüfvermerk (./pruefen.sh) zum Stand der
+#                                  Quellen ohne Befund vorliegt — wird in der
+#                                  Zusammenfassung protokolliert (E44)
+#
+#  Jede Einreichung lädt das Paket zu Apples Beglaubigungsdienst hoch. Ohne
+#  --ja fragt das Skript vorher — im Terminal; ohne Terminal bricht es vor dem
+#  Hochladen ab. Voraussetzung ist ein Paket aus ./bauen.sh mit SIGNATUR, das
+#  den Stand seiner Quellen trägt (UPQuellenstand): Er muss der aktuelle sein
+#  und der des Prüfvermerks — geprüft, gebaut und eingereicht ist dann
+#  dasselbe (N51-04); die Zusammenfassung hält Quellenstand und CDHash fest.
+#  Seit v63 (E127, N61-01) ebenso der Werkzeugstand (UPWerkzeugstand, aus
+#  bauumgebung.sh): Paket, Prüfvermerk und dieser Rechner müssen denselben
+#  tragen, und die LC_BUILD_VERSION des Prüfbaus im Vermerk muss der des
+#  Pakets gleichen — geprüft und gebaut ist dann auch *womit* dasselbe.
+#  Seit v65 (E138, N61-01 Rest) dazu die Konfiguration: Das Paket muss
+#  UPKonfiguration = release tragen; ein Debug-Bau (gleicher Quellenstand,
+#  gleiche LC_BUILD_VERSION, aber -Onone und Symboltabelle) wird benannt
+#  abgewiesen — sein Werkzeugstand ist ohnehin ein anderer.
+#
+#  Umgebung:
+#     SIGNATUR="Developer ID Application: Name (TEAMID)"   wie bei ./bauen.sh
+#     PROFIL=unterrichtsplanung   Schlüsselbund-Profil aus
+#                                 `xcrun notarytool store-credentials` (Vorgabe)
+#     SCHLUESSELBUND=<Pfad>       Schlüsselbund mit der Kennung, nur für Prüfläufe
+#
+#  Protokolle landen in Paket/Beglaubigung/ — Einreichung, Apples Prüfbericht
+#  (JSON) und eine fortlaufende Zusammenfassung je Fassung.
+# ──────────────────────────────────────────────────────────────────────────
+set -euo pipefail
+
+HIER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$HIER"
+# Die Bauumgebung an einer Stelle (E124): Werkzeugstand und LC_BUILD_VERSION.
+. "$HIER/bauumgebung.sh"
+
+NAME="Unterrichtsplanung"
+PAKET="$HIER/Paket/$NAME.app"
+PROFIL="${PROFIL:-unterrichtsplanung}"
+SIGNATUR="${SIGNATUR:-}"
+SCHLUESSELBUND="${SCHLUESSELBUND:-}"
+export SIGNATUR SCHLUESSELBUND
+PROBE=0
+NUR=""
+JA=0
+OHNE_PRUEFUNG=0
+# Ob ein vollständiger Prüfvermerk zum Stand der Quellen ohne Befund vorliegt.
+VERMERK_GILT=0
+VERMERK=""
+
+ONLINE=0
+for arg in "$@"; do
+  case "$arg" in
+    --probe)  PROBE=1 ;;
+    --online) ONLINE=1 ;;
+    --app)    NUR="app" ;;
+    --dmg)    NUR="dmg" ;;
+    --ja)     JA=1 ;;
+    --ohne-pruefung) OHNE_PRUEFUNG=1 ;;
+    *) echo "Unbekannte Angabe: $arg"; exit 2 ;;
+  esac
+done
+APP=1; DMG=1
+[ "$NUR" = "dmg" ] && APP=0
+[ "$NUR" = "app" ] && DMG=0
+
+ORDNER="$HIER/Paket/Beglaubigung"
+STEMPEL="$(date +%Y-%m-%d-%H%M%S)"
+# Das ZIP ist nur der Transportbehälter — auch bei Abbruch weg damit.
+ZIP=""
+trap 'rm -f "$ZIP"' EXIT
+
+# ── Was vorliegt ──────────────────────────────────────────────────────────
+FEHLER=0
+ok()   { echo "  ✓ $1"; }
+nein() { echo "  ✗ $1"; FEHLER=$((FEHLER + 1)); }
+
+beschreibung() { codesign -dvv "$1" 2>&1; }
+
+echo "▸ Prüfe die Voraussetzungen …"
+
+if xcrun --find notarytool >/dev/null 2>&1 && xcrun --find stapler >/dev/null 2>&1; then
+  ok "notarytool $(xcrun notarytool --version 2>/dev/null | head -1) und stapler (Xcode unter $(xcode-select -p))"
+else
+  nein "notarytool oder stapler fehlt — Xcode auswählen (xcode-select)"
+fi
+
+if [ -n "$SIGNATUR" ]; then
+  ok "SIGNATUR: $SIGNATUR"
+  # Ausgaben erst in Variablen: `befehl | grep -q` lügt unter pipefail, sobald
+  # grep die Leitung vor dem Ende schließt.
+  ALLE=(security find-identity -p codesigning)
+  GUELTIGE=(security find-identity -v -p codesigning)
+  if [ -n "$SCHLUESSELBUND" ]; then ALLE+=("$SCHLUESSELBUND"); GUELTIGE+=("$SCHLUESSELBUND"); fi
+  GEFUNDEN="$("${ALLE[@]}" 2>/dev/null || true)"
+  GUELTIG="$("${GUELTIGE[@]}" 2>/dev/null || true)"
+  if grep -qF "\"$SIGNATUR\"" <<<"$GEFUNDEN"; then
+    if grep -qF "\"$SIGNATUR\"" <<<"$GUELTIG"; then
+      ok "Kennung im Schlüsselbund, gültig (Zertifikat, privater Schlüssel, Vertrauenskette)"
+    else
+      nein "Kennung im Schlüsselbund, aber nicht gültig — fehlt das Zwischenzertifikat „Developer ID – G2“ oder der private Schlüssel?"
+    fi
+  else
+    nein "Kennung nicht im Schlüsselbund: security find-identity -v -p codesigning nennt sie nicht (Phase A2 des Ablaufplans)"
+  fi
+else
+  nein "SIGNATUR ist nicht gesetzt (export SIGNATUR=\"Developer ID Application: Name (TEAMID)\")"
+fi
+
+PAKETSTAND=""
+PAKETKONFIGURATION=""
+QUELLENSTAND="$("$HIER/pruefen.sh" --stand 2>/dev/null || true)"
+if [ -d "$PAKET" ]; then
+  FASSUNG="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PAKET/Contents/Info.plist" 2>/dev/null || echo "0")"
+  STUFE="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PAKET/Contents/Info.plist" 2>/dev/null || echo "")"
+  ABBILD="$HIER/Paket/$NAME-$FASSUNG${STUFE:+-$STUFE}.dmg"
+  ok "Paket $NAME $FASSUNG${STUFE:+ ($STUFE)}: $PAKET"
+  # Das Paket trägt den Stand seiner Quellen (UPQuellenstand, von bauen.sh
+  # mitsigniert): Er muss der aktuelle sein — und damit der des Prüfvermerks
+  # unten, der ebenfalls am aktuellen Stand gemessen wird. Sonst wäre geprüft
+  # und gebaut nicht dasselbe (N51-04). Kein Weg daran vorbei: Bauen ist billig.
+  PAKETSTAND="$(/usr/libexec/PlistBuddy -c 'Print :UPQuellenstand' "$PAKET/Contents/Info.plist" 2>/dev/null || true)"
+  if [ -z "$PAKETSTAND" ]; then
+    nein "das Paket nennt keinen Quellenstand (UPQuellenstand) — erst ./bauen.sh"
+  elif [ -z "$QUELLENSTAND" ]; then
+    nein "der Stand der Quellen ließ sich nicht bestimmen (./pruefen.sh --stand)"
+  elif [ "$PAKETSTAND" != "$QUELLENSTAND" ]; then
+    nein "das Paket stammt aus einem anderen Quellenstand ($(cut -c1-12 <<<"$PAKETSTAND")… statt $(cut -c1-12 <<<"$QUELLENSTAND")…) — seit dem Bau wurde geändert; erst ./bauen.sh"
+  else
+    ok "das Paket stammt aus dem aktuellen Quellenstand $(cut -c1-12 <<<"$QUELLENSTAND")…"
+  fi
+  # Die Konfiguration (E138, N61-01 Rest, seit v65): Apple bekommt nur einen
+  # Release-Bau. bauen.sh schreibt sie mitsigniert; ein Paket ohne den Schlüssel
+  # stammt aus einer Fassung vor v65 oder ist nicht aus bauen.sh.
+  PAKETKONFIGURATION="$(/usr/libexec/PlistBuddy -c 'Print :UPKonfiguration' "$PAKET/Contents/Info.plist" 2>/dev/null || true)"
+  if [ -z "$PAKETKONFIGURATION" ]; then
+    nein "das Paket nennt keine Konfiguration (UPKonfiguration, E138, seit v65) — erst ./bauen.sh dieser Fassung"
+  elif [ "$PAKETKONFIGURATION" != "release" ]; then
+    nein "das Paket ist ein Debug-Bau (UPKonfiguration $PAKETKONFIGURATION) — Apple bekommt nur Release; erst ./bauen.sh ohne --debug"
+  else
+    ok "das Paket ist ein Release-Bau (UPKonfiguration release)"
+  fi
+  # Der Werkzeugstand (E127, seit v63): Paket und die Kette dieses Rechners
+  # müssen gleich sein — sonst wurde Xcode, Swift oder das SDK seit dem Bau
+  # gewechselt (oder das Paket ist kein Release-Bau, E138); der Vermerk unten
+  # muss denselben nennen.
+  WERKZEUG_AKTUELL="$(werkzeugkennung release 2>/dev/null || true)"
+  PAKETWERKZEUG="$(/usr/libexec/PlistBuddy -c 'Print :UPWerkzeugstand' "$PAKET/Contents/Info.plist" 2>/dev/null || true)"
+  if [ -z "$PAKETWERKZEUG" ]; then
+    nein "das Paket nennt keinen Werkzeugstand (UPWerkzeugstand, E127, seit v63) — erst ./bauen.sh dieser Fassung"
+  elif [ -z "$WERKZEUG_AKTUELL" ]; then
+    nein "der Werkzeugstand dieses Rechners ließ sich nicht bestimmen (bauumgebung.sh)"
+  elif [ "$PAKETWERKZEUG" != "$WERKZEUG_AKTUELL" ]; then
+    nein "das Paket stammt aus einer anderen Werkzeugkette ($(cut -c1-12 <<<"$PAKETWERKZEUG")… statt $(cut -c1-12 <<<"$WERKZEUG_AKTUELL")…) — seit dem Bau wurde Xcode, Swift oder das SDK gewechselt, oder das Paket ist kein Release-Bau; erst ./bauen.sh"
+  else
+    ok "das Paket stammt aus der aktuellen Werkzeugkette $(cut -c1-12 <<<"$WERKZEUG_AKTUELL")…"
+  fi
+  PAKETBAUVERSION="$(bauversion "$PAKET/Contents/MacOS/$NAME")"
+  B="$(beschreibung "$PAKET")"
+  if grep -q '^Signature=adhoc' <<<"$B"; then
+    nein "Das Paket ist ad hoc gesiegelt — erst ./bauen.sh mit SIGNATUR"
+  else
+    if [ -n "$SIGNATUR" ] && grep -qxF "Authority=$SIGNATUR" <<<"$B"; then
+      ok "signiert mit der Kennung, Team-ID $(sed -n 's/^TeamIdentifier=//p' <<<"$B")"
+    else
+      nein "signiert, aber nicht mit SIGNATUR: $(sed -n 's/^Authority=//p' <<<"$B" | head -1)"
+    fi
+    if grep -q '^CodeDirectory .*runtime' <<<"$B"; then ok "Hardened Runtime"; else nein "Hardened Runtime fehlt"; fi
+    if grep -q '^Timestamp=' <<<"$B"; then ok "beglaubigter Zeitstempel $(sed -n 's/^Timestamp=//p' <<<"$B")"; else nein "kein beglaubigter Zeitstempel"; fi
+  fi
+  if codesign --verify --strict "$PAKET" >/dev/null 2>&1; then ok "codesign --verify --strict"; else nein "codesign --verify --strict schlägt fehl"; fi
+  # Die Berechtigungen als XML-Plist (`--xml`), gelesen mit plutil — nicht über
+  # die Textform, deren Gestalt codesign nicht zusichert.
+  BERECHTIGUNGEN="$(codesign -d --entitlements - --xml "$PAKET" 2>/dev/null || true)"
+  # Im Schlüsselpfad von plutil trennt der Punkt Ebenen — die Punkte des Namens sind zu maskieren.
+  if [ "$(plutil -extract 'com\.apple\.security\.get-task-allow' raw -o - - <<<"$BERECHTIGUNGEN" 2>/dev/null || true)" = "true" ]; then
+    nein "Berechtigung get-task-allow im Paket — Apple weist das ab"
+  else
+    ok "keine Debug-Berechtigung (get-task-allow) im Paket"
+  fi
+  if [ "$(plutil -extract 'com\.apple\.security\.app-sandbox' raw -o - - <<<"$BERECHTIGUNGEN" 2>/dev/null || true)" = "true" ]; then
+    ok "App Sandbox in der Signatur"
+  else
+    nein "App Sandbox fehlt in der Signatur (Beiwerk/Berechtigungen.plist)"
+  fi
+  # Der Prüfvermerk aus ./pruefen.sh (E39, E44): Er gilt, wenn er vollständig
+  # ist (Ergebniszeile, kein jüngerer .laeuft-Rest), im Profil „vollständig“
+  # lief, keinen Befund trägt, die Warnungen gezählt hat (E104: „Warnungen
+  # (…): 0“ — eine Warnung stünde als ✗ darin) und zum Stand der Quellen passt
+  # (nicht zur Uhr: gebaut wird nach dem Prüfen). Bei --probe ein Hinweis;
+  # --ja verlangt ihn.
+  VERMERK="$(ls -t "$HIER"/Paket/Pruefung-*.txt 2>/dev/null | head -1 || true)"
+  LAEUFT="$(ls -t "$HIER"/Paket/Pruefung-*.txt.laeuft 2>/dev/null | head -1 || true)"
+  if [ -n "$LAEUFT" ] && { [ -z "$VERMERK" ] || [ "$LAEUFT" -nt "$VERMERK" ]; }; then
+    echo "  · Prüflauf $(basename "$LAEUFT") ist unvollständig — abgebrochen oder noch im Gang; ./pruefen.sh erneut"
+  elif [ -z "$VERMERK" ]; then
+    echo "  · kein Prüfvermerk in Paket/ — ./pruefen.sh lässt die Prüfungen laufen und legt ihn an"
+  elif grep -q '^✗' "$VERMERK"; then
+    echo "  · Prüfvermerk $(basename "$VERMERK") trägt einen Befund — bitte nachsehen"
+  elif [ "$(sed -n 's/^Ergebnis: //p' "$VERMERK")" != "bestanden" ]; then
+    echo "  · Prüfvermerk $(basename "$VERMERK") ist unvollständig (keine Ergebniszeile) — ./pruefen.sh erneut"
+  elif ! grep -q '^Warnungen (' "$VERMERK"; then
+    echo "  · Prüfvermerk $(basename "$VERMERK") trägt keine Warnungszählung (E104, seit v59) — ./pruefen.sh dieser Fassung"
+  elif ! grep -q '^Werkzeugstand: ' "$VERMERK"; then
+    echo "  · Prüfvermerk $(basename "$VERMERK") trägt keinen Werkzeugstand (E127, seit v63) — ./pruefen.sh dieser Fassung"
+  elif [ -z "$WERKZEUG_AKTUELL" ] || [ "$(sed -n 's/^Werkzeugstand: //p' "$VERMERK")" != "$WERKZEUG_AKTUELL" ]; then
+    echo "  · Prüfvermerk $(basename "$VERMERK") wurde mit einer anderen Werkzeugkette geprüft ($(sed -n 's/^Werkzeugstand: //p' "$VERMERK" | cut -c1-12)… statt $(cut -c1-12 <<<"$WERKZEUG_AKTUELL")…) — ./pruefen.sh erneut"
+  elif [ "$(sed -n 's/^✓ LC_BUILD_VERSION (Prüfbau): minos \(.*\) sdk \(.*\)$/\1 \2/p' "$VERMERK")" != "$PAKETBAUVERSION" ]; then
+    echo "  · Prüfvermerk $(basename "$VERMERK") nennt für den Prüfbau „$(sed -n 's/^✓ LC_BUILD_VERSION (Prüfbau): //p' "$VERMERK")“, das Paket trägt „minos ${PAKETBAUVERSION% *} sdk ${PAKETBAUVERSION#* }“ — Prüfbau und Paket sind verschieden gebunden; ./pruefen.sh und ./bauen.sh erneut"
+  elif [ "$(sed -n 's/^Profil: *//p' "$VERMERK")" = "schnell" ]; then
+    echo "  · Prüfvermerk $(basename "$VERMERK") ist verkürzt (--schnell) — für die Beglaubigung nicht ausreichend; ./pruefen.sh ohne --schnell"
+  elif [ -z "$QUELLENSTAND" ] || [ "$(sed -n 's/^Quellenstand: //p' "$VERMERK")" != "$QUELLENSTAND" ]; then
+    echo "  · Prüfvermerk $(basename "$VERMERK") passt nicht zum Stand der Quellen — seit der Prüfung wurde geändert; ./pruefen.sh erneut"
+  else
+    ok "Prüfvermerk $(basename "$VERMERK") ist vollständig, passt zu Quellen- und Werkzeugstand und zur Bindung des Pakets, ohne Befund"
+    VERMERK_GILT=1
+  fi
+  if xcrun stapler validate -q "$PAKET" >/dev/null 2>&1; then
+    ok "die App trägt ihr Beglaubigungsticket"
+  elif [ "$APP" = "1" ]; then
+    ok "die App trägt noch kein Ticket — das ist der Zweck dieses Laufs"
+  else
+    nein "die App trägt noch kein Ticket; --dmg setzt es voraus (erst --app)"
+  fi
+else
+  nein "Kein Paket unter $PAKET — erst ./bauen.sh"
+  FASSUNG="0"; STUFE=""; ABBILD=""
+fi
+
+# Nur lesend: die Liste bisheriger Einreichungen. Belegt Profil und Zugang —
+# geht aber ins Netz und an den Schlüsselbund. Darum nur vor dem Einreichen
+# oder auf Wunsch (--online); die Probe allein bleibt auf dem Rechner.
+if [ "$PROBE" != "1" ] || [ "$ONLINE" = "1" ]; then
+  if PROTOKOLL="$(xcrun notarytool history --keychain-profile "$PROFIL" 2>&1)"; then
+    ok "Profil „$PROFIL“ angenommen (notarytool history: $(grep -c 'id:' <<<"$PROTOKOLL" || true) Einreichungen bisher)"
+  else
+    nein "Profil „$PROFIL“: $(tail -1 <<<"$PROTOKOLL") (Phase A3: xcrun notarytool store-credentials \"$PROFIL\")"
+  fi
+else
+  echo "  · Profil „$PROFIL“ nicht belegt — die Probe bleibt ohne Netz; mit --online oder vor --ja wird es geprüft"
+fi
+
+if [ "$FEHLER" -gt 0 ]; then
+  echo "  $FEHLER Voraussetzung(en) fehlen — nichts eingereicht."
+  exit 1
+fi
+if [ "$PROBE" = "1" ]; then
+  echo "  Alles bereit. Ohne --probe würde jetzt eingereicht."
+  exit 0
+fi
+
+# ── Einreichen ────────────────────────────────────────────────────────────
+mkdir -p "$ORDNER"
+ZUSAMMENFASSUNG="$ORDNER/Beglaubigung-$FASSUNG${STUFE:+-$STUFE}.txt"
+
+# Die Sperre (E44): eingereicht wird nur mit gültigem Prüfvermerk — oder
+# ausdrücklich ohne, und das steht dann in der Zusammenfassung.
+if [ "$VERMERK_GILT" != "1" ]; then
+  if [ "$OHNE_PRUEFUNG" = "1" ]; then
+    echo "  ! Einreichen ohne gültigen Prüfvermerk (--ohne-pruefung) — wird protokolliert"
+    printf '%s  ohne-pruefung  Vermerk: %s\n' "$STEMPEL" "${VERMERK:+$(basename "$VERMERK")}" >> "$ZUSAMMENFASSUNG"
+  else
+    echo "  ✗ Kein vollständiger Prüfvermerk zum Stand der Quellen ohne Befund — erst ./pruefen.sh;"
+    echo "    wer bewusst ohne einreicht: --ohne-pruefung (wird in $(basename "$ZUSAMMENFASSUNG") protokolliert). Nichts eingereicht."
+    exit 1
+  fi
+fi
+# Die Herkunft (N51-04): welcher Quellenstand geprüft und gebaut wurde und
+# welches Paket eingereicht wird — der CDHash ist die Kennung seiner Signatur.
+printf '%s  paket  Quellenstand %s  Werkzeugstand %s  Konfiguration %s  CDHash %s  Vermerk %s\n' "$STEMPEL" "$PAKETSTAND" \
+  "${PAKETWERKZEUG:-?}" "${PAKETKONFIGURATION:-?}" \
+  "$(codesign -dvvv "$PAKET" 2>&1 | sed -n 's/^CDHash=//p' | head -1)" \
+  "${VERMERK:+$(basename "$VERMERK")}" >> "$ZUSAMMENFASSUNG"
+
+# $1 Datei, $2 Kürzel (app|dmg). Fragt, lädt hoch, wartet, holt Apples Bericht.
+einreichen() {
+  local datei="$1" kurz="$2" antwort protokoll kennung status
+  echo "▸ Einreichen: $(basename "$datei") ($(du -h "$datei" | cut -f1)) → Apples Beglaubigungsdienst, Profil „$PROFIL“"
+  if [ "$JA" != "1" ]; then
+    if [ -t 0 ]; then
+      read -r -p "  Hochladen? [j/N] " antwort
+      case "$antwort" in
+        j|J|ja|Ja) ;;
+        *) echo "  Abgebrochen — nichts hochgeladen."; exit 3 ;;
+      esac
+    else
+      echo "  Kein Terminal für die Rückfrage: Einreichen braucht --ja. Nichts hochgeladen."
+      exit 3
+    fi
+  fi
+  protokoll="$ORDNER/$STEMPEL-$kurz-einreichung.txt"
+  if ! xcrun notarytool submit "$datei" --keychain-profile "$PROFIL" --wait --timeout 1h 2>&1 | tee "$protokoll"; then
+    echo "  notarytool meldet einen Fehler — siehe $protokoll"
+  fi
+  kennung="$(sed -n 's/^ *id: //p' "$protokoll" | head -1)"
+  status="$(sed -n 's/^ *status: //p' "$protokoll" | tail -1)"
+  if [ -n "$kennung" ]; then
+    # Apples Bericht nennt auch bei „Accepted“ Hinweise; bei „Invalid“ die Gründe.
+    xcrun notarytool log "$kennung" --keychain-profile "$PROFIL" \
+      "$ORDNER/$STEMPEL-$kurz-bericht.json" >/dev/null 2>&1 || true
+  fi
+  printf '%s  %s  %s  id=%s  status=%s\n' "$STEMPEL" "$kurz" "$(basename "$datei")" \
+    "${kennung:-?}" "${status:-?}" >> "$ZUSAMMENFASSUNG"
+  if [ "$status" != "Accepted" ]; then
+    echo "  Nicht beglaubigt (Status: ${status:-unbekannt}) — Gründe in $ORDNER/$STEMPEL-$kurz-bericht.json"
+    exit 1
+  fi
+  echo "  Beglaubigt — Einreichung $kennung"
+}
+
+if [ "$APP" = "1" ]; then
+  ZIP="$HIER/Paket/$NAME-$FASSUNG${STUFE:+-$STUFE}-App.zip"
+  echo "▸ Packe die App zum Hochladen (ditto, bewahrt die Signatur) …"
+  rm -f "$ZIP"
+  ditto -c -k --keepParent "$PAKET" "$ZIP"
+  einreichen "$ZIP" app
+  rm -f "$ZIP"
+  echo "▸ Hefte das Ticket an die App …"
+  xcrun stapler staple -q "$PAKET"
+  xcrun stapler validate -q "$PAKET" && echo "  Ticket geprüft (stapler validate)"
+  echo "▸ Gatekeepers Sicht auf die App:"
+  spctl -a -t exec -vv "$PAKET" 2>&1 | sed 's/^/  /'
+fi
+
+if [ "$DMG" = "1" ]; then
+  echo "▸ Abbild um die beglaubigte App (./bauen.sh --nur-dmg) …"
+  ./bauen.sh --nur-dmg
+  einreichen "$ABBILD" dmg
+  echo "▸ Hefte das Ticket an das Abbild …"
+  xcrun stapler staple -q "$ABBILD"
+  xcrun stapler validate -q "$ABBILD" && echo "  Ticket geprüft (stapler validate)"
+  echo "▸ Gatekeepers Sicht auf das Abbild:"
+  spctl -a -t open --context context:primary-signature -v "$ABBILD" 2>&1 | sed 's/^/  /'
+  if hdiutil verify "$ABBILD" >/dev/null 2>&1; then
+    echo "  hdiutil verify: geprüft"
+  else
+    echo "  hdiutil verify schlägt nach dem Anheften fehl — das Abbild nicht weitergeben."
+    exit 1
+  fi
+  printf '%s  dmg  Prüfsumme SHA-256 %s\n' "$STEMPEL" "$(shasum -a 256 "$ABBILD" | cut -d' ' -f1)" >> "$ZUSAMMENFASSUNG"
+  echo "▸ Fertig: $ABBILD"
+fi
+
+echo "  Zusammenfassung: $ZUSAMMENFASSUNG"
