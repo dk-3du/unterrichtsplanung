@@ -43,13 +43,17 @@ Enclave), überall sonst über eine Passphrase, für den Notfall über einen
 gedruckten Wiederherstellungsschlüssel. Die App läuft im App Sandbox von macOS
 und erreicht Dateien und Ordner nur dort, wo sie ihr einmal gezeigt wurden; bei
 eingeschalteter Verschlüsselung liegen auch diese Lesezeichen versiegelt neben
-der Planung, ebenso die Sitzpläne der Klassen. Eine freiwillige, wöchentliche Prüfung auf Updates gegen die
-Releases dieses Repositorys überträgt nur die IP-Adresse, die Versionsnummer
-der App und ein ETag und lädt oder installiert nie etwas von selbst.
+der Planung, ebenso die Sitzpläne der Klassen. Ins Netz geht die App nur für
+zwei Dinge, beide nur mit Erlaubnis: Eine freiwillige, wöchentliche Prüfung auf
+Updates gegen die Releases dieses Repositorys überträgt nur die IP-Adresse, die
+Versionsnummer der App und ein ETag und lädt oder installiert nie etwas von
+selbst; und auf Klick im Vorhaben-Dialog lädt sie die Materialliste von
+3ducation.org, um ein Material als Link zu hinterlegen (seit 1.9.0) —
+übertragen werden dabei IP-Adresse und Versionsnummer, gespeichert wird nichts.
 
 ## Bauen, prüfen, weitergeben
 
-Die macOS-App (`macOS-App/v70/`) ist in Swift und SwiftUI geschrieben, für
+Die macOS-App (`macOS-App/v71/`) ist in Swift und SwiftUI geschrieben, für
 macOS 26 auf Apple Silicon und ohne fremde Bibliothek. `./bauen.sh` baut sie
 (Xcode wird gebraucht; `--dmg` schnürt zusätzlich ein Abbild),
 `PLANUNGSORDNER=$(mktemp -d) swift test` prüft sie. Dazu kommen Prüfstände am
@@ -71,13 +75,13 @@ sich je Fassung ändert, steht in [`CHANGELOG.md`](CHANGELOG.md).
 **Lizenzen.** Freie Software: die macOS-App und alles Übrige unter der GNU
 General Public License, Version 3 oder neuer ([`LICENSE`](LICENSE)), die
 Ansicht unter der GNU Affero General Public License, Version 3 oder neuer
-([`Web-App/v70/LICENSE.txt`](Web-App/v70/LICENSE.txt)). Die Zuordnung je Datei
+([`Web-App/v71/LICENSE.txt`](Web-App/v71/LICENSE.txt)). Die Zuordnung je Datei
 steht in [`REUSE.toml`](REUSE.toml), die Lizenztexte liegen in
 [`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code
 (Opus 5 & Fable 5/5.1).
 
-**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v70/`,
-`Web-App/v70/`; ältere Fassungen bleiben daneben stehen); die Nummer im
+**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v71/`,
+`Web-App/v71/`; ältere Fassungen bleiben daneben stehen); die Nummer im
 Ordnernamen ist der Build der Version. Was sich je Fassung ändert, steht in
 [`CHANGELOG.md`](CHANGELOG.md). Oberfläche und
 Dokumentation sind deutsch.
@@ -94,10 +98,13 @@ and hands check marks and comments back to the app. All data stays on the Mac.
 Plans can be encrypted with AES-256 (Touch ID or the login password via the
 Secure Enclave, a passphrase elsewhere, a printed recovery key for
 emergencies); the app runs in the macOS App Sandbox and reaches files and
-folders only where the user has pointed it once; an optional weekly update
+folders only where the user has pointed it once; the app goes online for two
+things only, each only with the user's consent: an optional weekly update
 check against this repository's releases transmits only the IP address, the
 app's version number and an ETag and never downloads or installs anything by
-itself. The user interface and all documentation are in German. Free software:
+itself, and, on click in the item dialog, it loads the list of materials from
+3ducation.org so that a material can be attached as a link (IP address and
+version number are transmitted, nothing is stored). The user interface and all documentation are in German. Free software:
 the macOS app and everything else is licensed under the GNU GPL v3 or later,
 the web view under the GNU AGPL v3 or later (see `LICENSE`, `LICENSES/`,
 `REUSE.toml`). Signed and notarized disk images are published under

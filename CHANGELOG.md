@@ -16,6 +16,46 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.9.0 (71)] - 2026-09-18
+
+Materialien von 3ducation.org zu Vorhaben hinzufügen — mit Opt-in wie bei der
+Prüfung auf Updates. Geplant und entschieden nach dem Fassungsvertrag
+(E174–E183).
+
+### Added
+
+- **Material von 3ducation.org:** Am Ende des Vorhaben-Dialogs, unter den
+  Links, öffnet „Material von 3ducation.org hinzufügen“ ein Blatt mit den
+  Kacheln der Website — Kategorien, Titel, Beschreibung, Fach, Lizenz, ein
+  Suchfeld wie auf der Startseite. Ein Klick hinterlegt das Material als
+  gewöhnlichen Link am Vorhaben (Bezeichnung = Kacheltitel), ein zweiter nimmt
+  ihn wieder heraus; „Fertig“ schließt. In der Ansicht fürs iPad erscheint der
+  Link wie jeder andere; am Dateiformat ändert sich nichts.
+- **Nur mit Erlaubnis:** Die Ersteinrichtung stellt die Frage als vierte;
+  eine bestehende Planung bekommt sie einmal als eigenes Blatt beim ersten
+  Start dieser Fassung; der Schalter steht unter „Einstellungen → Materialien
+  von 3ducation.org“. Ohne Erlaubnis zeigt der Knopf die Frage — vor
+  „Einschalten“ geht nichts ins Netz. Übertragen werden beim Öffnen des Blatts
+  die IP-Adresse dieses Rechners und die Versionsnummer der App, sonst nichts;
+  gespeichert wird nichts, die Liste wird bei jedem Öffnen neu geladen.
+- **Der Leser der `inhalte.js`:** Die Liste der Website ist JavaScript; die App
+  liest sie mit einem eigenen Leser der Literal-Teilmenge, ohne ein Skript
+  auszuführen, mit Grenzen und der bestehenden Schranke für Adressen (nur
+  http und https). Das Prüfwerk hält den Leser gegen `jsc`
+  (`katalog_pruefen.py`, Vorlagen unter `Pruefungen/Vorlagen/`); die
+  Sollzahlen stammen aus der Vorlage, nie aus dem Code — die Kachelzahl der
+  Website steigt.
+- **Prüfstände:** `--materialtest` (Liste aus `MATERIAL_QUELLE`, Zahlen gegen
+  `MATERIAL_ERWARTET`), zwei neue Schritte im `--dialogtest` (der Bogen am
+  Vorhaben-Blatt: die Frage, die Liste; ⎋ schließt), Lauf 28 der Runde,
+  `--abbild --dialog material`, die Erststartprobe beantwortet die vierte Frage.
+
+### Changed
+
+- Die Kurzanleitung und die Berechtigungen nennen beide Wege ins Netz — Updates
+  und Materialliste —, beide nur mit Erlaubnis und unter „Einstellungen“
+  umschaltbar.
+
 ## [1.8.1 (70)] - 2026-09-17
 
 Behebungen nach der fünfzehnten externen Code-Review an 1.8.0 und der eigenen
