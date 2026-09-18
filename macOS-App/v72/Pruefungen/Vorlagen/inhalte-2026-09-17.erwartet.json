@@ -1,0 +1,616 @@
+{
+ "vorlage": "inhalte-2026-09-17.js",
+ "sha256": "d5e45f04903dfac7bee31bfca51301740222b8755c66637954123d8d0736f1b9",
+ "erzeugt": "2026-09-18 13:05:40",
+ "kategorien": 7,
+ "kacheln": 29,
+ "daten": [
+  {
+   "titel": "AIS.chat",
+   "beschreibung": "Assistenten und Lernszenarien",
+   "kacheln": [
+    {
+     "titel": "Assistent zum Erstellen von Konfigurationen für AIS.chat (externer Link)",
+     "beschreibung": "KI-assistiertes Erstellen fertiger, copy-paste-fähiger Konfigurationen für AIS.chat (Lernszenarien, Dialogpartner und Assistenten; Version vom 21.07.2026)",
+     "meta": "AIS.chat · alle Lernjahre",
+     "schlagworte": [
+      "AIS.chat",
+      "alle Lernjahre",
+      "Assistent",
+      "KI",
+      "Lernszenarien",
+      "Dialogpartner",
+      "Konfiguration"
+     ],
+     "lizenz": "CC BY-SA 4.0",
+     "link": "https://app.ais-chat.schule/assistants/742d65a9-8d62-471a-80b5-54047643d973",
+     "download": "",
+     "qr": "aischat/assistent_konfiguration_aischat.png",
+     "qrMin": "aischat/assistent_konfiguration_aischat_64px.png"
+    },
+    {
+     "titel": "Podcast-Werkstatt: Küste und Meer (externer Link + Download)",
+     "beschreibung": "Lernszenario zur Unterstützung bei der Erstellung eines Podcasts in Partner-/Teamarbeit im Fach Geographie (Version vom 21.07.2026), inkl. Materialpaket",
+     "meta": "AIS.chat · 1./2. Lernjahr",
+     "schlagworte": [
+      "AIS.chat",
+      "Geographie",
+      "1. Lernjahr",
+      "2. Lernjahr",
+      "Lernszenario",
+      "KI",
+      "Podcast",
+      "Unterstützung",
+      "Kollaboration"
+     ],
+     "lizenz": "CC BY-SA 4.0",
+     "link": "https://app.ais-chat.schule/learning-scenarios/1351e131-57f7-4c75-858e-f6e2262485e5",
+     "download": "aischat/lernszenario_podcastwerkstatt.zip",
+     "qr": "aischat/lernszenario_podcastwerkstatt.png",
+     "qrMin": "aischat/lernszenario_podcastwerkstatt_64px.png"
+    },
+    {
+     "titel": "Lernplakatassistent: Mein Lieblingssäugetier (externer Link)",
+     "beschreibung": "Lernszenario zur Unterstützung beim Strukturieren und Organisieren der Partner-/Teamarbeit am Lernplakat im Fach Biologie (Version vom 21.07.2026)",
+     "meta": "AIS.chat · 1. Lernjahr",
+     "schlagworte": [
+      "AIS.chat",
+      "Biologie",
+      "1. Lernjahr",
+      "Lernszenario",
+      "KI",
+      "Lernplakat",
+      "Unterstützung",
+      "Kollaboration",
+      "Strukturieren",
+      "Organisieren"
+     ],
+     "lizenz": "CC BY-SA 4.0",
+     "link": "https://app.ais-chat.schule/learning-scenarios/24141a5b-16c1-40d7-b644-149e7316bf08",
+     "download": "",
+     "qr": "aischat/lernszenario_lernplakatassistent.png",
+     "qrMin": "aischat/lernszenario_lernplakatassistent_64px.png"
+    }
+   ]
+  },
+  {
+   "titel": "Allgemein",
+   "beschreibung": "Interaktive Lernmaterialien, Tools und Skills (KI)",
+   "kacheln": [
+    {
+     "titel": "Unterrichtsplanung-App (externer Link)",
+     "beschreibung": "Native, kompakte macOS-App zur Unterrichts- und Vorhabenplanung sowie zum Kuratieren von Lehr- und Lernmaterialien mit Fokus auf Datensicherheit (ab macOS 26, Mac mit M-Prozessor) inkl. optionaler Web App",
+     "meta": "allgemein · alle Lernjahre",
+     "schlagworte": [
+      "Unterrichtsplanung",
+      "Vorbereitung",
+      "Nachbereitung",
+      "Planen",
+      "Kuratieren",
+      "alle Lernjahre",
+      "macOS",
+      "Datensicherheit"
+     ],
+     "lizenz": "GPL-3.0-or-later & AGPL-3.0-or-later",
+     "link": "https://github.com/dk-3du/unterrichtsplanung",
+     "download": "https://github.com/dk-3du/unterrichtsplanung/releases",
+     "qr": "allgemein/unterrichtsplanung-app.png",
+     "qrMin": "allgemein/unterrichtsplanung-app_64px.png"
+    },
+    {
+     "titel": "Pinnwand zur Projektplanung",
+     "beschreibung": "Vielseitig einsatzbare und leichtgewichtige digitale Pinnwand zur Projektplanung mit Anschlussmöglichkeit zur Weiterarbeit mit KI-Unterstützung",
+     "meta": "allgemein · alle Lernjahre",
+     "schlagworte": [
+      "allgemein",
+      "alle Lernjahre",
+      "Projektplanung",
+      "Pinnwand"
+     ],
+     "lizenz": "CC BY-SA 4.0",
+     "link": "allgemein/pinnwand.html",
+     "download": "allgemein/pinnwand_offline.zip",
+     "qr": "allgemein/pinnwand.png",
+     "qrMin": "allgemein/pinnwand_64px.png"
+    },
+    {
+     "titel": "QR-Code-Generator",
+     "beschreibung": "Einfaches Webtool zur schnellen, datensparsamen Erzeugung von QR-Codes",
+     "meta": "allgemein · alle Lernjahre",
+     "schlagworte": [
+      "allgemein",
+      "alle Lernjahre",
+      "QR-Code",
+      "Generator",
+      "Webtool",
+      "teilen"
+     ],
+     "lizenz": "CC BY-SA 4.0",
+     "link": "allgemein/qrcodegenerator.html",
+     "download": "allgemein/qrcodegenerator_offline.zip",
+     "qr": "allgemein/qrcodegenerator.png",
+     "qrMin": "allgemein/qrcodegenerator_64px.png"
+    },
+    {
+     "titel": "Claude-Skill zum Erstellen interaktiver Lernumgebungen (Download)",
+     "beschreibung": "methodisch-didaktisch und technisch optimierter KI-Skill (learning-artifacts-builder, kurz: lab), optimiert für Opus 5 (-o5) via Claude Code (Version vom 01.09.2026)",
+     "meta": "allgemein · alle Lernjahre",
+     "schlagworte": [
+      "allgemein",
+      "alle Lernjahre",
+      "Skill",
+      "KI",
+      "Lernumgebung",
+      "Claude Code",
+      "Opus 5",
+      "interaktiv"
+     ],
+     "lizenz": "CC BY-SA 4.0",
+     "link": "skills/lab-o5.zip",
+     "download": "skills/lab-o5.zip",
+     "qr": "skills/lab-o5.png",
+     "qrMin": "skills/lab-o5_64px.png"
+    },
+    {
+     "titel": "Claude-Skill zum Erstellen interaktiver Lernumgebungen (Download)",
+     "beschreibung": "methodisch-didaktisch und technisch optimierter KI-Skill (learning-artifacts-builder, kurz: lab), optimiert für Fable 5 (-f5) via Claude Code (Version vom 01.09.2026)",
+     "meta": "allgemein · alle Lernjahre",
+     "schlagworte": [
+      "allgemein",
+      "alle Lernjahre",
+      "Skill",
+      "KI",
+      "Lernumgebung",
+      "Claude Code",
+      "Fable 5",
+      "interaktiv"
+     ],
+     "lizenz": "CC BY-SA 4.0",
+     "link": "skills/lab-f5.zip",
+     "download": "skills/lab-f5.zip",
+     "qr": "skills/lab-f5.png",
+     "qrMin": "skills/lab-f5_64px.png"
+    },
+    {
+     "titel": "Claude-Skill zum Erstellen von Konfigurationen für AIS.chat (Download)",
+     "beschreibung": "KI-assistiertes Erstellen fertiger, copy-paste-fähiger Konfigurationen für AIS.chat (Lernszenarien, Dialogpartner und Assistenten; optimiert für Claude, Version vom 21.07.2026)",
+     "meta": "AIS.chat · alle Lernjahre",
+     "schlagworte": [
+      "AIS.chat",
+      "alle Lernjahre",
+      "Assistent",
+      "Claude",
+      "Lernszenarien",
+      "Dialogpartner",
+      "Konfiguration"
+     ],
+     "lizenz": "CC BY-SA 4.0",
+     "link": "skills/aischat-builder.zip",
+     "download": "skills/aischat-builder.zip",
+     "qr": "skills/aischat-builder.png",
+     "qrMin": "skills/aischat-builder_64px.png"
+    },
+    {
+     "titel": "KomPo7-Beobachtungstool (externer Link)",
+     "beschreibung": "Hilfsmittel zur strukturierten Beobachtungsdokumentation zur späteren Übertragung in das Eingaberaster der zugehörigen App",
+     "meta": "Berufsorientierung · Klasse 7",
+     "schlagworte": [
+      "Berufsorientierung",
+      "Klasse 7",
+      "KomPo7",
+      "Beobachtung",
+      "Dokumentation",
+      "Kompetenzfeststellung"
+     ],
+     "lizenz": "CC BY-SA 4.0",
+     "link": "https://lbs-50.de/kompo7/",
+     "download": "allgemein/kompo7-beobachtungstool_offline.zip",
+     "qr": "allgemein/kompo7-beobachtungstool.png",
+     "qrMin": "allgemein/kompo7-beobachtungstool_64px.png"
+    }
+   ]
+  },
+  {
+   "titel": "Biologie: Lernplakate",
+   "beschreibung": "Tools für Feedback und Reflexion",
+   "kacheln": [
+    {
+     "titel": "Leitfaden zum Projektablauf",
+     "beschreibung": "Erstellen und Präsentieren eines Lernplakates (Beispielthema: Illegale Drogen)",
+     "meta": "Biologie · 3. Lernjahr",
+     "schlagworte": [
+      "Biologie",
+      "3. Lernjahr",
+      "Lernplakat",
+      "Projektablauf",
+      "Präsentieren",
+      "Drogen",
+      "Gruppenarbeit"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "biologie/projektablauf_lernplakat.html",
+     "download": "biologie/projektablauf_lernplakat_offline.zip",
+     "qr": "biologie/projektablauf_lernplakat.png",
+     "qrMin": "biologie/projektablauf_lernplakat_64px.png"
+    },
+    {
+     "titel": "Feedbackbogen: Erarbeitungsphase",
+     "beschreibung": "Feedback und/oder Bewertung der Erarbeitungsphase (Lernplakat, Beispielthema: Illegale Drogen)",
+     "meta": "Biologie · 3. Lernjahr",
+     "schlagworte": [
+      "Biologie",
+      "3. Lernjahr",
+      "Feedback",
+      "Bewertung",
+      "Erarbeitungsphase",
+      "Lernplakat"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "biologie/feedback_erarbeitung_lernplakat.html",
+     "download": "biologie/feedback_erarbeitung_lernplakat_offline.zip",
+     "qr": "biologie/feedback_erarbeitung_lernplakat.png",
+     "qrMin": "biologie/feedback_erarbeitung_lernplakat_64px.png"
+    },
+    {
+     "titel": "Reflexionsbogen: Erarbeitungsphase",
+     "beschreibung": "Angeleitete Reflexion der Erarbeitungsphase (Lernplakat, Beispielthema: Illegale Drogen)",
+     "meta": "Biologie · 3. Lernjahr",
+     "schlagworte": [
+      "Biologie",
+      "3. Lernjahr",
+      "Reflexion",
+      "Reflexionsbogen",
+      "Erarbeitungsphase",
+      "Lernplakat"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "biologie/reflexion_erarbeitung_lernplakat.html",
+     "download": "biologie/reflexion_erarbeitung_lernplakat_offline.zip",
+     "qr": "biologie/reflexion_erarbeitung_lernplakat.png",
+     "qrMin": "biologie/reflexion_erarbeitung_lernplakat_64px.png"
+    },
+    {
+     "titel": "Auswertung des Reflexionsbogens zur Erarbeitungsphase (Download)",
+     "beschreibung": "Skill zur KI-assistieren Auswertung ausgefüllter Reflexionsbögen (Lernplakat, Beispielthema: Illegale Drogen / Datenschutz beachten! / optimiert für Claude Code)",
+     "meta": "Biologie · 3. Lernjahr",
+     "schlagworte": [
+      "Biologie",
+      "3. Lernjahr",
+      "Skill",
+      "KI",
+      "Auswertung",
+      "Reflexion",
+      "Lernplakat",
+      "Claude Code"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "skills/lernplakat-reflexion-auswerten.zip",
+     "download": "skills/lernplakat-reflexion-auswerten.zip",
+     "qr": "skills/lernplakat-reflexion-auswerten.png",
+     "qrMin": "skills/lernplakat-reflexion-auswerten_64px.png"
+    }
+   ]
+  },
+  {
+   "titel": "Chemie",
+   "beschreibung": "Interaktive Lernumgebungen und Spiele",
+   "kacheln": [
+    {
+     "titel": "Memory: GHS-Symbole",
+     "beschreibung": "Erlernen und Einüben der GHS-Symbole mit deren Bedeutungen",
+     "meta": "Chemie · ab 1. Lernjahr",
+     "schlagworte": [
+      "Chemie",
+      "1. Lernjahr",
+      "GHS",
+      "Gefahrstoffe",
+      "Memory",
+      "Spiel",
+      "Sicherheit"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "chemie/ghs-memory.html",
+     "download": "chemie/ghs-memory_offline.zip",
+     "qr": "chemie/ghs-memory.png",
+     "qrMin": "chemie/ghs-memory_64px.png"
+    },
+    {
+     "titel": "Lernumgebung: Dichte",
+     "beschreibung": "Digitales Erforschen der Stoffeigenschaft Dichte auf Stoff- und Teilchenebene",
+     "meta": "Chemie · 1. Lernjahr",
+     "schlagworte": [
+      "Chemie",
+      "1. Lernjahr",
+      "Dichte",
+      "Stoffeigenschaft",
+      "Teilchenebene",
+      "Lernumgebung"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "chemie/dichte.html",
+     "download": "chemie/dichte_offline.zip",
+     "qr": "chemie/dichte.png",
+     "qrMin": "chemie/dichte_64px.png"
+    }
+   ]
+  },
+  {
+   "titel": "Digitale Welt / Informatische Grundbildung",
+   "beschreibung": "Interaktive Lernumgebungen zu den Lernfeldern 1 bis 4 (Digitale Welt, Hessen)",
+   "kacheln": [
+    {
+     "titel": "Inhaltsübersicht (Lernfelder 1-4)",
+     "beschreibung": "Übersicht aller Interaktionen der Lernumgebungen zu den Lernfeldern 1 bis 4",
+     "meta": "Digitale Welt · 1./2. Lernjahr",
+     "schlagworte": [
+      "Digitale Welt",
+      "DW",
+      "Informatik",
+      "1./2. Lernjahr",
+      "Inhaltsübersicht",
+      "Überblick",
+      "Lernfelder",
+      "Informatik"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "dw/inhaltsuebersicht.html",
+     "download": "dw/inhaltsuebersicht_offline.zip",
+     "qr": "dw/inhaltsuebersicht.png",
+     "qrMin": "dw/inhaltsuebersicht_64px.png"
+    },
+    {
+     "titel": "Lernfeld 1: Computer überall",
+     "beschreibung": "Aufbau eines Computers · EVA(S)-Prinzip · Robotik · Smartphones",
+     "meta": "Digitale Welt · 1. Lernjahr",
+     "schlagworte": [
+      "Digitale Welt",
+      "DW",
+      "Informatik",
+      "1. Lernjahr",
+      "Lernfeld 1",
+      "Computer",
+      "EVA-Prinzip",
+      "Robotik",
+      "Smartphone"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "dw/lernfeld_1_computer_ueberall.html",
+     "download": "dw/lernfeld_1_computer_ueberall_offline.zip",
+     "qr": "dw/lernfeld_1_computer_ueberall.png",
+     "qrMin": "dw/lernfeld_1_computer_ueberall_64px.png"
+    },
+    {
+     "titel": "Lernfeld 2: Informationen und Daten",
+     "beschreibung": "Binärsystem · Textrepräsentation · Bunte Pixel",
+     "meta": "Digitale Welt · 1. Lernjahr",
+     "schlagworte": [
+      "Digitale Welt",
+      "DW",
+      "Informatik",
+      "1. Lernjahr",
+      "Lernfeld 2",
+      "Informationen",
+      "Daten",
+      "Binärsystem",
+      "Pixel"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "dw/lernfeld_2_informationen_und_daten.html",
+     "download": "dw/lernfeld_2_informationen_und_daten_offline.zip",
+     "qr": "dw/lernfeld_2_informationen_und_daten.png",
+     "qrMin": "dw/lernfeld_2_informationen_und_daten_64px.png"
+    },
+    {
+     "titel": "Lernfeld 3: Grundlagen der Programmierung",
+     "beschreibung": "Algorithmen · Bedingungen & Variablen · Wiederholungen · Spielprojekt",
+     "meta": "Digitale Welt · 1./2. Lernjahr",
+     "schlagworte": [
+      "Digitale Welt",
+      "DW",
+      "Informatik",
+      "1./2. Lernjahr",
+      "Lernfeld 3",
+      "Programmierung",
+      "Algorithmen",
+      "Variablen",
+      "Wiederholungen",
+      "Spielprojekt"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "dw/lernfeld_3_grundlagen_der_programmierung.html",
+     "download": "dw/lernfeld_3_grundlagen_der_programmierung_offline.zip",
+     "qr": "dw/lernfeld_3_grundlagen_der_programmierung.png",
+     "qrMin": "dw/lernfeld_3_grundlagen_der_programmierung_64px.png"
+    },
+    {
+     "titel": "Lernfeld 4: Vernetzung",
+     "beschreibung": "Internet · World Wide Web · HTML",
+     "meta": "Digitale Welt · 1. Lernjahr",
+     "schlagworte": [
+      "Digitale Welt",
+      "DW",
+      "Informatik",
+      "1. Lernjahr",
+      "Lernfeld 4",
+      "Vernetzung",
+      "Internet",
+      "World Wide Web",
+      "HTML"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "dw/lernfeld_4_vernetzung.html",
+     "download": "dw/lernfeld_4_vernetzung_offline.zip",
+     "qr": "dw/lernfeld_4_vernetzung.png",
+     "qrMin": "dw/lernfeld_4_vernetzung_64px.png"
+    },
+    {
+     "titel": "Lernfeld 4: Erweiterung",
+     "beschreibung": "Funktionsweise von Suchmaschinen",
+     "meta": "Digitale Welt · 2. Lernjahr",
+     "schlagworte": [
+      "Digitale Welt",
+      "DW",
+      "Informatik",
+      "2. Lernjahr",
+      "Lernfeld 4",
+      "Suchmaschinen",
+      "Internet",
+      "Recherche"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "dw/lernfeld_4_erweiterung_suchmaschinen.html",
+     "download": "dw/lernfeld_4_erweiterung_suchmaschinen_offline.zip",
+     "qr": "dw/lernfeld_4_erweiterung_suchmaschinen.png",
+     "qrMin": "dw/lernfeld_4_erweiterung_suchmaschinen_64px.png"
+    },
+    {
+     "titel": "Interaktive Podcastserie: Zwischen den Räumen",
+     "beschreibung": "Philosophische und medientheoretische Auseinandersetzung mit KI",
+     "meta": "Digitale Welt · 2. Lernjahr",
+     "schlagworte": [
+      "Digitale Welt",
+      "DW",
+      "Informatik",
+      "Ethik",
+      "2. Lernjahr",
+      "Künstliche Intelligenz",
+      "KI",
+      "Podcast"
+     ],
+     "lizenz": "CC BY-SA 4.0 / CC BY-NC-ND 4.0",
+     "link": "dw/zwischen_den_raeumen/zwischen_den_raeumen.html",
+     "download": "dw/zwischen_den_raeumen/zwischen_den_raeumen_offline.zip",
+     "qr": "dw/zwischen_den_raeumen/zwischen_den_raeumen.png",
+     "qrMin": "dw/zwischen_den_raeumen/zwischen_den_raeumen_64px.png"
+    }
+   ]
+  },
+  {
+   "titel": "Informatik: Präsentationen",
+   "beschreibung": "Tools für Feedback und Reflexion",
+   "kacheln": [
+    {
+     "titel": "Feedbackbogen: Inhalt & Gestaltung",
+     "beschreibung": "Feedback und/oder Bewertung zu Inhalt und Gestaltung (PowerPoint-Präsentation)",
+     "meta": "Informatik · ab Klasse 8",
+     "schlagworte": [
+      "Informatik",
+      "Klasse 8",
+      "Feedback",
+      "Bewertung",
+      "PowerPoint",
+      "Präsentation",
+      "Gestaltung"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "informatik/feedback_erarbeitung_ppp.html",
+     "download": "informatik/feedback_erarbeitung_ppp_offline.zip",
+     "qr": "informatik/feedback_erarbeitung_ppp.png",
+     "qrMin": "informatik/feedback_erarbeitung_ppp_64px.png"
+    },
+    {
+     "titel": "Reflexionsbogen: Erarbeitungsphase",
+     "beschreibung": "Angeleitete Reflexion der Erarbeitungsphase (PowerPoint-Präsentation)",
+     "meta": "Informatik · ab Klasse 8",
+     "schlagworte": [
+      "Informatik",
+      "Klasse 8",
+      "Reflexion",
+      "Reflexionsbogen",
+      "Erarbeitungsphase",
+      "PowerPoint",
+      "Präsentation"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "informatik/reflexion_erarbeitung_ppp.html",
+     "download": "informatik/reflexion_erarbeitung_ppp_offline.zip",
+     "qr": "informatik/reflexion_erarbeitung_ppp.png",
+     "qrMin": "informatik/reflexion_erarbeitung_ppp_64px.png"
+    },
+    {
+     "titel": "Auswertung des Reflexionsbogens zur Erarbeitungsphase (Download)",
+     "beschreibung": "Skill zur KI-assistieren Auswertung ausgefüllter Reflexionsbögen (PowerPoint-Präsentation / Datenschutz beachten! / optimiert für Claude Code)",
+     "meta": "Informatik · ab Klasse 8",
+     "schlagworte": [
+      "Informatik",
+      "Klasse 8",
+      "Skill",
+      "KI",
+      "Auswertung",
+      "Reflexion",
+      "PowerPoint",
+      "Claude Code"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "skills/praesentation-reflexion-auswerten.zip",
+     "download": "skills/praesentation-reflexion-auswerten.zip",
+     "qr": "skills/praesentation-reflexion-auswerten.png",
+     "qrMin": "skills/praesentation-reflexion-auswerten_64px.png"
+    },
+    {
+     "titel": "Feedbackbogen: Präsentieren",
+     "beschreibung": "Feedback und Bewertung zum/des Präsentieren/s",
+     "meta": "Informatik · ab Klasse 8",
+     "schlagworte": [
+      "Informatik",
+      "Klasse 8",
+      "Feedback",
+      "Bewertung",
+      "Präsentieren",
+      "Vortrag",
+      "PowerPoint"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "informatik/feedback_praesentieren_ppp.html",
+     "download": "informatik/feedback_praesentieren_ppp_offline.zip",
+     "qr": "informatik/feedback_praesentieren_ppp.png",
+     "qrMin": "informatik/feedback_praesentieren_ppp_64px.png"
+    }
+   ]
+  },
+  {
+   "titel": "Klassenleitung",
+   "beschreibung": "Tools für Reflexion & Feedback",
+   "kacheln": [
+    {
+     "titel": "Reflexionsumgebung für Klasse 5 (1. Halbjahr)",
+     "beschreibung": "Reflexion zum Ende des ersten Halbjahres an der neuen Schule · Tipp: Einsatz als Grundlage für ein Feedback- und/oder Elterngespräch",
+     "meta": "Klassenleitung · Klasse 5",
+     "schlagworte": [
+      "Klassenleitung",
+      "Klasse 5",
+      "Reflexion",
+      "Halbjahr",
+      "Elterngespräch",
+      "Feedbackgespräch",
+      "Schulwechsel"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "klassenleitung/reflexion_5-1.html",
+     "download": "klassenleitung/reflexion_5-1_offline.zip",
+     "qr": "klassenleitung/reflexion_5-1.png",
+     "qrMin": "klassenleitung/reflexion_5-1_64px.png"
+    },
+    {
+     "titel": "Reflexionsumgebung für Klasse 5 (2. Halbjahr)",
+     "beschreibung": "Reflexion zum Ende des ersten Schuljahres an der neuen Schule · Tipp: Einsatz als Grundlage für ein Feedback- und/oder Elterngespräch",
+     "meta": "Klassenleitung · Klasse 5",
+     "schlagworte": [
+      "Klassenleitung",
+      "Klasse 5",
+      "Reflexion",
+      "Schuljahr",
+      "Elterngespräch",
+      "Feedbackgespräch",
+      "Schuljahresende"
+     ],
+     "lizenz": "CC BY-NC-SA 4.0",
+     "link": "klassenleitung/reflexion_5-2.html",
+     "download": "klassenleitung/reflexion_5-2_offline.zip",
+     "qr": "klassenleitung/reflexion_5-2.png",
+     "qrMin": "klassenleitung/reflexion_5-2_64px.png"
+    }
+   ]
+  }
+ ]
+}

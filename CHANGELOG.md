@@ -16,6 +16,55 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.9.1 (72)] - 2026-09-18
+
+Behebungen nach einer externen Review der Fassung 1.9.0 und ein neues Merkmal:
+Vorhaben als Korrektur kennzeichnen. Geplant und entschieden nach dem
+Fassungsvertrag (E184–E192); jeder Befund wurde am Lauf nachgestellt, bevor er
+behoben wurde.
+
+### Added
+
+- **Als Korrektur kennzeichnen:** Ein Vorhaben lässt sich im Vorhaben-Dialog
+  oder im Rechtsklickmenü als Korrektur kennzeichnen — gehandhabt wie die
+  Dringlichkeit, ohne Pflichtdatum. Die Kachel trägt einen gestrichelten Rahmen
+  im Rot der Prüfung und die umrandete Zeile „Korrektur“: der Bezug über die
+  Farbe, der Unterschied über die Form, die auch im Schwarzweißdruck trägt.
+  Tagesliste, Druck, Bedienungshilfen und die Ansicht fürs iPad führen das
+  Merkmal ebenso. Ein Vorhaben ist entweder Prüfung oder Korrektur: Der Schalter
+  des jeweils anderen ist gesperrt, und trägt eine fremde Datei beides, gilt die
+  Prüfung. Das Feld `korrektur` ist additiv; das Dateiformat bleibt.
+
+### Fixed
+
+- **Quellenstand:** Der Stand der Quellen kommt aus einem Inventar statt aus
+  einer Aufzählung von Hand — jedes Skript der Fassungswurzel, `LICENSE.txt` und
+  die Symbole der Ansicht sind gedeckt; der erste Schritt jedes Prüflaufs macht
+  ihn rot, wenn in einer der Wurzeln etwas liegt, das weder gedeckt noch
+  ausgenommen ist. Zuvor fehlte `katalog_pruefen.py`.
+- **Der Leser der `inhalte.js`:** Annehmen heißt dasselbe lesen. Was JavaScript
+  anders läse, wird abgewiesen statt umgedeutet — Oktal-Escapes, Zahlen mit
+  führender Null, nicht-endliche Zahlen, der Schlüssel `__proto__`, ein
+  einzelnes Ersatzzeichen; `\u{…}` und die Fortsetzung vor U+2028/U+2029 liest
+  er wie JavaScript. Eine Grenzfall-Vorlage hält jedes Literal einzeln gegen
+  `jsc`.
+- **Adressen ohne Schema** werden nach den Regeln für Adressen gegen die Wurzel
+  der Website aufgelöst, wie im Browser: `//rechner/pfad` behält seinen
+  Rechner, `../` und `a/../b` lösen sich auf.
+- **Bezeichnungen ohne Steuerzeichen:** Titel, Fach, Lizenz und Schlagworte der
+  Liste, der übernommene Kacheltitel und jede Bezeichnung eines Links oder
+  Materials — auch von Hand eingegeben — werden bereinigt wie beim Dateileser,
+  bevor gekappt wird. Was die App schreibt, muss ihr Leser nicht mehr
+  bereinigen.
+- **Weiterleitungen:** Beide Wege ins Netz — Prüfung auf Updates und
+  Materialliste — folgen einer Weiterleitung nur über https zum selben Rechner
+  und Anschluss und ohne Zugangsdaten; alles andere wird verweigert, bevor die
+  Anfrage hinausgeht, und gilt als „nicht erreichbar“.
+- **Material-Blatt:** Geladen wird auf einem Weg, gebunden an das Blatt;
+  „Erneut laden“ startet ihn neu. Wird die Erlaubnis während des Ladens
+  entzogen, kommt keine Liste mehr an. Ist die Liste unlesbar, nennt das Blatt
+  den Grund in einer Zeile.
+
 ## [1.9.0 (71)] - 2026-09-18
 
 Materialien von 3ducation.org zu Vorhaben hinzufügen — mit Opt-in wie bei der
