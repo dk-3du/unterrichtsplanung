@@ -16,6 +16,42 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.9.2 (73)] - 2026-09-18
+
+Behebungen nach einer externen Review der Fassung 1.9.1 und drei eigenen
+Funden. Geplant und entschieden nach dem Fassungsvertrag (E196–E200); jeder
+Befund wurde am Lauf nachgestellt, bevor er behoben wurde.
+
+### Fixed
+
+- **Quellenstand nur mit stimmigem Inventar:** Ohne stimmiges Inventar gibt es
+  keinen Stand der Quellen mehr — nicht nur im Prüflauf, sondern überall, wo er
+  gelesen wird. `bauen.sh` übersetzt dann nicht; es bestimmt den Stand nach dem
+  Übersetzen, nach dem Signieren und nach dem Schnüren des Abbilds noch einmal
+  und verwirft, wenn er sich geändert hat. Der Prüflauf bestimmt ihn auch am
+  Ende und trägt sonst einen Befund. `beglaubigen.sh` nennt den Grund, ohne
+  sich von anderen Meldungen auf stderr beirren zu lassen. Zuvor blieb eine
+  symbolische Verknüpfung, die nach dem Prüflauf in die Quellen kam, beim Bauen
+  und Beglaubigen unbemerkt. Ein Selbsttest im Prüflauf hält die Regel.
+- **Der Leser der `inhalte.js` liest Kommentare und Leerraum wie JavaScript:**
+  `//` endet an jedem Zeilenende — auch an CR, U+2028 und U+2029, nicht nur an
+  LF. Leerraum ist, was JavaScript dafür hält (NEL nicht mehr); Schlüssel ohne
+  Anführungszeichen sind nur ASCII; die Datei muss `KATEGORIEN` deklarieren, wie
+  die Startseite sie liest. Was die Website anders oder gar nicht läse, wird
+  abgewiesen. Zeilen einer Meldung zählen wie in JavaScript (CRLF als eine),
+  Spalten in Zeichen. Neue
+  Grenzfälle halten ganze kleine Dateien gegen `jsc`.
+- **Entzug einer Erlaubnis bricht ab:** Wird die Erlaubnis für die Materialliste
+  oder für die Prüfung auf Updates entzogen, während eine Anfrage läuft, wird
+  sie abgebrochen, und ihr Ergebnis gilt nicht — auch nicht nach erneutem
+  Einschalten. Zuvor lief die Anfrage zu Ende, und auf dem Update-Weg erschien
+  das Angebot trotzdem. Eine Prüfung von Hand läuft wie bisher zu Ende.
+- **Bezeichnungen von Links und Materialien** überstehen das Wiederlesen: Ist
+  eine Bezeichnung nach dem Bereinigen leer, trägt sie gleich beim Sichern den
+  Namen, den sie beim nächsten Öffnen bekäme — der Rechnername eines Links, der
+  Dateiname eines Materials. Zuvor wurde sie leer gesichert und änderte sich
+  beim Öffnen.
+
 ## [1.9.1 (72)] - 2026-09-18
 
 Behebungen nach einer externen Review der Fassung 1.9.0 und ein neues Merkmal:
