@@ -16,6 +16,34 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
 
+## [1.9.3 (74)] - 2026-09-19
+
+Behebungen nach einer externen Review der Fassung 1.9.2 und zwei eigenen
+Funden. Geplant und entschieden nach dem Fassungsvertrag (E206–E209); jeder
+Befund wurde am Lauf nachgestellt, bevor er behoben wurde.
+
+### Fixed
+
+- **Ein Text, der an seiner Grenze gekappt wird, bleibt beim nächsten Sichern,
+  wie er ist:** Titel, Beschreibung, Kommentar, Hausaufgabe und die
+  Bezeichnungen von Links und Materialien werden erst getrimmt, dann gekappt —
+  und was das Kappen am Ende an Leerraum freilegt, fällt gleich mit weg. Zuvor
+  fiel es erst beim nächsten Sichern still weg — beim Kommentar, sobald er
+  wieder bearbeitet wurde. Ebenso beim Titel einer neuen Planung und beim
+  Kommentar aus der Statusdatei, dort in App und Ansicht gleich.
+- **Den Ersatznamen einer leeren Bezeichnung liest die App, wie sie ihn
+  schreibt:** bereinigt und ohne Leerraum am Rand. Zuvor kam ein Dateiname, der
+  nur aus Leerraum oder Steuerzeichen besteht, beim Öffnen ungefiltert in die
+  Bezeichnung.
+- **Die Prüfung des Entzugs wartet auf das Ende der alten Anfrage:** Die
+  Prüfungen zum Entzug der Erlaubnis fragen erst, wenn die abgebrochene Anfrage
+  zu Ende ist, statt ihr eine feste Zahl von Schritten Zeit zu lassen. Neu
+  geprüft werden „aus und gleich wieder an“ auf dem Update-Weg, der Entzug
+  mitten in der Antwort und drei Ladevorgänge zugleich. Der Prüflauf erkennt
+  außerdem jede Prüfung, die eine Zahl von Schritten oder eine Uhr abwartet:
+  Wo eine Uhr bleiben soll — etwa um die Frist der Entprellung zu messen —,
+  ist sie am Ort mit Grund benannt; eine neue fällt auf.
+
 ## [1.9.2 (73)] - 2026-09-18
 
 Behebungen nach einer externen Review der Fassung 1.9.1 und drei eigenen

@@ -31,7 +31,7 @@ Das Raster zeigt die Kalenderwochen des Schuljahres als Spalten und die Klassen
 und Kurse als Zeilen; Ferien, freie Tage und Sperrzeiträume sind darin
 eingetragen. Ein Vorhaben besteht aus Titel und Beschreibung und kann einen
 Wochentag oder ein Datum, eine Dringlichkeit, einen Prüfungstermin oder eine
-Hausaufgabe tragen und als Korrektur gekennzeichnet werden (seit 1.9.1). Mit
+Hausaufgabe tragen und als Korrektur gekennzeichnet werden. Mit
 dem integrierten Sitzplan-Editor (seit 1.4.8) kann
 jeder Klasse und jedem Kurs ein Sitzplan hinzugefügt und dieser sowohl als PDF
 exportiert als auch ausgedruckt werden.
@@ -54,7 +54,7 @@ selbst; und auf Klick im Vorhaben-Dialog lädt sie die Materialliste von
 
 ## Bauen, prüfen, weitergeben
 
-Die macOS-App (`macOS-App/v73/`) ist in Swift und SwiftUI geschrieben, für
+Die macOS-App (`macOS-App/v74/`) ist in Swift und SwiftUI geschrieben, für
 macOS 26 auf Apple Silicon und ohne fremde Bibliothek. `./bauen.sh` baut sie
 (Xcode wird gebraucht; `--dmg` schnürt zusätzlich ein Abbild),
 `PLANUNGSORDNER=$(mktemp -d) swift test` prüft sie. Dazu kommen Prüfstände am
@@ -76,13 +76,13 @@ sich je Fassung ändert, steht in [`CHANGELOG.md`](CHANGELOG.md).
 **Lizenzen.** Freie Software: die macOS-App und alles Übrige unter der GNU
 General Public License, Version 3 oder neuer ([`LICENSE`](LICENSE)), die
 Ansicht unter der GNU Affero General Public License, Version 3 oder neuer
-([`Web-App/v73/LICENSE.txt`](Web-App/v73/LICENSE.txt)). Die Zuordnung je Datei
+([`Web-App/v74/LICENSE.txt`](Web-App/v74/LICENSE.txt)). Die Zuordnung je Datei
 steht in [`REUSE.toml`](REUSE.toml), die Lizenztexte liegen in
 [`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code
 (Opus 5 & Fable 5/5.1).
 
-**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v73/`,
-`Web-App/v73/`; ältere Fassungen bleiben daneben stehen); die Nummer im
+**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v74/`,
+`Web-App/v74/`; ältere Fassungen bleiben daneben stehen); die Nummer im
 Ordnernamen ist der Build der Version. Was sich je Fassung ändert, steht in
 [`CHANGELOG.md`](CHANGELOG.md). Oberfläche und
 Dokumentation sind deutsch.
