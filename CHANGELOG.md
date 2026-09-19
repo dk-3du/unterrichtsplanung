@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 # Changelog
 
 Alle nennenswerten Änderungen an der Unterrichtsplanung — macOS-App und
-Ansicht fürs iPad — stehen in dieser Datei. Das Format folgt
+Web App — stehen in dieser Datei. Das Format folgt
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/); die Versionsnummer
 ist Apples Zählung „Version (Build)“, der Build ist zugleich die Nummer des
 Fassungsordners (`macOS-App/v35`, `Web-App/v35`).
@@ -14,7 +14,72 @@ Fassungsordners (`macOS-App/v35`, `Web-App/v35`).
 Die Fassungen vor 1.2.3 (33) wurden nicht veröffentlicht, sondern
 ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
-GNU GPL (macOS-App) und der GNU AGPL (Ansicht fürs iPad) freigegeben ist.
+GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
+
+## [1.9.4 (75)] - 2026-09-19
+
+Die Übernahme aus der Web App bei geöffneter App, dazu Behebungen nach einer
+externen Review der Fassung 1.9.3 und eigenen Funden. Geplant und entschieden
+nach dem Fassungsvertrag (E213–E224); jeder Befund wurde am Lauf nachgestellt,
+bevor er behoben wurde.
+
+### Added
+
+- **„Stand der Web App abrufen“** im Menü „Ablage“: übernimmt Haken und
+  Kommentare aus der Web App sofort; liegt nichts Neues vor oder ist der
+  Zielordner nicht erreichbar, sagt die App es. Solange keine Planung offen oder
+  kein Zielordner gewählt ist, ist der Eintrag ausgegraut.
+- **Prüfstand `--statustest`**, Lauf 29 der Prüfstandsrunde: Aufwachen,
+  Wartezeit, offener Dialog und Befehl am gesiegelten Paket.
+
+### Changed
+
+- **Die Übernahme aus der Web App auch bei geöffneter App:** 15 Sekunden nach
+  dem Aufwachen des Macs aus dem Ruhezustand liest die App `current_status.json`
+  einmal, wie beim Start. Ist dann ein Blatt oder Dialog offen, wartet sie, bis
+  er geschlossen ist. Bewusst so — siehe unten. Die Meldung sagt, wenn der
+  Verlauf zum Widerrufen neu beginnt.
+- **Die Web App heißt überall Web App** — in allen Texten der App, in der Web
+  App selbst (Seitentitel, „Über diese Web App“), im Manifest, im Beipackzettel
+  des Abbilds und in der Dokumentation. Sie ist fürs iPad optimiert und läuft
+  auch auf anderen Geräten; die Texte der App nennen darum kein iPad mehr.
+- **Der Startbildschirm der Web App** zeigt kein Rastersymbol mehr.
+
+### Fixed
+
+- **Die Warnung vor dem gleichen Namen der Sicherungskopie gilt dem Titel, den
+  die neue Planung trägt.** Zuvor prüften Dialog und App den eingegebenen
+  Titel; bei einem Titel über 500 Zeichen konnte das Kappen den Namen der Kopie
+  ändern — dann fehlte die Warnung oder stand zu Unrecht.
+- **Ein Stand der Web App, der nur Zeitstempel bringt** — etwa ein Haken, der
+  gesetzt und wieder entfernt wurde —, leert den Verlauf zum Widerrufen nicht
+  mehr.
+- **Prüfwerk:** Der Prüflauf erkennt jede Wartestelle mit Takt oder Uhr auch in
+  Unterordnern und ohne Ausnahme für `while`, und ein Lesefehler heißt nicht
+  mehr „stimmig“; drei Prüfungen, die bei einem Rückschritt hängen blieben,
+  werden jetzt mit Meldung rot. Ein neuer Schritt hält den Namen der Web App in
+  allen sichtbaren Texten.
+
+### Bewusst so entschieden (E216, E217)
+
+Entscheidungen, keine Mängel:
+
+- **Kein laufendes Beobachten der Statusdatei, kein Takt.** Eine Übernahme mit
+  Haken oder Kommentaren ist nicht widerrufbar und lässt den Verlauf zum
+  Widerrufen neu beginnen. Ein ⌘Z, das fremde Haken still zurücknähme, wäre eine
+  Falle. Mitten in der Arbeit wöge dieser Neubeginn schwerer als ein früherer
+  Abruf. Während die macOS-App aktiv in Verwendung ist, wird zudem üblicherweise
+  nicht mit der Web App gearbeitet. Es sind daher keine Haken und Kommentare aus
+  der Web App während des Arbeitens mit der macOS-App zu erwarten.
+- **Nur das Aufwachen des Macs aus dem Ruhezustand löst aus**, nicht das des
+  Bildschirms. Ein dunkler Bildschirm ist oft nur eine kurze Unterbrechung; das
+  Aufwachen trennt zwei Arbeitsphasen wie ein Neustart.
+- **Genau eine Abfrage, 15 Sekunden danach, ohne Wiederholung.** Kommt die Datei
+  später, holt sie „Stand der Web App abrufen“.
+- **Ist ein Blatt, ein Dialog oder eine Rückfrage offen, wartet die Übernahme**,
+  bis es geschlossen ist.
+- **Ein Stand, der nur Zeitstempel bringt, lässt den Verlauf stehen**; ein
+  Widerrufen senkt diese Stempel nicht.
 
 ## [1.9.3 (74)] - 2026-09-19
 

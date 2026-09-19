@@ -24,8 +24,9 @@ eine native macOS-App (Swift/SwiftUI, macOS 26 auf Apple Silicon, ohne fremden
 Code), in der Unterricht und weitere Vorhaben Woche für Woche geplant und die
 passenden Lehr- und Lernmaterialien kuratiert werden — Verweise auf Dateien und
 Ordner sowie Weblinks je Vorhaben, eine Verwaltungs- und eine Curriculumdatei
-je Klasse und Kurs —, dazu eine rein lesende Ansicht fürs iPad, die eine
-exportierte Planung anzeigt und Haken und Kommentare an die App zurückgibt.
+je Klasse und Kurs —, dazu eine rein lesende Web App, fürs iPad optimiert und
+auch auf anderen Geräten nutzbar, die eine exportierte Planung anzeigt und
+Haken und Kommentare an die App zurückgibt.
 
 Das Raster zeigt die Kalenderwochen des Schuljahres als Spalten und die Klassen
 und Kurse als Zeilen; Ferien, freie Tage und Sperrzeiträume sind darin
@@ -54,7 +55,7 @@ selbst; und auf Klick im Vorhaben-Dialog lädt sie die Materialliste von
 
 ## Bauen, prüfen, weitergeben
 
-Die macOS-App (`macOS-App/v74/`) ist in Swift und SwiftUI geschrieben, für
+Die macOS-App (`macOS-App/v75/`) ist in Swift und SwiftUI geschrieben, für
 macOS 26 auf Apple Silicon und ohne fremde Bibliothek. `./bauen.sh` baut sie
 (Xcode wird gebraucht; `--dmg` schnürt zusätzlich ein Abbild),
 `PLANUNGSORDNER=$(mktemp -d) swift test` prüft sie. Dazu kommen Prüfstände am
@@ -66,7 +67,7 @@ Probepaket trägt eine eigene Kennung, ist ad hoc signiert und hat kein
 Umzugsmanifest, und Gatekeeper und Quarantäne bleiben außen vor. Diese Probe
 bleibt Handarbeit. Weitergegeben wird ein mit
 Developer ID signiertes und von Apple beglaubigtes Abbild (`./beglaubigen.sh`)
-unter **Releases**. Dort liegt auch die Ansicht als Datei mit ihrer
+unter **Releases**. Dort liegt auch die Web App als Datei mit ihrer
 SHA-256-Prüfsumme, damit sich die Seite im Netz prüfen lässt:
 `curl -s https://3ducation.org/upapp/index.html | shasum -a 256` muss die
 Zeile im Release ergeben. Gelesen werden Planungsdateien ab Version 1.2.3;
@@ -75,14 +76,14 @@ sich je Fassung ändert, steht in [`CHANGELOG.md`](CHANGELOG.md).
 
 **Lizenzen.** Freie Software: die macOS-App und alles Übrige unter der GNU
 General Public License, Version 3 oder neuer ([`LICENSE`](LICENSE)), die
-Ansicht unter der GNU Affero General Public License, Version 3 oder neuer
-([`Web-App/v74/LICENSE.txt`](Web-App/v74/LICENSE.txt)). Die Zuordnung je Datei
+Web App unter der GNU Affero General Public License, Version 3 oder neuer
+([`Web-App/v75/LICENSE.txt`](Web-App/v75/LICENSE.txt)). Die Zuordnung je Datei
 steht in [`REUSE.toml`](REUSE.toml), die Lizenztexte liegen in
 [`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code
 (Opus 5 & Fable 5/5.1).
 
-**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v74/`,
-`Web-App/v74/`; ältere Fassungen bleiben daneben stehen); die Nummer im
+**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v75/`,
+`Web-App/v75/`; ältere Fassungen bleiben daneben stehen); die Nummer im
 Ordnernamen ist der Build der Version. Was sich je Fassung ändert, steht in
 [`CHANGELOG.md`](CHANGELOG.md). Oberfläche und
 Dokumentation sind deutsch.
@@ -94,8 +95,9 @@ a native macOS app (Swift/SwiftUI, macOS 26 on Apple Silicon, no third-party
 code) in which lessons and other projects are planned in a week grid and the
 matching teaching and learning materials are curated — file and folder
 references and web links per item, administrative and curriculum documents per
-course —, plus a read-only web view for the iPad that displays an exported plan
-and hands check marks and comments back to the app. All data stays on the Mac.
+course —, plus a read-only web app, optimised for the iPad and usable on other
+devices, that displays an exported plan and hands check marks and comments back
+to the app. All data stays on the Mac.
 Plans can be encrypted with AES-256 (Touch ID or the login password via the
 Secure Enclave, a passphrase elsewhere, a printed recovery key for
 emergencies); the app runs in the macOS App Sandbox and reaches files and
@@ -107,6 +109,6 @@ itself, and, on click in the item dialog, it loads the list of materials from
 3ducation.org so that a material can be attached as a link (IP address and
 version number are transmitted, nothing is stored). The user interface and all documentation are in German. Free software:
 the macOS app and everything else is licensed under the GNU GPL v3 or later,
-the web view under the GNU AGPL v3 or later (see `LICENSE`, `LICENSES/`,
+the web app under the GNU AGPL v3 or later (see `LICENSE`, `LICENSES/`,
 `REUSE.toml`). Signed and notarized disk images are published under
 *Releases*. Created with Claude Code.

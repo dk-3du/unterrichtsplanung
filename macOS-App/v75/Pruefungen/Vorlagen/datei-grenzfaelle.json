@@ -1,0 +1,140 @@
+{
+ "hinweis": "Je Fall eine ganze kleine Datei, wie die Website sie l\u00e4dt. jsc wertet sie je Fall in einem eigenen Prozess aus wie die Vorlagen (Datei, dann ;KATEGORIEN). leser: gleich = Materialkatalog.literal(\u2026, deklaration: true) liest dasselbe; abgewiesen = er wirft. Nie: angenommen und anders gelesen. Die Werte aus jsc schreibt katalog_pruefen.py --erzeugen daneben.",
+ "faelle": [
+  {
+   "name": "const KATEGORIEN",
+   "quelle": "const KATEGORIEN = [1];",
+   "leser": "gleich"
+  },
+  {
+   "name": "let KATEGORIEN ohne Semikolon",
+   "quelle": "let KATEGORIEN = [1]",
+   "leser": "gleich"
+  },
+  {
+   "name": "var KATEGORIEN",
+   "quelle": "var KATEGORIEN = [1];",
+   "leser": "gleich"
+  },
+  {
+   "name": "Zuweisung ohne Deklaration",
+   "quelle": "KATEGORIEN = [1];",
+   "leser": "gleich"
+  },
+  {
+   "name": "Kommentare davor und danach",
+   "quelle": "/* Kopf */\n// Zeile\nconst KATEGORIEN = [1]; // Ende",
+   "leser": "gleich"
+  },
+  {
+   "name": "Deklaration \u00fcber Zeilen",
+   "quelle": "const\nKATEGORIEN\n=\n[1]\n;",
+   "leser": "gleich"
+  },
+  {
+   "name": "Kommentar zwischen const und Namen",
+   "quelle": "const/* x */KATEGORIEN = [1]",
+   "leser": "gleich"
+  },
+  {
+   "name": "Byte-Order-Mark am Anfang",
+   "quelle": "\ufeffconst KATEGORIEN = [1];",
+   "leser": "gleich"
+  },
+  {
+   "name": "Zeilenenden CRLF",
+   "quelle": "const KATEGORIEN = [\r\n 1, // x\r\n 2\r\n];\r\n",
+   "leser": "gleich"
+  },
+  {
+   "name": "Zeilenenden U+2028",
+   "quelle": "const KATEGORIEN = [\u2028 1, // x\u2028 2\u2028];\u2028",
+   "leser": "gleich"
+  },
+  {
+   "name": "anderer Name",
+   "quelle": "const FOO = [1];",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "anders geschrieben",
+   "quelle": "const Kategorien = [1];",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "blo\u00dfer Wert ohne Deklaration",
+   "quelle": "[1]",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "var if",
+   "quelle": "var if = [1];",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "const let",
+   "quelle": "const let = [1];",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "let let",
+   "quelle": "let let = [1];",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "var let",
+   "quelle": "var let = [1];",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "this =",
+   "quelle": "this = [1];",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "if =",
+   "quelle": "if = [1];",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "class =",
+   "quelle": "class = [1];",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "const mit umkreistem a (U+24D0)",
+   "quelle": "const \u24d0 = [1];",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "Unicode-Escape im Namen (JavaScript liest KATEGORIEN)",
+   "quelle": "KATEGORIE\\u004E = [1];",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "zwei Deklarationen",
+   "quelle": "var KATEGORIEN = [1];\nvar KATEGORIEN = [2];",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "Feldzugriff in der n\u00e4chsten Zeile (ohne Semikolon kein Ende)",
+   "quelle": "const KATEGORIEN = [[1]]\n[0]",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "zweites Semikolon",
+   "quelle": "const KATEGORIEN = [1];;",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "weitere Deklaration im selben const",
+   "quelle": "const KATEGORIEN = [1], X = 2;",
+   "leser": "abgewiesen"
+  },
+  {
+   "name": "// endet an U+2028, danach Code",
+   "quelle": "const KATEGORIEN = [1] // x\u2028;[2]\n",
+   "leser": "abgewiesen"
+  }
+ ]
+}
