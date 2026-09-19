@@ -16,6 +16,37 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [1.9.5 (76)] - 2026-09-19
+
+Behebungen nach einer externen Review der Fassung 1.9.4 und eigenen Funden.
+Geplant und entschieden nach dem Fassungsvertrag (E225–E233); jeder Befund
+wurde am Lauf nachgestellt, bevor er behoben wurde — einer im Live-Test.
+
+### Fixed
+
+- **Die Übernahme aus der Web App hält die App nicht mehr an.** Nach dem
+  Aufwachen und über „Stand der Web App abrufen“ liest, entsiegelt und deutet
+  die App die Statusdatei abseits des Hauptstrangs: Eine Datei, die erst aus
+  dem Cloud-Speicher geladen wird, oder ein langsamer Datenträger lässt die
+  Oberfläche nicht mehr stehen. Wechseln währenddessen Planung, Schlüssel oder
+  Zielordner, verwirft die App das Ergebnis; ist dann ein Blatt offen, wartet
+  sie. Beim Start, nach dem Entsperren, beim Übergang des Schutzes und nach der
+  Wahl des Zielordners liest sie wie bisher gleich — dort ist die Reihenfolge
+  festgelegt.
+- **Auch hinter einem Dialog des Systems wartet die Übernahme.** War beim
+  Aufwachen „Planung öffnen …“, ein Sichern- oder der Druckdialog offen, übernahm
+  1.9.4 dahinter. Jetzt wartet sie, bis der Dialog geschlossen ist — wie hinter
+  den eigenen Blättern.
+- **Prüfwerk:** Ein Ordner, der sich nicht lesen lässt, heißt beim Prüfschritt
+  „Name der Web App“ und beim Manifest des Rundenpakets nicht mehr „stimmig“,
+  sondern wird benannt; die Gegenproben prüfen die Meldung, nicht nur die
+  Rückgabe.
+- **Prüfwerk:** Die Prüfungen zum Entzug der Erlaubnis hingen seit 1.9.2 an der
+  Zeitgrenze des Betriebs (10 s): Kamen sie im vollen Prüflauf erst später
+  wieder an die Reihe, lief die festgehaltene Anfrage ab — etwa jeder zwanzigste
+  Lauf wurde so rot. Sie haben jetzt ihre eigene Grenze; der Betrieb behält
+  seine 10 s.
+
 ## [1.9.4 (75)] - 2026-09-19
 
 Die Übernahme aus der Web App bei geöffneter App, dazu Behebungen nach einer
