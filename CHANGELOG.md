@@ -16,6 +16,38 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [1.9.7 (78)] - 2026-09-20
+
+Wartung nach einer externen Review der Fassung 1.9.6. Geplant und entschieden
+nach dem Fassungsvertrag (E241–E243). Beide Befunde sind mild und keiner
+betrifft die Arbeit mit der App: **Am Verhalten ändert sich nichts.**
+
+### Changed
+
+- **Was ein Abbruch beim Lesen des Standes bedeutet, ist jetzt festgelegt.**
+  Die Review fragte, ob ein Abbruch der Leseaufgabe das Anwenden des
+  Ergebnisses verhindern soll. Er soll es nicht: **Eine zugelassene Übernahme
+  läuft zu Ende.** Die Aufgabe, die „Stand der Web App abrufen“ und der Abruf
+  nach dem Aufwachen zurückgeben, ist eine Wartemarke für die Prüfungen, kein
+  Griff zum Abbrechen — und im Programm bricht sie niemand ab. Ein Wächter
+  darauf brächte auch nichts ein: Gelesen wird auf einer Warteschlange, die
+  sich nicht abbrechen lässt; unterdrückt würde nur das Anwenden, während der
+  Lesevorgang weiterliefe. Verworfen wird weiterhin nach der Lage — nach
+  Anfragenummer und Marke der Sitzung. Die Festlegung steht am Quelltext und
+  ist durch zwei Prüfungen festgehalten, damit ein später eingefügter
+  Abbruchwächter auffällt.
+- **Prüfwerk:** `runde.py --packen` löst sein Ziel auf, bevor es prüft. Seit
+  1.9.6 weist der Treiber ein Ziel ab, das schon ein Rundenpaket benennt —
+  er sah dabei aber nur die Schreibweise an, nicht den Ordner: `.`, `..` aus
+  einem Unterordner und ein Aliasname kamen durch. Jetzt wird abgewiesen, was
+  in einem Rundenpaket liegt, gleich wie es geschrieben ist; gebaut wird der
+  Pfad unverändert aus der Schreibweise des Aufrufs. Sieben Fälle am echten
+  Arbeitsverzeichnis prüfen das mit.
+- **Prüfwerk:** Eine Lücke geschlossen — die Rückkehr in die Ersteinrichtung
+  nach einem **gescheiterten** Schutzübergang ist jetzt belegt. Sie bestand
+  schon seit 1.9.6, war aber nur für den gelungenen und den abgebrochenen
+  Übergang geprüft.
+
 ## [1.9.6 (77)] - 2026-09-20
 
 Behebungen nach einer externen Review der Fassung 1.9.5 und einem Fund des

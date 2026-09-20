@@ -1,0 +1,170 @@
+// SPDX-FileCopyrightText: 2026 Dominik Kluge
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import Foundation
+
+// ── Ersteinrichtung ──────────────────────────────────────────────────────────
+// Vier Fragen nach der ersten Planung, alle freiwillig: erst
+// die Verschlüsselung — mit der Einrichtung gleich im Blatt —, dann die
+// Sicherungskopie beim Beenden, dann die Prüfung auf Updates, zuletzt die
+// Materialliste von 3ducation.org (v71, E176).
+extension Planungsspeicher {
+
+    /// Wer den Ordner schon gewählt hat, wird nicht gefragt.
+    var ersteinrichtungFaellig: Bool {
+        Planungsspeicher.ersteinrichtungFaellig(
+            pruefstand: Ablage.istPruefstand,
+            ordner: autoexportOrdner,
+            gefragt: Einstellungen.wert(Einstellungen.Schluessel.autoexportGefragt) ?? false)
+    }
+
+    /// Die Entscheidung ohne ihre drei Quellen — sonst ließe sie sich nicht
+    /// prüfen: Im Prüflauf ist `Ablage.istPruefstand` gesetzt.
+    static func ersteinrichtungFaellig(pruefstand: Bool, ordner: String, gefragt: Bool) -> Bool {
+        !pruefstand && ordner.isEmpty && !gefragt
+    }
+
+    /// Die Stationen des Blatts: die Frage nach der Verschlüsselung, deren
+    /// zwei Einrichtungsschritte, die Frage nach der Sicherungskopie, die Frage
+    /// nach den Updates, die Frage nach der Materialliste. Im Speicher statt im
+    /// Blatt, damit Prüfungen und Abbilder jede erreichen.
+    enum Ersteinrichtungsschritt: Equatable, Sendable {
+        case verschluesselung
+        case passphrase
+        /// Mit dem Wiederherstellungsschlüssel, der nur hier gezeigt wird.
+        case blatt(String)
+        case sicherung
+        /// Beim Öffnen nach Updates suchen? Nur mit Einwilligung.
+        case updates
+        /// Die Materialliste von 3ducation.org im Vorhaben-Dialog anbieten?
+        /// Nur mit Erlaubnis (v71, E176).
+        case materialien
+    }
+
+    /// Was nach einer Planung von selbst aufgeht, in der Reihenfolge, in der
+    /// es kommt: die Ersteinrichtung mit ihren vier Fragen, dann die beiden
+    /// Ersatzblätter für Planungen, die älter sind als die dritte und vierte
+    /// Frage, zuletzt das Angebot der Tour. Jeder Schritt prüft selbst, ob er
+    /// fällig ist und ob gerade nichts offen ist; der erste, der zusagt,
+    /// nimmt das Fenster, die übrigen kommen beim nächsten Schließen.
+    ///
+    /// **Die Tour steht am Ende (E239, v77):** Sie ist ein Angebot, keine
+    /// Frage. Bis 1.9.5 stand sie vor den beiden Ersatzblättern — auf dem Weg
+    /// über die Verschlüsselung (B67) kam sie damit vor der Frage nach den
+    /// Updates und der nach der Materialliste.
+    ///
+    /// Hier statt in der `Hauptansicht`, damit Prüfungen dieselbe Folge gehen
+    /// wie die Oberfläche und nicht eine nachgebaute — **an einer Stelle, nicht
+    /// an dreien**: Eine Folge, die zweimal geschrieben steht, läuft auseinander.
+    ///
+    /// `mitTour: false` beim Erscheinen des Fensters: Dort kommt die Tour
+    /// nicht, weil sie zur **neuen** Planung gehört (`neuePlanung` setzt
+    /// `tourAnbieten`, `Planungsspeicher+Dateien.swift`) und eine geladene
+    /// keine neue ist. Der Schalter sagt das ausdrücklich, statt sich darauf
+    /// zu verlassen, dass der Merker beim Start ohnehin falsch ist (v77).
+    func angeboteUndFragenPruefen(mitTour: Bool = true) {
+        ersteinrichtungPruefen()
+        updateNachfragePruefen()
+        materialNachfragePruefen()
+        if mitTour { tourAnbietenPruefen() }
+    }
+
+    /// Die Frage kommt erst, wenn eine Planung da ist und kein anderes Blatt
+    /// offen liegt — sonst nähme sie ihm das Fenster weg.
+    func ersteinrichtungPruefen() {
+        guard hatPlanung, !dialogOffen else { return }
+        // Abgelöst, aber nicht zu Ende: dort weiter, wo sie stand — nicht über
+        // `ersteinrichtungOeffnen()`, das den Schritt zurücksetzte, und ohne
+        // `ersteinrichtungFaellig`, das nach der zweiten Antwort falsch ist
+        // (B67, E239, v77). Der Merker fällt vor dem Öffnen, damit ein Blatt,
+        // das der Nutzer ungefragt schließt, nicht wiederkehrt; die beiden
+        // Ersatzblätter fangen die Fragen dann wie bei älteren Planungen.
+        if ersteinrichtungFortsetzen {
+            ersteinrichtungFortsetzen = false
+            offenerDialog = .ersteinrichtung
+            return
+        }
+        guard ersteinrichtungFaellig else { return }
+        ersteinrichtungOeffnen()
+    }
+
+    /// Das Blatt öffnen, ohne die Schranke — für Prüfungen und Prüfstände.
+    /// Ist die Verschlüsselung schon eingeschaltet (eine versiegelte Datei als
+    /// erste Planung), bleibt nur die zweite Frage.
+    func ersteinrichtungOeffnen() {
+        ersteinrichtungsschritt = verschluesselt ? .sicherung : .verschluesselung
+        offenerDialog = .ersteinrichtung
+    }
+
+    /// „Verschlüsselung einrichten …“: Schritt 1, die Passphrase.
+    func ersteinrichtungEinrichten() {
+        ersteinrichtungsschritt = .passphrase
+    }
+
+    /// „Weiter“ nach der Passphrase: Datenschlüssel und Wicklungen liegen
+    /// bereit, das Blatt mit dem Wiederherstellungsschlüssel folgt. Scharf ist
+    /// noch nichts; eine zu kurze Passphrase wirft und lässt den Schritt stehen.
+    func ersteinrichtungWeiter(passphrase: String) throws {
+        ersteinrichtungsschritt = .blatt(try verschluesselungVorbereiten(passphrase: passphrase))
+    }
+
+    /// Dasselbe abseits des Hauptstrangs — für das Blatt; ein verworfenes
+    /// Ergebnis lässt den Schritt stehen.
+    func ersteinrichtungWeiterAsynchron(passphrase: String) async throws {
+        guard let blatt = try await verschluesselungVorbereitenAsynchron(passphrase: passphrase),
+              ersteinrichtungsschritt == .passphrase else { return }
+        ersteinrichtungsschritt = .blatt(blatt)
+    }
+
+    /// „Verschlüsselung einschalten“ nach dem bestätigten Blatt — und weiter
+    /// zur zweiten Frage, deren Kopie dann von Anfang an versiegelt ist. Wurde
+    /// der Übergang zurückgenommen (die Ablage ließ sich nicht schreiben),
+    /// steht wieder die Frage: Geschehen ist nichts, das Blatt sagt, warum.
+    @discardableResult
+    func ersteinrichtungEinschalten() -> Schutzergebnis {
+        guard case .blatt = ersteinrichtungsschritt else {
+            return Schutzergebnis(ablage: .zurueckgenommen("kein bestätigtes Blatt"))
+        }
+        let ergebnis = verschluesselungEinschalten()
+        if case .zurueckgenommen = ergebnis.ablage {
+            ersteinrichtungsschritt = .verschluesselung
+        } else {
+            ersteinrichtungsschritt = .sicherung
+        }
+        return ergebnis
+    }
+
+    /// „Abbrechen“ in der Einrichtung: zurück zur Frage; geschehen ist nichts.
+    func ersteinrichtungAbbrechen() {
+        verschluesselungVerwerfen()
+        ersteinrichtungsschritt = .verschluesselung
+    }
+
+    /// „Überspringen“: Die Verschlüsselung bleibt aus — nachzuholen unter
+    /// „Einstellungen“, spätestens mit der Kopie, die es nur versiegelt gibt.
+    func ersteinrichtungUeberspringen() {
+        ersteinrichtungsschritt = .sicherung
+    }
+
+    /// Beantwortet ist beantwortet — auch „Später“; nachzuholen ist es unter
+    /// „Einstellungen“.
+    func ersteinrichtungBeantwortet() {
+        Einstellungen.setzen(true, Einstellungen.Schluessel.autoexportGefragt)
+    }
+
+    /// Nach der Sicherungsfrage — „Später“ wie „Ordner wählen …“ — die dritte.
+    func ersteinrichtungZuUpdates() {
+        ersteinrichtungsschritt = .updates
+    }
+
+    /// Die Antwort auf die dritte Frage — und weiter zur vierten.
+    func ersteinrichtungUpdates(erlauben: Bool) {
+        updatesErlauben(erlauben)
+        ersteinrichtungsschritt = .materialien
+    }
+
+    /// Die Antwort auf die vierte Frage; damit ist die Ersteinrichtung durch.
+    func ersteinrichtungMaterialien(erlauben: Bool) {
+        materialienErlauben(erlauben)
+    }
+}
