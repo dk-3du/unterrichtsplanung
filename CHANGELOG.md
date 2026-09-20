@@ -16,6 +16,54 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [1.9.6 (77)] - 2026-09-20
+
+Behebungen nach einer externen Review der Fassung 1.9.5 und einem Fund des
+Nutzers. Geplant und entschieden nach dem Fassungsvertrag (E235–E240); jeder
+Befund am Verhalten wurde am Lauf nachgestellt, bevor er behoben wurde.
+
+### Fixed
+
+- **Ein im Hintergrund gelesener Stand gilt nur für seine Sitzung.** Bis 1.9.5
+  erkannte die App ihre Sitzung am Zeitstempel der Erstellung — der steht in
+  der Planungsdatei und überlebt jedes Sichern und Öffnen. Wer während eines
+  laufenden Abrufs dieselbe Planung erneut öffnete oder eine Sicherungskopie
+  zurückholte, bekam den alten Stand in die frisch geladene Planung, und der
+  Verlauf zum Widerrufen begann dort neu. Die App führt jetzt eine eigene
+  Marke der Sitzung. Eine gewöhnliche Bearbeitung — auch Widerrufen und
+  Wiederholen — sperrt den Stand der Web App weiterhin nicht aus; dafür
+  entscheidet der Abgleich je Vorhaben nach Zeitstempel.
+- **Auch der Zugang zum Zielordner hält die App nicht mehr an.** 1.9.5 las die
+  Statusdatei abseits des Hauptstrangs, löste aber das Lesezeichen des
+  Zielordners noch davor auf — und ein verschobener Ordner wurde dabei gleich
+  neu gemerkt. Beides fasst den Zielordner an und dauert dort so lange, wie
+  der Speicher braucht. Jetzt gibt der Hauptstrang nur noch die Merkdaten
+  heraus; aufgelöst wird, wo gelesen wird. Ein erneuertes Lesezeichen kommt
+  mit dem Ergebnis zurück und wird nur übernommen, wenn die Lage noch gilt.
+- **„Stand der Web App abrufen“ liest nur noch einmal zugleich.** Gegen einen
+  Zielordner, der nicht antwortet, legte jeder weitere Aufruf einen weiteren
+  Lesevorgang an. Jetzt liest einer, weitere Anfragen bündeln sich zu einer
+  Wiederholung, und der Menüeintrag ist währenddessen grau. Wer dennoch
+  klickt, bekommt die Antwort „Der Stand der Web App wird gerade gelesen.“
+- **Die Ersteinrichtung wird auf jedem Weg zu Ende geführt.** Wer bei der
+  ersten Frage die Verschlüsselung übersprang und dann einen Ordner für die
+  Sicherungskopie wählte, richtete die Verschlüsselung nachträglich ein — und
+  deren Blatt löste die Ersteinrichtung nach der zweiten von vier Fragen ab.
+  Die Fragen nach den Updates und nach der Materialliste kamen danach einzeln,
+  und die Tour wurde vor ihnen angeboten. Jetzt kehrt die App in die
+  Ersteinrichtung zurück, gleich ob die Verschlüsselung eingerichtet oder
+  abgebrochen wurde; die Tour ist ein Angebot und kommt zuletzt. Der Fehler
+  bestand seit 1.7.7.
+
+### Changed
+
+- **Prüfwerk:** Die vierte Frage der Ersteinrichtung lässt sich abbilden;
+  die Reihenfolge der Blätter nach einer Planung steht an einer Stelle statt
+  in der Oberfläche, damit die Prüfungen dieselbe Folge gehen. `runde.py
+  --packen` weist ein Ziel ab, das schon ein Rundenpaket benennt, und nennt
+  den richtigen Aufruf — sonst entstünde ein Rundenpaket im Rundenpaket, das
+  im Gast nicht läuft.
+
 ## [1.9.5 (76)] - 2026-09-19
 
 Behebungen nach einer externen Review der Fassung 1.9.4 und eigenen Funden.
