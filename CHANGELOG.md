@@ -16,6 +16,30 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [1.9.8 (79)] - 2026-09-27
+
+Wartung am Prüfwerk nach einer externen Review der Fassung 1.9.7. Geplant und
+entschieden nach dem Fassungsvertrag (E244, E245). Der eine Befund ist mild
+und betrifft ein Werkzeug, nicht die App: **An der App ist keine Zeile
+geändert.**
+
+### Fixed
+
+- **`runde.py --packen` prüft jetzt den Ordner, den es anlegt.** Seit 1.9.7
+  löst der Wächter das ZIEL auf, bevor er es prüft — er baute den Pfad aber
+  weiterhin aus der Schreibweise des Aufrufs, und beides meint nicht denselben
+  Ort, sobald auf einen Aliasnamen ein `..` folgt: Das Auflösen geht durch den
+  Alias hindurch und dann hinauf, das textliche Kürzen streicht `alias/..`
+  weg, ohne den Alias anzusehen. Hinter einem Alias über die Grenze eines
+  Rundenpakets wies der Wächter darum den einen Ordner zu und ließ das Paket
+  im anderen anlegen — in beide Richtungen: Ein Ziel im Rundenpaket wurde
+  angenommen, ein Ziel außerhalb abgewiesen. Jetzt wird zuerst der Ordner
+  gebildet, der wirklich beschrieben wird, und dann **dessen** Ort geprüft.
+  Gebaut wird weiterhin aus der Schreibweise, damit im Packprotokoll der
+  Ordner steht, den der Aufruf genannt hat. Der Selbsttest verlangt die Zusage
+  nun an jedem angenommenen Fall: Der Ordner, der entsteht, liegt in keinem
+  Rundenpaket.
+
 ## [1.9.7 (78)] - 2026-09-20
 
 Wartung nach einer externen Review der Fassung 1.9.6. Geplant und entschieden
