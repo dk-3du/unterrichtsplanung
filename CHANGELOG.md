@@ -16,6 +16,50 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.0.2 (82)] - 2026-10-26
+
+Behebungen nach 2.0.1 (Fassungsvertrag v82, E413–E446).
+
+### Fixed
+
+- **Rückfragen hinter Blättern:** Eine Frage, deren Ort gerade nicht zu sehen
+  ist, stand bisher unsichtbar — sie sperrte das Menü still und hielt
+  bestätigte Handlungen fest. Jetzt wartet sie, solange ein Bogen über ihrem
+  Blatt liegt oder das Blatt erst kommt; ist ihr Ort fort (ihr Blatt oder Bogen
+  ist zu, oder ein Blatt liegt über der Hauptfläche), entfällt sie — eine neue
+  gleich mit Ton —, und ein Hinweis kommt, wenn nichts mehr offen ist.
+- **Antworten, die die Fläche umbauen:** Was eine Antwort umbaut — die
+  Hauptfläche oder ein Blatt —, geschieht erst, wenn die Rückfrage zu ist;
+  bisher schloss das System die Rückfrage mitten im Umbau. Das gilt auch für
+  die eigenen Rückfragen des Vorhaben-Blatts und des Sitzplan-Editors. In der
+  kurzen Lücke bis dahin prallen Tasten, Klicks, Befehle und das Beenden ab,
+  mit Ton.
+- **„Trotzdem beenden“:** Wird das Beenden danach doch abgelehnt, fragt das
+  nächste wieder — bisher beendete jedes spätere ⌘Q ohne Frage, obwohl die
+  Sicherung weiter scheiterte.
+- **Beenden per AppleScript bei offenem Blatt:** Das Skript erfährt, ob die App
+  endete oder warum das Beenden abgelehnt wurde; bisher meldete es Gelingen,
+  bevor die Blätter zu waren.
+- **„Übernehmen“ beim Beenden** nimmt den Stand des Blatts „Lernende“ zur Zeit
+  der Antwort, nicht der Frage; ist dann nichts mehr geändert, wird nichts
+  geschrieben.
+- **Ersetzte Kennungen in der Jahresdatei:** Ersetzte das Lesen ungültige oder
+  doppelte Kennungen, würfelte jedes Lesen neu, und Tische im Sitzplan
+  verloren beim nächsten Start ihre Bindung. Jetzt bleibt das Original als
+  Kopie daneben, und die Jahresdatei wird einmal geschrieben.
+- **Meldungen hinter Blättern:** Ein Fehler beim Sichern der Sitzpläne beim
+  Öffnen des Editors kommt nach dessen Schließen. Dateifehler beim Öffnen aus
+  dem Finder hinter einem Blatt geben den Ton sofort und kommen danach, mit dem
+  Namen der Datei; ein Export der Lernendenverwaltung nennt dort gleich den
+  Grund, aus dem er nicht eingelesen würde.
+
+### Changed
+
+- **Prüfwerk:** Lehnt das System das Beenden an der Endstelle eines
+  Prüfstands endgültig ab, endet der Lauf binnen Sekunden mit Grund und
+  Rückgabe 3 statt erst an der Frist der Runde; die Lernendenprobe hat eine
+  eigene Reißleine. Die Prüfstände warten die Lücke nach einer Antwort ab.
+
 ## [2.0.1 (81)] - 2026-10-26
 
 Behebungen nach 2.0.0 (Fassungsvertrag v81, E325–E348 und E391–E399).
