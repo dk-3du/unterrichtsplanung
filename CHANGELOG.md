@@ -16,6 +16,52 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.0.3 (83)] - 2026-10-26
+
+Behebungen nach 2.0.2 (Fassungsvertrag v83, E449–E475).
+
+### Fixed
+
+- **VoiceOver:** Neue Meldungen werden angesagt — mehrere einer Änderung in
+  einer Ansage, in ihrer Reihenfolge, Warnungen mit „Warnung:“ davor —, sobald
+  der Fokus ruht: auch nach einem Dialog, beim Aktivieren aus dem Finder und
+  beim Start. Bisher hörte VoiceOver von mehreren Meldungen nur die letzte, und
+  das Objekt unter dem Mauszeiger oder der Fenstertitel übertönte die Ansage.
+- **„Als PDF sichern …“ im Sitzplan** fragt bei eingeschalteter
+  Verschlüsselung nicht mehr vorab; der Kennwortschutz bleibt vorgewählt.
+- **Ein zweiter Dialog am selben Blatt:** PDF und Druck des Sitzplans geben
+  den Systemton und tun nichts, solange am Blatt schon ein Bogen hängt.
+  Dialoge aus einem Blatt hängen nichts an ein Blatt, das nach kurzer Frist
+  noch belegt ist (mit Ton); ein verwaistes Zusatzfenster bleibt nicht mehr
+  stehen.
+- **„Übernehmen“ im Blatt „Lernende“** trägt eine getippte, noch nicht
+  eingetragene Namensliste ein und übernimmt dann, statt zu fragen, ob sie
+  verworfen werden soll. Mit einer fehlerhaften Zeile bleibt das Blatt offen,
+  eine Warnung nennt die Zeile; ist die Liste verdeckt, holt „Übernehmen“ sie
+  nur nach vorn, mit einem Hinweis — eingetragen wird beim nächsten
+  „Übernehmen“.
+- **„Trotzdem beenden“:** Scheitert dabei eine eben bestätigte Löschung im
+  Archiv, bleibt die App mit ihrer Warnung, und das nächste Beenden fragt
+  wieder — bisher ging die Warnung mit der App.
+- **Lesen mit Verlust oder ersetzten Kennungen:** Jahresdatei, Archiv und
+  Sitzpläne bewahren das Original als Kopie und werden einmal geschrieben,
+  mit einer Meldung — bisher legte jeder Start (außer bei ersetzten Kennungen
+  der Jahresdatei, 2.0.2) eine neue Kopie an und warnte erneut, und eine
+  Löschung im Archiv konnte ins Leere gehen. Die Planung
+  ebenso, wenn das Lesen Kennungen ersetzte: Sitzpläne an Klassen mit
+  ersetzter Kennung fielen sonst beim nächsten Start aus der Planung.
+- **Löschung im Archiv ohne Ziel:** Findet eine bestätigte Löschung ihren
+  Eintrag nicht mehr, wird nichts geschrieben, und eine Warnung sagt es.
+
+### Changed
+
+- **Archiv:** Eine Löschung entschlüsselt das Archiv einmal weniger.
+- **Prüfwerk:** Die Dialogprobe prüft am Sitzplan einen zweiten Dialog bei
+  hängendem Bogen und am Klassen-Blatt einen Dialog aus der Antwort auf eine
+  Rückfrage; ruft sie das Netz direkt auf und ist dabei nicht vorn, endet
+  dieser Schritt sofort mit Befund. Die Lernendenprobe prüft „Übernehmen“ mit
+  getippter, fehlerhafter und verdeckter Namensliste.
+
 ## [2.0.2 (82)] - 2026-10-26
 
 Behebungen nach 2.0.1 (Fassungsvertrag v82, E413–E446).
