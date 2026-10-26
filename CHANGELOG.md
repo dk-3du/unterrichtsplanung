@@ -16,6 +16,45 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.2.0 (85)] - 2026-10-26
+
+Vorhaben-Blatt mit Abschnitten und Rückmeldungslisten (Fassungsvertrag v85).
+
+### Added
+
+- **Rückmeldungsliste:** Im Teil „Mitteilungen“ einer Lerngruppe steht rechts in der Zeile „Neue Mitteilung“
+  der Knopf „Rückmeldungsliste …“ (gesperrt, solange die Lerngruppe keine Mitteilung hat). Der Bogen nimmt
+  gewählte Mitteilungen — nichts ist vorgewählt — und gibt sie als Liste aus: je Mitteilung eine Spalte mit
+  allen Rückläufen und ihrem Stand, die Notizen im Anhang, auf DIN A4 quer. „Als PDF sichern (verschlüsselt) …“
+  schreibt das PDF nur verschlüsselt (AES-128) mit einem zweimal getippten Kennwort; der Bogen sagt, dass der
+  Knopf erst dann wählbar ist. „Drucken …“ geht nur an einen Drucker — die PDF-Wege des Druckdialogs weist die
+  App ab und sagt es. Wer betroffen, aber nicht mehr Mitglied ist, steht unter der Zwischenzeile „nicht mehr in
+  der Lerngruppe“; sie steht nie allein am Fuß einer Seite und oben auf jeder Folgeseite, die mit solchen
+  Personen beginnt. Der Dateiname nennt die Lerngruppe und den Tag.
+- **Planung übernehmen:** Ein Mac ohne Planung und ohne Verschlüsselung öffnet eine versiegelte Planung über das
+  Blatt „Planung übernehmen“ — mit ihrer Passphrase oder ihrem Wiederherstellungsschlüssel werden ihre Schlüssel
+  die der Ablage; nie Klartext auf der Platte. Auch aus Frage 1 der Ersteinrichtung („Planung öffnen …“).
+
+### Changed
+
+- **Vorhaben-Blatt:** so groß wie das Blatt „Lernende“, oben eine Leiste mit sieben gleich breiten Teilen —
+  Grundlegendes, Kommentar, Prüfung, Termin, Hausaufgabe, Material, Links (Materialien von 3ducation.org unter
+  „Links“). Der Inhalt nutzt die volle Breite; Kennzeichen an der Leiste zeigen, wo etwas eingetragen ist; weist
+  „Übernehmen“ etwas ab, öffnet das Blatt den Teil, der es betrifft. „Hausaufgabe hinzufügen …“ im Kachelmenü
+  öffnet den Teil „Hausaufgabe“.
+- **Rücklaufliste:** Die Spalten der Mitteilungen sind fest breit; ihr Kopf nennt den Tag vorn
+  („07.09. · Elternbrief Wandertag“).
+- **Öffnen- und Sichern-Dialoge an einem Blatt** stehen nicht mehr weit über das Blatt hinaus: höchstens so breit
+  wie das Blatt, nie schmaler als ihre Mindestbreite.
+- **Herkunftszeile:** überall nur „Erstellt mit Claude Code“.
+
+### Fixed
+
+- **Termin ohne offene Lernendenverwaltung:** Im Vorhaben-Blatt ließ sich „Als Termin führen“ bei einem bestehenden
+  Termin aus-, aber nicht wieder einschalten; jetzt geht beides, und „Übernehmen“ behält den Termin.
+- **Planung aus der Ersteinrichtung:** Wird in Frage 1 eine Planung im Klartext geöffnet, erscheint ihre Meldung —
+  auch eine Warnung über Verlorenes — nach dem Blatt, statt unbemerkt darunter zu vergehen.
+
 ## [2.1.0 (84)] - 2026-10-26
 
 Erweiterung der Lernendenverwaltung (Fassungsvertrag v84).
