@@ -1,0 +1,827 @@
+// SPDX-FileCopyrightText: 2026 Dominik Kluge
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import AppKit
+import Foundation
+
+/// Proben am echten Fenster mit echten Ereignissen: rollen, klicken, ziehen,
+/// tippen, Menüs — was ein Prüfziel ohne Fenster nicht zeigen kann.
+@MainActor
+enum Klickproben {
+
+    /// `--rolltest`: rollt das Raster über eine wiederkehrende Uhr und meldet
+    /// die Zeit je Bild.
+    static func rolltestUndBeenden(zerlegen: Bool) {
+        Messzaehler.an = zerlegen
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2.5))
+            guard let fenster = NSApp.windows.first(where: { $0.isVisible }),
+                  let rollbereich = groesserRollbereich(in: fenster.contentView) else {
+                print("ROLLTEST ✗ kein Rollbereich gefunden")
+                fflush(stdout)
+                Pruefstaende.abschliessenUndBeenden()
+                return
+            }
+
+            let messung = Messung()
+            messung.beginn = Date()
+            messung.rechenzeitVorher = Messung.rechenzeit()
+            let uhr = Timer(timeInterval: 1.0 / 60, repeats: true) { _ in
+                MainActor.assumeIsolated {
+                    rollbereich.contentView.scroll(
+                        to: NSPoint(x: CGFloat((messung.schritt % 60) * 40), y: 0))
+                    rollbereich.reflectScrolledClipView(rollbereich.contentView)
+                    messung.schritt += 1
+                    guard messung.schritt >= 120 else { return }
+                    // Anhalten vor dem Auswerten: Sonst schlüge die Uhr während
+                    // des Nachlaufs weiter und riefe `fertig()` erneut auf.
+                    messung.uhr?.invalidate()
+                    messung.uhr = nil
+                    messung.fertig()
+                }
+            }
+            messung.uhr = uhr
+            RunLoop.main.add(uhr, forMode: .common)
+        }
+    }
+
+    /// `--klicktest`: misst einen Handgriff am echten Fenster in echter Größe —
+    /// im Prüfstand ist es kleiner, und die Zahl fiele zu günstig aus.
+    static func klicktestUndBeenden(_ speicher: Planungsspeicher) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2.5))
+            // Ein Frühausstieg sagt ✗, spült aus und endet über die Blätter (N67-01, v68):
+            // Bis v67 stand hier nur der Text und `NSApp.terminate` — in einem leeren
+            // Ordner wies das Blatt „Neue Planung“ das Beenden ab (Hänger bis zur
+            // Frist, die Zeile blieb im Puffer), und mit einer Planung ohne Klassen
+            // endete der Lauf still mit Rückgabe 0 — der Treiber zählte ihn grün.
+            guard let planung = speicher.planung,
+                  let fenster = NSApp.windows.first(where: { $0.isVisible }),
+                  let klasse = planung.klassen.first else {
+                print("KLICKTEST ✗ keine Planung")
+                fflush(stdout)
+                await Pruefstaende.abschliessenUndBeenden(speicher)
+                return
+            }
+            let wochen = planung.wochenListe
+            // Rechenzeit statt Uhrzeit: SwiftUI trägt erst im nächsten Ablaufring nach.
+            let laeufe = 10
+            let vorher = Messung.rechenzeit()
+            for lauf in 0..<laeufe {
+                speicher.zelleFreiSchalten(klasse: klasse.id, woche: wochen[lauf % wochen.count])
+                fenster.contentView?.layoutSubtreeIfNeeded()
+                fenster.displayIfNeeded()
+                try? await Task.sleep(for: .milliseconds(150))
+            }
+            let dauer = (Messung.rechenzeit() - vorher) / Double(laeufe) * 1000
+            print(String(format: "KLICKTEST %.0f ms Rechenzeit je Handgriff (Fenster %.0f × %.0f, "
+                         + "%d Klassen/Kurse, %d Wochen, %d Vorhaben)", dauer,
+                         fenster.frame.width, fenster.frame.height,
+                         planung.klassen.count, planung.wochen, planung.eintraege.count))
+            // An einem Vorhaben ohne Hausaufgabe: „Hausaufgabe hinzufügen …“ am Speicher, wie der Menüeintrag es ruft
+            // (den Menüweg selbst geht die Lernendenprobe) — das Blatt auf „Hausaufgabe“ mit eingeschalteter Hausaufgabe
+            // im Entwurf; ohne „Übernehmen“ geschlossen, bleibt nichts zurück (E653). Danach Hinzufügen und Entfernen am
+            // Speicher; Entfernen wie aus dem Menü, ein Schritt, der die Zeile mitnimmt; die Datei steht wieder wie vorher.
+            if let ohne = planung.eintraege.first(where: { !$0.hausaufgabe }) {
+                speicher.vorhabenOeffnen(id: ohne.id, alsHausaufgabe: true)
+                fenster.contentView?.layoutSubtreeIfNeeded()
+                fenster.displayIfNeeded()
+                // Zwei Bedingungen hinter einem Zeichen — die verfehlte beim Namen (G1-04).
+                var abweichend: [String] = []
+                if speicher.vorhabenDialog == nil {
+                    abweichend.append("kein Vorhaben-Blatt")  // die Ursache, nicht ihre Folgen (Z-AX0b-08)
+                } else {
+                    if speicher.vorhabenReiter != .hausaufgabe { abweichend.append("nicht auf „Hausaufgabe“") }
+                    if speicher.vorhabenDialog?.hausaufgabe != true { abweichend.append("Hausaufgabe im Entwurf aus") }
+                }
+                let blatt = abweichend.isEmpty
+                speicher.vorhabenDialog = nil
+                let nichts = speicher.planung?.eintraege.first { $0.id == ohne.id }?.hausaufgabe == false
+                print("KLICKTEST Hausaufgabe hinzufügen …: Blatt auf „Hausaufgabe“ \(blatt ? "✓" : "✗")"
+                      + (blatt ? "" : " (\(abweichend.joined(separator: "; ")))")
+                      + ", ohne Übernehmen nichts zurück \(nichts ? "✓" : "✗")")
+                speicher.hausaufgabeUmschalten(ohne.id)
+                let an = speicher.planung?.eintraege.first { $0.id == ohne.id }?.hausaufgabe == true
+                speicher.hausaufgabeUmschalten(ohne.id)
+                let danach = speicher.planung?.eintraege.first { $0.id == ohne.id }
+                let aus = danach?.hausaufgabe == false && danach?.hausaufgabenText == ""
+                print("KLICKTEST Hausaufgabe an \(an ? "✓" : "✗"), aus \(aus ? "✓" : "✗")")
+            } else {
+                print("KLICKTEST Hausaufgabe: kein Vorhaben ohne — übersprungen")
+            }
+            // Die Gegenprobe der Runde (N67-01, v69): Hier, nach der ersten
+            // Zusicherung und vor der Kurszelle, endet der Lauf regulär, wenn
+            // PRUEFSTAND_FRUEHES_ENDE gesetzt ist — im Betrieb nie.
+            Pruefstaende.fruehesEndeFallsVerlangt()
+            // Das Merkmal Korrektur am Paket: aus der Datei gelesen — die Saat der
+            // Runde führt eine, und `runde.py` verlangt diese Zeile —, dann
+            // geschaltet wie aus dem Rechtsklickmenü. Nach dem frühen Ende, damit
+            // die Gegenprobe ihr Szenario behält.
+            korrekturProbe(speicher)
+            // Kurszelle (v50, E34): Ein echter Klick auf „+ Sitzplan“ in der
+            // ersten Zeile öffnet den Editor; mit Plan fragt „Sitzplan
+            // entfernen“ zurück, Abbrechen lässt ihn. Der Wähler der
+            // Dateizeilen ist ein modales Blatt — dort klickt der Prüfstand
+            // nicht; der Weg ist derselbe wie in ⌘K (`kursdateiWaehlen`).
+            await kurszelleProbe(speicher, fenster: fenster, klasse: klasse)
+            Pruefstaende.abschliessenUndBeenden()
+        }
+    }
+
+    /// Liest, schaltet und hält die Regel „entweder Prüfung oder Korrektur“ —
+    /// danach steht die Planung wie vorher.
+    private static func korrekturProbe(_ speicher: Planungsspeicher) {
+        guard let planung = speicher.planung else { return }
+        func stand(_ id: String) -> Vorhaben? { speicher.planung?.eintraege.first { $0.id == id } }
+        let gelesen = planung.eintraege.filter(\.korrektur)
+        if let eine = gelesen.first {
+            print("KLICKTEST Korrektur aus der Datei: \(gelesen.count) gelesen ✓")
+            speicher.pruefungUmschalten(eine.id)
+            let bleibt = stand(eine.id)?.korrektur == true && stand(eine.id)?.pruefung == false
+            print("KLICKTEST an der Korrektur wird keine Prüfung \(bleibt ? "✓" : "✗")")
+        } else {
+            print("KLICKTEST Korrektur aus der Datei: keine in dieser Planung — übersprungen")
+        }
+        if let frei = planung.eintraege.first(where: { !$0.korrektur && !$0.pruefung }) {
+            speicher.korrekturUmschalten(frei.id)
+            let an = stand(frei.id)?.korrektur == true
+            speicher.korrekturUmschalten(frei.id)
+            let aus = stand(frei.id)?.korrektur == false
+            print("KLICKTEST Korrektur an \(an ? "✓" : "✗"), aus \(aus ? "✓" : "✗")")
+        }
+    }
+
+    /// Bis `gilt` zutrifft, höchstens `takte` × 150 ms — die eine Warteschleife der Kurszelle (AX7e: aus der Probe „+ Sitzplan“
+    /// herausgelöst, auch für die Leistungsdokumentation).
+    private static func bisGilt(_ takte: Int, _ gilt: @MainActor () -> Bool) async {
+        for _ in 0..<takte where !gilt() {
+            try? await Task.sleep(for: .milliseconds(150))
+        }
+    }
+
+    /// Klick am Fenster: Ereignisse einreihen, nicht senden — wie `--auswahltest`.
+    private static func klicken(_ fenster: NSWindow, _ punkt: NSPoint) {
+        for art in [NSEvent.EventType.leftMouseDown, .leftMouseUp] {
+            guard let ereignis = NSEvent.mouseEvent(
+                with: art, location: punkt, modifierFlags: [],
+                timestamp: ProcessInfo.processInfo.systemUptime,
+                windowNumber: fenster.windowNumber, context: nil,
+                eventNumber: 0, clickCount: 1, pressure: art == .leftMouseDown ? 1 : 0)
+            else { continue }
+            NSApp.postEvent(ereignis, atStart: false)
+        }
+    }
+
+    private static func kurszelleProbe(_ speicher: Planungsspeicher, fenster: NSWindow,
+                                       klasse: Klasse) async {
+        var buehne: Rasterbuehne?
+        @MainActor func suchen(_ ansicht: NSView) {
+            if let treffer = ansicht as? Rasterbuehne { buehne = treffer }
+            ansicht.subviews.forEach(suchen)
+        }
+        if let inhalt = fenster.contentView { suchen(inhalt) }
+        guard let buehne else {
+            print("KLICKTEST Kurszelle: keine Rasterbühne ✗")
+            return
+        }
+        // AX7e: die Leistungsdokumentation schon hier hinterlegt — bis zu ihrem Kontextmenü unten hat die Zelle sie längst
+        // gezeichnet. Sie hängt nicht am Sitzplan: Fällt dessen Teil aus, läuft sie trotzdem (Z-AX7-08).
+        let ldVorher = speicher.planung?.klasse(klasse.id)?.leistungsdokumentation ?? ""
+        let ldPfad = "Noten/\(klasse.name)-Leistungen.numbers"
+        speicher.kursdateiSetzen(klasse: klasse.id, art: .leistungsdokumentation, pfad: ldPfad)
+        NSApp.activate(ignoringOtherApps: true)
+        fenster.makeKeyAndOrderFront(nil)
+        speicher.sprung = Rastersprung(woche: 0)
+        await sprungAbwarten(fenster)
+        if speicher.sitzplaene.schreibbar, speicher.sitzplan(fuer: klasse.id) == nil {
+            // Die dritte Verwaltungszeile („+ Sitzplan“) liegt über der vierten, untersten („+ Leistungsdokumentation“,
+            // AX6, E662): Polster 12, Zeile 21 (`Zellenmass`); die Bühne ist gekippt, y läuft von oben.
+            let kopf = Zellenmass.kopfhoehe(klasse)
+            let punkt = buehne.convert(
+                NSPoint(x: 14 + 24,
+                        y: Masse.wochenkopfHoehe + kopf - 12 - Zellenmass.hoeheVerwaltungszeile * 1.5),
+                to: nil)
+            klicken(fenster, punkt)
+            await bisGilt(12) { speicher.offenerDialog == .sitzplan }
+            let editor = speicher.offenerDialog == .sitzplan && speicher.sitzplanKlasse == klasse.id
+            print("KLICKTEST Kurszelle: Klick auf „+ Sitzplan“ öffnet den Editor "
+                  + (editor ? "✓" : "✗ (Dialog \(speicher.offenerDialog?.rawValue ?? "—"))"))
+            if speicher.offenerDialog != nil {
+                speicher.alleDialogeSchliessen()
+                await Planungsspeicher.blaetterAbloesenAbwarten()
+            }
+            speicher.sitzplanUebernehmen(Sitzplan.anordnen(klasseId: klasse.id,
+                                                           namen: Sitzplanprobe.beispielnamen))
+            fenster.contentView?.layoutSubtreeIfNeeded()
+            fenster.displayIfNeeded()
+            speicher.sitzplanEntfernen(klasse: klasse.id, ort: .hauptansicht)
+            let gefragt = speicher.rueckfrage?.ort == .hauptansicht
+            // Wie von Hand, nicht im Programm (B82, Z-AS1-12).
+            if let fehlt = await Pruefstaende.vonHandAntworten(speicher, false) {
+                print("KLICKTEST Kurszelle: ✗ Knopf „\(fehlt)“ im Alert gefunden")
+            }
+            for _ in 0..<16 where Pruefstaende.alertfenster() != nil { try? await Task.sleep(for: .milliseconds(125)) }
+            let bleibt = speicher.sitzplan(fuer: klasse.id) != nil
+            print("KLICKTEST Kurszelle: „Sitzplan entfernen“ fragt zurück \(gefragt ? "✓" : "✗"), "
+                  + "Abbrechen lässt den Plan \(bleibt ? "✓" : "✗")")
+            speicher.sitzplaene.setzen(nil, fuer: klasse.id)
+        } else {
+            print("KLICKTEST Kurszelle: „+ Sitzplan“ übersprungen — Sitzpläne "
+                  + (speicher.sitzplaene.schreibbar ? "mit Plan für „\(klasse.name)“" : "nicht schreibbar"))
+        }
+        await leistungsdokumentationProbe(speicher, fenster: fenster, buehne: buehne, klasse: klasse, pfad: ldPfad)
+        // Der Wert wie vor der Probe — gesetzt, nicht widerrufen: Dazwischen liegen Schritte des Sitzplans. Leer heißt
+        // entfernen, derselbe Weg wie „Verweis entfernen“ (`pfad: nil`, Z-AX7-08).
+        if speicher.planung?.klasse(klasse.id)?.leistungsdokumentation != ldVorher {
+            speicher.kursdateiSetzen(klasse: klasse.id, art: .leistungsdokumentation, pfad: ldVorher.isEmpty ? nil : ldVorher)
+        }
+        let wieVorher = speicher.planung?.klasse(klasse.id)?.leistungsdokumentation == ldVorher
+        print("KLICKTEST Kurszelle: Leistungsdokumentation wie vor der Probe " + (wieVorher ? "✓" : "✗"))
+    }
+
+    /// AX7e (v86; AX6, E662): eine gesetzte Leistungsdokumentation in der vierten, untersten Verwaltungszeile. Ein gebauter
+    /// Rechtsklick öffnet das Kontextmenü von SwiftUI nicht (am Lauf gesehen, 24.10.) — gefragt wird die Ansicht unter dem
+    /// Punkt nach ihrem Menü (`menu(for:)`), die Einträge gelesen, „Verweis entfernen“ über seine Handlung gewählt (Muster
+    /// „über den Eintrag“ wie in der Widerrufprobe): ein Schritt „Leistungsdokumentation entfernen“, Widerrufen am Speicher
+    /// bringt den Verweis. Der Wähler hinter „Andere Datei wählen …“ ist modal und bleibt ungeklickt. Eine Datei braucht es
+    /// nicht: hinterlegt ist nur der Verweis. Den Rechtsklick selbst prüft die Hand.
+    private static func leistungsdokumentationProbe(_ speicher: Planungsspeicher, fenster: NSWindow, buehne: Rasterbuehne,
+                                                    klasse: Klasse, pfad: String) async {
+        guard speicher.planung?.klasse(klasse.id)?.leistungsdokumentation.isEmpty == false else {
+            print("KLICKTEST Kurszelle: Leistungsdokumentation hinterlegt ✗")
+            return
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        fenster.makeKeyAndOrderFront(nil)
+        let kopf = Zellenmass.kopfhoehe(klasse)
+        let punkt = buehne.convert(
+            NSPoint(x: 14 + 24, y: Masse.wochenkopfHoehe + kopf - 12 - Zellenmass.hoeheVerwaltungszeile * 0.5), to: nil)
+        let schritte = speicher.verlauf.zurueck.count
+        var titel: [String] = []
+        if let ansicht = fenster.contentView?.superview?.hitTest(punkt), let ereignis = NSEvent.mouseEvent(
+            with: .rightMouseDown, location: punkt, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+            windowNumber: fenster.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: 1),
+           let menue = ansicht.menu(for: ereignis) {
+            menue.update()
+            titel = menue.items.map(\.title).filter { !$0.isEmpty }
+            if let stelle = menue.items.firstIndex(where: { $0.title == "Verweis entfernen" }) {
+                menue.performActionForItem(at: stelle)
+            }
+        }
+        await bisGilt(20) { speicher.verlauf.naechsterName == Schrittname.leistungsdokumentationEntfernen }
+        let erwartet = ["Öffnen", "Im Finder zeigen", "Vollständigen Pfad kopieren", "Andere Datei wählen …", "Verweis entfernen"]
+        let entfernt = speicher.planung?.klasse(klasse.id)?.leistungsdokumentation == ""
+            && speicher.verlauf.zurueck.count == schritte + 1
+            && speicher.verlauf.naechsterName == Schrittname.leistungsdokumentationEntfernen
+        let darunter = fenster.contentView?.superview?.hitTest(punkt).map { String(describing: type(of: $0)) } ?? "nichts"
+        print("KLICKTEST Kurszelle: Kontextmenü der Leistungsdokumentation (über `menu(for:)`) — "
+              + "\(titel.joined(separator: " · ")) " + (titel == erwartet ? "✓" : "✗ (unter dem Punkt: \(darunter))"))
+        print("KLICKTEST Kurszelle: „Verweis entfernen“ ist ein Schritt „Leistungsdokumentation entfernen“ "
+              + (entfernt ? "✓" : "✗"))
+        if entfernt {
+            speicher.widerrufen()
+            let zurueck = speicher.planung?.klasse(klasse.id)?.leistungsdokumentation == Pfade.normalisieren(
+                pfad, basis: speicher.planung?.basis ?? "")
+            print("KLICKTEST Kurszelle: Widerrufen am Speicher bringt den Verweis \(zurueck ? "✓" : "✗")")
+        }
+    }
+
+    /// `--auswahltest`: klickt wirklich ins Raster, auch mit ⌘ und ⇧ — ob eine
+    /// Geste beim richtigen Empfänger ankommt, zeigt nur ein echtes Ereignis.
+    static func auswahltestUndBeenden(_ speicher: Planungsspeicher) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2.5))
+            guard let fenster = NSApp.windows.first(where: { $0.isVisible }),
+                  let planung = speicher.planung else {
+                print("AUSWAHLTEST ✗ kein Fenster")
+                fflush(stdout)
+                await Pruefstaende.abschliessenUndBeenden(speicher)
+                return
+            }
+            let breite = CGFloat(speicher.spaltenbreite)
+            guard planung.klassen.count >= 3 else {
+                print("AUSWAHLTEST ✗ zu wenige Klassen/Kurse")
+                fflush(stdout)
+                await Pruefstaende.abschliessenUndBeenden(speicher)
+                return
+            }
+
+            @MainActor func klicken(_ punkt: NSPoint, _ tasten: NSEvent.ModifierFlags) {
+                for art in [NSEvent.EventType.leftMouseDown, .leftMouseUp] {
+                    guard let ereignis = NSEvent.mouseEvent(
+                        with: art, location: punkt, modifierFlags: tasten,
+                        timestamp: ProcessInfo.processInfo.systemUptime,
+                        windowNumber: fenster.windowNumber, context: nil,
+                        eventNumber: 0, clickCount: 1, pressure: art == .leftMouseDown ? 1 : 0)
+                    else { continue }
+                    // Einreihen: `sendEvent` überspränge die Tastenstand-Beobachter.
+                    NSApp.postEvent(ereignis, atStart: false)
+                }
+            }
+
+            // Ein Klick ins nicht aktive Fenster aktiviert es nur und wird verschluckt.
+            NSApp.activate(ignoringOtherApps: true)
+            fenster.makeKeyAndOrderFront(nil)
+            fenster.setContentSize(NSSize(width: 1800, height: 1000))
+            // An den linken Rand zurück — die Klickpunkte sind ausgemessen.
+            speicher.sprung = Rastersprung(woche: 0)
+            await sprungAbwarten(fenster)
+
+            let inhalt = fenster.contentView!
+            @MainActor func punkt(woche: Int) -> NSPoint {
+                NSPoint(x: Masse.spalteKlasse + (CGFloat(woche) + 0.5) * breite,
+                        y: inhalt.frame.maxY - 130)
+            }
+
+            var bericht: [String] = []
+            @MainActor func festhalten(_ was: String, _ erwartet: [String]) async {
+                // 700 ms Abstand: Dichter aufeinander wertet AppKit als Doppelklick.
+                try? await Task.sleep(for: .milliseconds(700))
+                let ist = speicher.auswahl.sorted()
+                let dialog = speicher.vorhabenDialog != nil ? " (Dialog offen!)" : ""
+                bericht.append("\(was): [\(ist.joined(separator: ", "))]"
+                               + (ist == erwartet.sorted() ? " ✓" : " ✗ erwartet ["
+                                  + erwartet.sorted().joined(separator: ", ") + "]") + dialog)
+                speicher.vorhabenDialog = nil
+            }
+
+            klicken(punkt(woche: 0), [])
+            await festhalten("einfacher Klick", ["e0-0"])
+
+            klicken(punkt(woche: 2), [.command])
+            await festhalten("⌘ nimmt dazu", ["e0-0", "e0-2"])
+
+            klicken(punkt(woche: 2), [.command])
+            await festhalten("⌘ nimmt wieder weg", ["e0-0"])
+
+            klicken(punkt(woche: 0), [])
+            await festhalten("einfacher Klick setzt zurück", ["e0-0"])
+
+            klicken(punkt(woche: 4), [.shift])
+            await festhalten("⇧ nimmt die Spanne", ["e0-0", "e0-2", "e0-4"])
+
+            print("AUSWAHLTEST\n  " + bericht.joined(separator: "\n  "))
+            Pruefstaende.abschliessenUndBeenden()
+        }
+    }
+
+    /// `--ziehtest`: Beim Fallenlassen kommt der Zeigerort in
+    /// Fensterkoordinaten an (`NSDraggingInfo.draggingLocation`), gebraucht wird
+    /// er in Zellenkoordinaten — ob die Umrechnung am gerollten Raster stimmt,
+    /// zeigt nur das laufende Fenster.
+    static func ziehtestUndBeenden(_ speicher: Planungsspeicher) {
+        Task { @MainActor in
+            for _ in 0..<40 where NSApp.windows.first(where: { $0.isVisible }) == nil
+                || speicher.planung == nil {
+                try? await Task.sleep(for: .milliseconds(250))
+            }
+            guard let fenster = NSApp.windows.first(where: { $0.isVisible }),
+                  let planung = speicher.planung, let kurs = planung.klassen.first else {
+                print("ZIEHTEST ✗ kein Fenster / keine Planung")
+                fflush(stdout)
+                await Pruefstaende.abschliessenUndBeenden(speicher)
+                return
+            }
+            NSApp.activate(ignoringOtherApps: true)
+            fenster.makeKeyAndOrderFront(nil)
+            fenster.setContentSize(NSSize(width: 1800, height: 1000))
+            speicher.sprung = Rastersprung(woche: 0)
+            await sprungAbwarten(fenster)
+
+            var gefunden: Zellenkoerper?
+            @MainActor func suchen(_ ansicht: NSView) {
+                if let zelle = ansicht as? Zellenkoerper, zelle.zeile == 0, zelle.woche == 0 {
+                    gefunden = zelle
+                }
+                ansicht.subviews.forEach(suchen)
+            }
+            if let inhalt = fenster.contentView { suchen(inhalt) }
+            let kacheln = gefunden?.subviews.compactMap { $0 as? Kachelansicht } ?? []
+            guard let zelle = gefunden, kacheln.count >= 2 else {
+                print("ZIEHTEST ✗ braucht wenigstens zwei Kacheln in der ersten Zelle")
+                fflush(stdout)
+                await Pruefstaende.abschliessenUndBeenden(speicher)
+                return
+            }
+
+            // Genau der Weg, den `acceptDrop` geht.
+            @MainActor func stelleBei(_ y: CGFloat) -> String {
+                let imFenster = kacheln[0].convert(NSPoint(x: 10, y: y), to: nil)
+                return zelle.einfuegestelle(bei: zelle.convert(imFenster, from: nil)).vorId
+                    ?? "ans Ende"
+            }
+            let vorher = planung.vorhaben(klasse: kurs.id, woche: 0).map(\.id)
+            let oben = stelleBei(2)
+            let unten = stelleBei(kacheln[0].bounds.height - 2)
+
+            guard let letztes = planung.vorhaben(klasse: kurs.id, woche: 0).last else { return }
+            speicher.versetzen([letztes], nach: Zellenort(klasse: kurs.id, woche: 0),
+                               verschieben: true, vor: vorher.first)
+            let nachher = (speicher.planung?.vorhaben(klasse: kurs.id, woche: 0) ?? []).map(\.id)
+
+            if let pfad = ProcessInfo.processInfo.environment["ZIEHBILD"] {
+                zelle.zielSetzen(true, marke: 1)
+                zelle.displayIfNeeded()
+                try? await Task.sleep(for: .milliseconds(300))
+                Selbstabbild.ablegen(fenster, nach: URL(fileURLWithPath: pfad))
+                zelle.zielSetzen(false)
+            }
+
+            print("ZIEHTEST")
+            print("  über der Mitte der ersten Kachel → vor \(oben)"
+                  + (oben == vorher.first ? "  ✓" : "  ✗ erwartet \(vorher[0])"))
+            print("  unter ihrer Mitte → vor \(unten)"
+                  + (unten == vorher[1] ? "  ✓" : "  ✗ erwartet \(vorher[1])"))
+            print("  vorher:  " + vorher.joined(separator: ", "))
+            print("  nachher: " + nachher.joined(separator: ", "))
+            Pruefstaende.abschliessenUndBeenden()
+        }
+    }
+
+    /// `--mischtest`: Der Speicher schließt aus, dass Zelle und Vorhaben
+    /// zugleich angewählt sind — ob am Bildschirm trotzdem zwei Rahmen stehen
+    /// (der Tastaturfokus zeichnet einen eigenen), zeigt nur das Fenster.
+    static func mischtestUndBeenden(_ speicher: Planungsspeicher) {
+        Task { @MainActor in
+            for _ in 0..<40 where NSApp.windows.first(where: { $0.isVisible }) == nil
+                || speicher.planung == nil {
+                try? await Task.sleep(for: .milliseconds(250))
+            }
+            guard let fenster = NSApp.windows.first(where: { $0.isVisible }),
+                  speicher.planung != nil else {
+                print("MISCHTEST ✗ kein Fenster — \(NSApp.windows.count) Fenster, "
+                      + "Planung \(speicher.planung == nil ? "fehlt" : "da")")
+                fflush(stdout)
+                await Pruefstaende.abschliessenUndBeenden(speicher)
+                return
+            }
+            let breite = CGFloat(speicher.spaltenbreite)
+            NSApp.activate(ignoringOtherApps: true)
+            fenster.makeKeyAndOrderFront(nil)
+            fenster.setContentSize(NSSize(width: 1800, height: 1000))
+            speicher.sprung = Rastersprung(woche: 0)
+            await sprungAbwarten(fenster)
+
+            let inhalt = fenster.contentView!
+            @MainActor func punkt(woche: Int) -> NSPoint {
+                NSPoint(x: Masse.spalteKlasse + (CGFloat(woche) + 0.5) * breite,
+                        y: inhalt.frame.maxY - 130)
+            }
+            @MainActor func klicken(_ punkt: NSPoint) {
+                for art in [NSEvent.EventType.leftMouseDown, .leftMouseUp] {
+                    guard let ereignis = NSEvent.mouseEvent(
+                        with: art, location: punkt, modifierFlags: [],
+                        timestamp: ProcessInfo.processInfo.systemUptime,
+                        windowNumber: fenster.windowNumber, context: nil,
+                        eventNumber: 0, clickCount: 1, pressure: art == .leftMouseDown ? 1 : 0)
+                    else { continue }
+                    NSApp.postEvent(ereignis, atStart: false)
+                }
+            }
+
+            var bericht: [String] = []
+            @MainActor func festhalten(_ was: String) async {
+                try? await Task.sleep(for: .milliseconds(700))
+                let gewaehlt = speicher.auswahl.sorted().joined(separator: ", ")
+                let zelle = speicher.zielzelle.map { "\($0.klasse.suffix(5))/KW\($0.woche)" } ?? "—"
+                let empfaenger = fenster.firstResponder.map { String(describing: type(of: $0)) } ?? "—"
+                bericht.append("\(was): Vorhaben [\(gewaehlt)] · Zelle \(zelle) · Fokus \(empfaenger)")
+                speicher.vorhabenDialog = nil
+            }
+
+            klicken(punkt(woche: 0))
+            await festhalten("1. Klick auf Vorhaben (Zeile 0, KW 0)")
+
+            klicken(punkt(woche: 1))
+            await festhalten("2. Klick auf leere Zelle (Zeile 0, KW 1)")
+
+            // Über die Umgebung: weitere Aufrufparameter deutet AppKit als Voreinstellungen.
+            if let pfad = ProcessInfo.processInfo.environment["MISCHBILD"] {
+                Selbstabbild.ablegen(fenster, nach: URL(fileURLWithPath: pfad))
+            }
+
+            klicken(punkt(woche: 0))
+            await festhalten("3. Klick zurück auf das Vorhaben")
+
+            print("MISCHTEST\n  " + bericht.joined(separator: "\n  "))
+            Pruefstaende.abschliessenUndBeenden()
+        }
+    }
+
+    /// `--titeltest`: Schickt AppKit für den Fenstertitel
+    /// `NSText.didBeginEditingNotification`? Ohne die Meldung löschte ⌫
+    /// Vorhaben, während jemand den Titel korrigiert.
+    static func titeltestUndBeenden(_ speicher: Planungsspeicher) {
+        Task { @MainActor in
+            for _ in 0..<40 where NSApp.windows.first(where: { $0.isVisible }) == nil {
+                try? await Task.sleep(for: .milliseconds(250))
+            }
+            guard let fenster = NSApp.windows.first(where: { $0.isVisible }) else {
+                print("TITELTEST ✗ kein Fenster")
+                fflush(stdout)
+                await Pruefstaende.abschliessenUndBeenden(speicher)
+                return
+            }
+            NSApp.activate(ignoringOtherApps: true)
+            fenster.makeKeyAndOrderFront(nil)
+            try? await Task.sleep(for: .milliseconds(600))
+
+            // Der Titel sitzt in der Rahmenansicht, nicht im Inhalt.
+            var felder: [NSTextField] = []
+            @MainActor func absuchen(_ ansicht: NSView) {
+                if let feld = ansicht as? NSTextField, feld.isEditable { felder.append(feld) }
+                ansicht.subviews.forEach(absuchen)
+            }
+            if let rahmen = fenster.contentView?.superview { absuchen(rahmen) }
+
+            var bericht: [String] = ["beschreibbare Textfelder in der Fensterleiste: \(felder.count)"]
+            bericht.append("vorher: schreibstelleAktiv = \(speicher.schreibstelleAktiv)")
+            if let titelfeld = felder.first {
+                fenster.makeFirstResponder(titelfeld)
+                try? await Task.sleep(for: .milliseconds(400))
+                bericht.append("Titelfeld hat die Schreibmarke: "
+                               + "\(fenster.firstResponder is NSTextView)")
+                bericht.append("beim Schreiben: schreibstelleAktiv = "
+                               + "\(speicher.schreibstelleAktiv) "
+                               + (speicher.schreibstelleAktiv ? "✓" : "✗ — ⌫ löschte hier Vorhaben"))
+                fenster.makeFirstResponder(nil)
+                try? await Task.sleep(for: .milliseconds(400))
+                bericht.append("danach wieder: schreibstelleAktiv = "
+                               + "\(speicher.schreibstelleAktiv) "
+                               + (speicher.schreibstelleAktiv ? "✗ hängt fest" : "✓"))
+            } else {
+                bericht.append("✗ kein beschreibbares Titelfeld gefunden")
+            }
+            print("TITELTEST\n  " + bericht.joined(separator: "\n  "))
+            Pruefstaende.abschliessenUndBeenden()
+        }
+    }
+
+    /// `--menuetest`: In der Menüleiste können zwei Einträge dasselbe Kürzel
+    /// tragen — welcher greift, zeigt nur die laufende Anwendung.
+    static func menuetestUndBeenden(_ speicher: Planungsspeicher) {
+        Task { @MainActor in
+            for _ in 0..<40 where NSApp.windows.first(where: { $0.isVisible }) == nil
+                || speicher.planung == nil {
+                try? await Task.sleep(for: .milliseconds(250))
+            }
+            guard let fenster = NSApp.windows.first(where: { $0.isVisible }),
+                  let planung = speicher.planung, planung.eintraege.count >= 2 else {
+                print("MENUETEST ✗ keine Planung mit mindestens zwei Vorhaben")
+                fflush(stdout)
+                await Pruefstaende.abschliessenUndBeenden(speicher)
+                return
+            }
+            NSApp.activate(ignoringOtherApps: true)
+            fenster.makeKeyAndOrderFront(nil)
+            try? await Task.sleep(for: .milliseconds(600))
+
+            speicher.anwaehlen(vorhaben: planung.eintraege[0].id)
+            speicher.anwaehlen(vorhaben: planung.eintraege[1].id, erweitern: true)
+            speicher.kopieren()
+            try? await Task.sleep(for: .milliseconds(300))
+
+            NSApp.mainMenu?.update()
+            var zeilen: [String] = []
+            zeilen.append("Auswahl \(speicher.auswahl.count) · Ablage "
+                          + "\(speicher.ablage?.vorhaben.count ?? 0) · kannEinfuegen "
+                          + "\(speicher.kannEinfuegen) · schreibstelleAktiv "
+                          + "\(speicher.schreibstelleAktiv)")
+
+            @MainActor func absuchen(_ menue: NSMenu, _ pfad: String) {
+                for punkt in menue.items {
+                    if let unter = punkt.submenu {
+                        absuchen(unter, pfad.isEmpty ? punkt.title : pfad + " › " + punkt.title)
+                        continue
+                    }
+                    let taste = punkt.keyEquivalent
+                    guard ["c", "v", "x", "\u{8}", "\u{7f}"].contains(taste),
+                          punkt.keyEquivalentModifierMask.contains(.command) || taste.count == 1,
+                          !punkt.isSeparatorItem else { continue }
+                    let name = taste == "\u{8}" || taste == "\u{7f}" ? "⌫" : "⌘" + taste.uppercased()
+                    zeilen.append("  \(name)  „\(punkt.title)“ in [\(pfad)] · "
+                                  + "aktiv \(punkt.isEnabled ? "ja" : "NEIN") · "
+                                  + "Handlung \(punkt.action.map(String.init(describing:)) ?? "—")")
+                }
+            }
+            if let haupt = NSApp.mainMenu { absuchen(haupt, "") }
+
+            if let bearbeiten = NSApp.mainMenu?.items
+                .first(where: { $0.title == "Bearbeiten" || $0.title == "Edit" })?.submenu {
+                zeilen.append("Bearbeiten-Menü (\(bearbeiten.items.count) Einträge):")
+                for punkt in bearbeiten.items {
+                    let taste = punkt.keyEquivalent.isEmpty ? "—" : punkt.keyEquivalent
+                    zeilen.append("  · „\(punkt.isSeparatorItem ? "———" : punkt.title)“ "
+                                  + "Kürzel \(taste) · aktiv \(punkt.isEnabled ? "ja" : "nein")")
+                }
+            }
+
+            var glied: NSResponder? = fenster.firstResponder
+            var kette: [String] = []
+            while let r = glied {
+                var kann: [String] = []
+                if r.responds(to: #selector(NSText.copy(_:))) { kann.append("copy") }
+                if r.responds(to: #selector(NSText.paste(_:))) { kann.append("paste") }
+                kette.append(String(describing: type(of: r))
+                             + (kann.isEmpty ? "" : " ← \(kann.joined(separator: "/"))"))
+                glied = r.nextResponder
+            }
+            zeilen.append("Antwortkette: " + kette.joined(separator: " → "))
+
+            @MainActor func zustand(_ titel: String, soll: Bool) {
+                @MainActor func finden(_ menue: NSMenu) -> NSMenuItem? {
+                    for punkt in menue.items {
+                        if punkt.title == titel { return punkt }
+                        if let unter = punkt.submenu, let treffer = finden(unter) { return treffer }
+                    }
+                    return nil
+                }
+                guard let haupt = NSApp.mainMenu, let punkt = finden(haupt) else {
+                    zeilen.append("  „\(titel)“ NICHT GEFUNDEN ✗"); return
+                }
+                zeilen.append("  „\(titel)“ ist \(punkt.isEnabled ? "aktiv" : "grau")"
+                              + " · soll \(soll ? "aktiv" : "grau") sein"
+                              + (punkt.isEnabled == soll ? " ✓" : " ✗"))
+            }
+            zeilen.append("Nachführung der Menüzustände (Planung geladen, \(speicher.auswahl.count) angewählt):")
+            zustand("Vorhaben durchsuchen", soll: true)
+            zustand("Lernende, Klassen/Kurse und Fächer …", soll: true)
+            zustand("Kopieren", soll: true)
+            zustand("Einsetzen", soll: true)
+
+            // Aktiv-Zustand allein trügt: SwiftUI-Einträge tragen keine prüfbare Handlung.
+            zeilen.append("Wirkung der Tastenkürzel:")
+            @MainActor func druecken(_ zeichen: String, _ name: String,
+                                     _ tasten: NSEvent.ModifierFlags = [.command],
+                                     wirkung: @MainActor () -> String) async {
+                let vorher = wirkung()
+                // Einreihen: `performKeyEquivalent` umginge den echten Tastenweg.
+                for art in [NSEvent.EventType.keyDown, .keyUp] {
+                    guard let ereignis = NSEvent.keyEvent(
+                        with: art, location: .zero, modifierFlags: tasten,
+                        timestamp: ProcessInfo.processInfo.systemUptime,
+                        windowNumber: fenster.windowNumber, context: nil,
+                        characters: zeichen, charactersIgnoringModifiers: zeichen,
+                        isARepeat: false, keyCode: 0) else { return }
+                    NSApp.postEvent(ereignis, atStart: false)
+                }
+                try? await Task.sleep(for: .milliseconds(500))
+                let nachher = wirkung()
+                zeilen.append("  \(name): \(vorher) → \(nachher)"
+                              + (vorher == nachher ? "  ✗ ohne Wirkung" : "  ✓"))
+            }
+
+            for (taste, name, welcher) in [("k", "⌘K (Klassen/Kurse)", "klassen"),
+                                           ("e", "⌘E (Ferien)", "ferien"),
+                                           (",", "⌘, (Einstellungen)", "einstellungen"),
+                                           ("d", "⌘D (Tagesliste)", "heute")] {
+                await druecken(taste, name) { "Dialog \(speicher.offenerDialog?.rawValue ?? "—")" }
+                if speicher.offenerDialog?.rawValue != welcher {
+                    zeilen.append("      erwartet war „\(welcher)“")
+                }
+                speicher.offenerDialog = nil
+                try? await Task.sleep(for: .milliseconds(200))
+            }
+
+            speicher.sprung = nil
+            // ⌘J zählt nur, wenn die laufende Woche in der Planung liegt — die Saat endet im September (B76, E282).
+            if planung.laufendeWoche != nil {
+                await druecken("j", "⌘J (laufende Woche)") { "Sprung \(speicher.sprung?.woche ?? -1)" }
+            } else {
+                // Außerhalb: kein Sprung, aber der Hinweis (Z14d-07).
+                let bisher = Set(speicher.meldungen.map(\.id))
+                await druecken("j", "⌘J (laufende Woche außerhalb der Planung)") {
+                    speicher.meldungen.contains {
+                        !bisher.contains($0.id) && $0.text == "Die laufende Woche liegt außerhalb des geplanten Zeitraums."
+                    } ? "Hinweis" : "kein Hinweis"
+                }
+            }
+
+            speicher.anwaehlen(vorhaben: planung.eintraege[0].id)
+            await druecken("a", "⌘A (alles wählen)") { "Auswahl \(speicher.auswahl.count)" }
+            speicher.anwaehlen(vorhaben: planung.eintraege[0].id)
+            speicher.anwaehlen(vorhaben: planung.eintraege[1].id, erweitern: true)
+
+            speicher.ablageLeeren()
+            await druecken("c", "⌘C (kopieren)") { "Ablage \(speicher.ablage?.vorhaben.count ?? 0)" }
+
+            if speicher.ablage == nil { speicher.kopieren() }
+            let ziel = planung.klassen.count > 1 ? planung.klassen[1].id : planung.klassen[0].id
+            // Eine Woche, ab der die ganze Ablage in die Planung passt — die Saat hat sechs (B76, E282, Z14d-06).
+            let abgelegt = speicher.ablage?.vorhaben.map(\.woche) ?? []
+            let spanne = (abgelegt.max() ?? 0) - (abgelegt.min() ?? 0)
+            speicher.anwaehlen(zelle: Zellenort(klasse: ziel, woche: max(0, min(6, planung.wochen - 1 - spanne))))
+            let vorEinfuegen = speicher.planung?.eintraege.count ?? 0
+            await druecken("v", "⌘V (einfügen)") { "Vorhaben \(speicher.planung?.eintraege.count ?? 0)" }
+            let eingefuegt = (speicher.planung?.eintraege.count ?? 0) - vorEinfuegen
+            zeilen.append("  ⌘V setzt die ganze Ablage ein: \(eingefuegt) von \(abgelegt.count)"
+                          + (eingefuegt == abgelegt.count ? "  ✓" : "  ✗"))
+
+            speicher.anwaehlen(vorhaben: planung.eintraege[0].id)
+            await druecken("\u{8}", "⌫ (löschen)", []) {
+                "Rückfrage \(speicher.rueckfrage == nil ? "nein" : "ja")"
+            }
+
+            // Rückfrage wegräumen — solange sie steht, ist sie das Schlüsselfenster. Wie von Hand (B82).
+            if let fehlt = await Pruefstaende.vonHandAntworten(speicher, false) {
+                zeilen.append("✗ Knopf „\(fehlt)“ im Alert gefunden")
+            }
+            fenster.makeKeyAndOrderFront(nil)
+            try? await Task.sleep(for: .milliseconds(600))
+            zeilen.append("Im Textfeld (Fenstertitel):")
+            var felder: [NSTextField] = []
+            @MainActor func absuchenFelder(_ ansicht: NSView) {
+                if let feld = ansicht as? NSTextField, feld.isEditable { felder.append(feld) }
+                ansicht.subviews.forEach(absuchenFelder)
+            }
+            if let rahmen = fenster.contentView?.superview { absuchenFelder(rahmen) }
+            if let titelfeld = felder.first {
+                NSPasteboard.general.clearContents()
+                let titel = "Prüftext"
+                fenster.makeFirstResponder(titelfeld)
+                try? await Task.sleep(for: .milliseconds(300))
+                titelfeld.currentEditor()?.string = titel
+                try? await Task.sleep(for: .milliseconds(200))
+                // Hier ist „gleich geblieben“ der Erfolg — daher die eigene Zeile.
+                let vorherAuswahl = speicher.auswahl.count
+                await druecken("a", "  ⌘A (nur ins Feld)") { "Feldeditor" }
+                zeilen.removeLast()
+                zeilen.append("    ⌘A greift nicht ins Raster: Auswahl "
+                              + "\(vorherAuswahl) → \(speicher.auswahl.count)"
+                              + (vorherAuswahl == speicher.auswahl.count ? "  ✓" : "  ✗"))
+                await druecken("c", "  ⌘C im Titelfeld") {
+                    "Zwischenablage „\(NSPasteboard.general.string(forType: .string) ?? "—")“"
+                }
+                let kopiert = NSPasteboard.general.string(forType: .string)
+                zeilen.append("    Titel war „\(titel)“ · kopiert wurde "
+                              + "„\(kopiert ?? "—")“"
+                              + (kopiert == titel ? "  ✓" : "  ✗"))
+                fenster.makeFirstResponder(nil)
+            } else {
+                zeilen.append("    kein Textfeld gefunden")
+            }
+
+            print("MENUETEST\n" + zeilen.joined(separator: "\n"))
+            Pruefstaende.abschliessenUndBeenden()
+        }
+    }
+
+    @MainActor
+    private final class Messung {
+        var schritt = 0
+        var beginn = Date()
+        var rechenzeitVorher: Double = 0
+        /// Die Uhr hängt hier, nicht am Blockbeiwert: `Timer` ist nicht
+        /// `Sendable`, und Swift 6 weist das Durchreichen in den
+        /// MainActor-Block ab.
+        var uhr: Timer?
+
+        /// Verbrauchte Rechenzeit — erfasst auch, was der Ablaufring später
+        /// erledigt.
+        nonisolated static func rechenzeit() -> Double {
+            var nutzung = rusage()
+            getrusage(RUSAGE_SELF, &nutzung)
+            let benutzer = Double(nutzung.ru_utime.tv_sec) + Double(nutzung.ru_utime.tv_usec) / 1e6
+            let system = Double(nutzung.ru_stime.tv_sec) + Double(nutzung.ru_stime.tv_usec) / 1e6
+            return benutzer + system
+        }
+
+        func fertig() {
+            let schritte = max(1, schritt)
+            let dauer = Date().timeIntervalSince(beginn)
+            Task { @MainActor in
+                // Nachlauf abwarten: Die Rechenzeit trägt der Ablaufring später nach.
+                try? await Task.sleep(for: .milliseconds(400))
+                let rechenzeit = Messung.rechenzeit() - rechenzeitVorher
+                print(String(format: "ROLLTEST %d Schritte in %.2f s · Rechenzeit %.2f s "
+                             + "· %.1f ms je Schritt", schritte, dauer, rechenzeit,
+                             rechenzeit / Double(schritte) * 1000))
+                if Messzaehler.an { print("  ZERLEGT " + Messzaehler.zeitbericht()) }
+                Pruefstaende.abschliessenUndBeenden()
+            }
+        }
+    }
+
+    /// Bis das Raster steht und der Sprung zu Woche 0 am linken Rand angekommen ist — nicht fest
+    /// (Z14f-03). Ohne Rollbereich oder ohne Inhalt gilt nichts als angekommen (Z-AS1-05).
+    @MainActor private static func sprungAbwarten(_ fenster: NSWindow) async {
+        for _ in 0..<40 {
+            if let rollbereich = groesserRollbereich(in: fenster.contentView),
+               (rollbereich.documentView?.frame.width ?? 0) > 0, rollbereich.contentView.bounds.origin.x <= 0.5 { break }
+            try? await Task.sleep(for: .milliseconds(100))
+        }
+        // Das Layout nach dem Sprung und nach `setContentSize` folgt im nächsten Durchgang.
+        try? await Task.sleep(for: .milliseconds(300))
+    }
+
+    private static func groesserRollbereich(in wurzel: NSView?) -> NSScrollView? {
+        guard let wurzel else { return nil }
+        var gefunden: [NSScrollView] = []
+        func absuchen(_ ansicht: NSView) {
+            if let rollbereich = ansicht as? NSScrollView { gefunden.append(rollbereich) }
+            ansicht.subviews.forEach(absuchen)
+        }
+        absuchen(wurzel)
+        return gefunden.max { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
+    }
+}

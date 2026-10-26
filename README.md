@@ -63,7 +63,7 @@ selbst; und auf Klick im Vorhaben-Dialog lädt sie die Materialliste von
 
 ## Bauen, prüfen, weitergeben
 
-Die macOS-App (`macOS-App/v85/`) ist in Swift und SwiftUI geschrieben, für
+Die macOS-App (`macOS-App/v86/`) ist in Swift und SwiftUI geschrieben, für
 macOS 26 auf Apple Silicon und ohne fremde Bibliothek. `./bauen.sh` baut sie
 (Xcode wird gebraucht; `--dmg` schnürt zusätzlich ein Abbild),
 `PLANUNGSORDNER=$(mktemp -d) swift test` prüft sie. Dazu kommen Prüfstände am
@@ -85,12 +85,12 @@ sich je Fassung ändert, steht in [`CHANGELOG.md`](CHANGELOG.md).
 **Lizenzen.** Freie Software: die macOS-App und alles Übrige unter der GNU
 General Public License, Version 3 oder neuer ([`LICENSE`](LICENSE)), die
 Web App unter der GNU Affero General Public License, Version 3 oder neuer
-([`Web-App/v85/LICENSE.txt`](Web-App/v85/LICENSE.txt)). Die Zuordnung je Datei
+([`Web-App/v86/LICENSE.txt`](Web-App/v86/LICENSE.txt)). Die Zuordnung je Datei
 steht in [`REUSE.toml`](REUSE.toml), die Lizenztexte liegen in
 [`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code.
 
-**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v85/`,
-`Web-App/v85/`; ältere Fassungen bleiben daneben stehen); die Nummer im
+**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v86/`,
+`Web-App/v86/`; ältere Fassungen bleiben daneben stehen); die Nummer im
 Ordnernamen ist der Build der Version. Was sich je Fassung ändert, steht in
 [`CHANGELOG.md`](CHANGELOG.md). Oberfläche und
 Dokumentation sind deutsch.

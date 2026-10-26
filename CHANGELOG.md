@@ -16,6 +16,54 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.2.1 (86)] - 2026-10-26
+
+Lernendenverwaltung, Wochentag, externe Leistungsdokumentation und neue Tour
+(Fassungsvertrag v86).
+
+### Added
+
+- **Archiv des laufenden Schuljahrs:** Im Teil „Archiv“ steht oben das laufende Schuljahr mit seinen archivierten
+  Personen und Lerngruppen — Lerngruppen mit Zahl der Mitglieder und Tag der Archivierung —, je mit „Zurückholen“
+  (ein Schritt, gesichert mit „Übernehmen“).
+- **Vereinbarungen:** ein vierter Teil der Lerngruppe und „Vereinbarung …“ unter „Alle Lernenden“; Stand je Person
+  gültig oder ungültig, auf Wunsch „gültig bis einschließlich“ eines Tages, danach abgeleitet ungültig, ohne etwas
+  zu schreiben. Eine Vereinbarung ist kein offenes Anliegen; beim Schuljahreswechsel kommt eine geltende mit. In der
+  Lerngruppe steht der Stand in der Spalte als kompaktes Menü wie bei den Mitteilungen, die Leiste hat drei Zeilen mit
+  ungekürzten Knöpfen, „Auch für …“ bietet „Alle Mitglieder der Lerngruppe“ (die Aktiven, ein Schritt); unter „Alle
+  Lernenden“ nennt eine Zeile „Vereinbarungen: …“ alle der Person mit Lerngruppe und Stand.
+- **Mehrere zugleich:** Mehrfachauswahl in der Mitgliederliste und in „Alle Lernenden“ (⌘-Klick, ⇧-Klick, ⌘A) mit
+  Sammelleiste: „Auch aufnehmen in“, „Umziehen nach“, „Aus der Lerngruppe nehmen“, „Archivieren“, „Endgültig
+  löschen …“ — ganz oder gar nicht, je ein Schritt mit Zahl („3 Personen umziehen“).
+- **Wochentag im Kachelmenü:** Rechtsklick auf die Kachel → „Wochentag“ → „Mo.“ … „Fr.“, die Unterrichtstage der
+  Zeile halbfett; ein Termin wechselt seinen Tag nur, eine Prüfung zieht ihren Termin mit. Die Bedienungshilfen bekommen
+  den ganzen Tag („Montag“).
+- **Externe Leistungsdokumentation:** eine vierte Verwaltungszeile in der Kurszelle und in ⌘K, auf jeder Zeile;
+  die Datei merkt sich nur den Pfad, eine Planung ohne bleibt Byte für Byte, wie sie war.
+
+### Changed
+
+- **Schuljahreswechsel:** Je Lerngruppe legt das Kästchen „mit Mitgliedern“ fest, ob sie mit Personen kommt —
+  vorbelegt bei einer Klassenstufe im Namen. Termine kommen beim echten Wechsel nach ihrem Datum mit (ab dem neuen
+  Schuljahr, auch stattgefundene), bei „Andere Planung öffnen“, „Früheres Schuljahr öffnen“ und „Neue Planung“ im
+  laufenden Schuljahr nur offene. Der Fuß der Blätter sagt es.
+- **Tour:** bis zu zehn kürzere Karten, von links nach rechts durch die Werkzeugleiste, durch eine Zelle des Rasters
+  bis zur Kurszelle.
+- **Wortlaute:** unpersönlich, ohne Anrede (etwa „Zugriff auf die eigenen Ordner“).
+- **Menü „Bearbeiten“:** Steht ein Bogen über dem Blatt „Lernende“, nennt es keinen Schritt.
+- **Archiv:** ohne Kürzel ⌘⌫ zum Löschen.
+- **Meldungen in Blättern:** „Lernende“ samt Bögen und das Vorhaben-Blatt zeigen ihre Meldung links im Fuß neben
+  „Abbrechen“/„Übernehmen“ statt über dem Inhalt — nur die jüngste, höchstens zwei Zeilen; die Knöpfe bleiben frei.
+
+### Fixed
+
+- Das Vorhaben-Blatt schließt nach „Als Termin führen …“ oder „Hausaufgabe hinzufügen …“ ohne weitere Eingabe mit
+  ⎋ ohne Rückfrage; weist es „Übernehmen“ ab, wechselt es auch bei der Grenze der Anliegen auf „Termin“.
+- ⌘Z unter einem offenen Bogen am Blatt „Lernende“ nimmt nichts mehr zurück (nur ein Ton).
+- Wird beim ersten Start nach „Überspringen“ in „Neue Planung“ eine Datei geöffnet, wartet ihre Meldung — auch eine
+  Warnung über Verlorenes — hinter der Ersteinrichtung, die gleich danach kommt; das Blatt nennt den Verlust sofort.
+- Die Werkzeugleiste springt während der Tour bei mittlerer Fensterbreite nicht mehr mit jeder Karte zwischen zwei Lagen.
+
 ## [2.2.0 (85)] - 2026-10-26
 
 Vorhaben-Blatt mit Abschnitten und Rückmeldungslisten (Fassungsvertrag v85).
