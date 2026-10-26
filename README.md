@@ -32,12 +32,20 @@ Das Raster zeigt die Kalenderwochen des Schuljahres als Spalten und die Klassen
 und Kurse als Zeilen; Ferien, freie Tage und Sperrzeiträume sind darin
 eingetragen. Ein Vorhaben besteht aus Titel und Beschreibung und kann einen
 Wochentag oder ein Datum, eine Dringlichkeit, einen Prüfungstermin oder eine
-Hausaufgabe tragen und als Korrektur gekennzeichnet werden. Mit
-dem integrierten Sitzplan-Editor (seit 1.4.8) kann
-jeder Klasse und jedem Kurs ein Sitzplan hinzugefügt und dieser sowohl als PDF
-exportiert als auch ausgedruckt werden.
+Hausaufgabe tragen und als Korrektur gekennzeichnet werden. Mit dem integrierten
+Sitzplan-Editor (seit 1.4.8) kann jeder Klasse und jedem Kurs ein Sitzplan hinzugefügt
+und dieser sowohl als PDF exportiert als auch ausgedruckt werden.
 Eine Suche, eine Liste der heute anstehenden Vorhaben und ein blattweiser
 Ausdruck ergänzen das Raster.
+
+Seit *2.0.0* verwaltet die App auch die Lernenden – eingegeben von Hand oder
+importiert aus IServ –, Rückmeldungen auf Mitteilungen, Maßnahmen mit Frist
+und Termine, die sich in der Planung eintragen lassen; der Sitzplan übernimmt
+die Namen einer Lerngruppe. Zum Schuljahreswechsel werden die Lerngruppen
+den Zeilen des neuen Jahrs zugeordnet, die bisherige Planung geht samt ihren
+Lernendendaten in ein schreibgeschütztes Archiv.
+Lernendendaten gibt es nur mit eingeschalteter Verschlüsselung in der macOS App;
+die Web App zeigt die Lernendendaten hingegen nicht.
 
 Alle Daten bleiben auf dem Mac. Die Planung lässt sich mit AES-256
 verschlüsseln — auf dem Mac über Touch ID oder das Anmeldepasswort (Secure
@@ -45,7 +53,7 @@ Enclave), überall sonst über eine Passphrase, für den Notfall über einen
 gedruckten Wiederherstellungsschlüssel. Die App läuft im App Sandbox von macOS
 und erreicht Dateien und Ordner nur dort, wo sie ihr einmal gezeigt wurden; bei
 eingeschalteter Verschlüsselung liegen auch diese Lesezeichen versiegelt neben
-der Planung, ebenso die Sitzpläne der Klassen. Ins Netz geht die App nur für
+der Planung, ebenso die Sitzpläne und die Lernendendaten. Ins Netz geht die App nur für
 zwei Dinge, beide nur mit Erlaubnis: Eine freiwillige, wöchentliche Prüfung auf
 Updates gegen die Releases dieses Repositorys überträgt nur die IP-Adresse, die
 Versionsnummer der App und ein ETag und lädt oder installiert nie etwas von
@@ -55,7 +63,7 @@ selbst; und auf Klick im Vorhaben-Dialog lädt sie die Materialliste von
 
 ## Bauen, prüfen, weitergeben
 
-Die macOS-App (`macOS-App/v79/`) ist in Swift und SwiftUI geschrieben, für
+Die macOS-App (`macOS-App/v80/`) ist in Swift und SwiftUI geschrieben, für
 macOS 26 auf Apple Silicon und ohne fremde Bibliothek. `./bauen.sh` baut sie
 (Xcode wird gebraucht; `--dmg` schnürt zusätzlich ein Abbild),
 `PLANUNGSORDNER=$(mktemp -d) swift test` prüft sie. Dazu kommen Prüfstände am
@@ -77,13 +85,12 @@ sich je Fassung ändert, steht in [`CHANGELOG.md`](CHANGELOG.md).
 **Lizenzen.** Freie Software: die macOS-App und alles Übrige unter der GNU
 General Public License, Version 3 oder neuer ([`LICENSE`](LICENSE)), die
 Web App unter der GNU Affero General Public License, Version 3 oder neuer
-([`Web-App/v79/LICENSE.txt`](Web-App/v79/LICENSE.txt)). Die Zuordnung je Datei
+([`Web-App/v80/LICENSE.txt`](Web-App/v80/LICENSE.txt)). Die Zuordnung je Datei
 steht in [`REUSE.toml`](REUSE.toml), die Lizenztexte liegen in
-[`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code
-(Opus 5 & Fable 5/5.1).
+[`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code.
 
-**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v79/`,
-`Web-App/v79/`; ältere Fassungen bleiben daneben stehen); die Nummer im
+**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v80/`,
+`Web-App/v80/`; ältere Fassungen bleiben daneben stehen); die Nummer im
 Ordnernamen ist der Build der Version. Was sich je Fassung ändert, steht in
 [`CHANGELOG.md`](CHANGELOG.md). Oberfläche und
 Dokumentation sind deutsch.
@@ -97,7 +104,10 @@ matching teaching and learning materials are curated — file and folder
 references and web links per item, administrative and curriculum documents per
 course —, plus a read-only web app, optimised for the iPad and usable on other
 devices, that displays an exported plan and hands check marks and comments back
-to the app. All data stays on the Mac.
+to the app. Since 2.0.0 the app also manages students – entered by hand or imported
+from IServ –, replies to notices, measures with deadlines, appointments, seating plans
+from a group, and a read-only archive of past school years; student data exists only
+with encryption switched on and never reaches the web app. All data stays on the Mac.
 Plans can be encrypted with AES-256 (Touch ID or the login password via the
 Secure Enclave, a passphrase elsewhere, a printed recovery key for
 emergencies); the app runs in the macOS App Sandbox and reaches files and

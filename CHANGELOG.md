@@ -16,6 +16,106 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.0.0 (80)] - 2026-10-26
+
+Die Lernendenverwaltung. Geplant und entschieden nach dem Fassungsvertrag
+(E246–E257, E270–E320). **Lernendendaten gibt es nur mit eingeschalteter
+Verschlüsselung, und sie liegen nie im Klartext auf der Platte** — außer in
+einer CSV-Datei, die man nach einer Warnung ausdrücklich sichert. Die Web App
+sieht keine Lernendendaten.
+
+### Added
+
+- **Das Blatt „Lernende“** („Planung → Lernende …“, ⌘L) mit den Teilen
+  „Lerngruppen“, „Alle Lernenden“ und „Archiv“. Lerngruppen (Klasse oder Kurs,
+  mit Fach) anlegen, umbenennen, archivieren, zurückholen, löschen; Personen
+  von Hand eingeben — eine je Zeile, „Nachname, Vorname“ oder „Vorname
+  Nachname“, mit Vorschau der Trennung —, umbenennen, mit Rufname versehen,
+  aus der Gruppe nehmen, archivieren, endgültig löschen. Höchstens 40 Personen
+  je Lerngruppe. Das Blatt arbeitet an einem Entwurf mit eigenem ⌘Z;
+  „Übernehmen“ schreibt, „Abbrechen“ fragt bei Änderungen.
+- **Jahresdatei und Archiv:** je Schuljahr eine Jahresdatei `lernende.json`,
+  an die Planung gebunden und stets versiegelt; die Vorjahre samt ihrer Planung
+  in einem gemeinsamen, schreibgeschützten Archiv `archiv.json`. Im Teil
+  „Archiv“: ein Schuljahr lesen, seine Planung versiegelt sichern (die Web App
+  öffnet sie) und drei Löschungen — ein Schuljahr, eine Person in allen
+  archivierten Schuljahren, ein einzelnes Anliegen.
+- **Rückmeldungen und Anliegen:** Mitteilungen an eine Lerngruppe mit Rücklauf
+  je Person (offen, erledigt, abgelehnt — ein Klick auf den Stand in der
+  Tabelle wählt ihn), Maßnahmen je Person mit Frist (offen, erfüllt, nicht
+  erfüllt; eine verstrichene Frist erscheint orange) und Termine mit Personen,
+  Tag und Uhrzeit. „Alle Lernenden“ zählt die offenen Anliegen je Person und
+  filtert danach.
+- **Termine in der Planung:** Ein Termin lässt sich „In der Planung
+  eintragen“ (in einer wählbaren Zeile, vorbelegt die Klassenleitung), und ein
+  Vorhaben lässt sich als Termin führen — im Vorhaben-Dialog („Als Termin
+  führen“) und im Kontextmenü der Kachel („Als Termin führen …“). Tag, Uhrzeit, Titel und der Haken („stattgefunden“)
+  bleiben auf beiden Seiten gleich; die Kachel trägt „Termin · hh:mm“. In die
+  Planung — und damit zur Web App — gehen Titel, Tag und Uhrzeit des Termins
+  und seine Kennung, nie die Namen seiner Personen.
+- **Planung und Lerngruppe:** Eine Zeile unter „Klassen/Kurse und Fächer“ (⌘K)
+  oder per Rechtsklick in die Kurszelle lässt sich an eine Lerngruppe binden
+  oder eine Lerngruppe aus ihr anlegen. Die Verwaltungszeile der Kurszelle
+  zeigt dann „Name · Zahl · n offen“; ein Klick öffnet die Gruppe.
+- **Sitzplan aus der Lerngruppe:** „Namen aus der Lerngruppe übernehmen“ (⇧⌘L)
+  setzt die Tische mit ihren Personen — mit Rufname, wo einer steht. Der Name
+  am Tisch bleibt frei änderbar, die Bindung bleibt; ein Personen-Symbol zeigt
+  sie, im Druck erscheint es nicht. Höchstens 40 Tische je Sitzplan.
+- **Import aus IServ:** „Aus IServ importieren …“ im Blatt liest die CSV-Datei
+  der Schulplattform (Kodierung, Trenner und Kopfzeile erkannt) und übernimmt
+  nur Vorname, Nachname und Klasse — mit Vorschau und Bilanz. Bei
+  Gleichnamigen wird nichts geraten, sondern genannt; eine archivierte Person,
+  die wieder auftaucht, wird zurückgeholt.
+- **Export und Einlesen** im Menü „Ablage“: „Lernende exportieren …“
+  (versiegelt, zu öffnen mit Passphrase oder Wiederherstellungsschlüssel),
+  „Lernende als CSV sichern …“ (unverschlüsselt, nach einer Warnung) und
+  „Lernende einlesen …“ (der Export zurück, nur in eine leere
+  Lernendenverwaltung derselben Planung; auch über ⌘O).
+- **Schuljahreswechsel:** „Neue Planung“ übernimmt die gewählten Lerngruppen
+  ins neue Schuljahr — Personen, Mitgliedschaften und offene Anliegen; die
+  bisherige Planung geht samt ihren Lernendendaten ins Archiv. „Lerngruppen
+  hochstufen“ schlägt die Namen eine Stufe höher vor (aus „G6a“ wird „G7a“,
+  änderbar) und ordnet jede Gruppe einer Zeile der neuen Planung zu; das Fach
+  folgt der Zeile. Öffnet ⌘O eine Planung anderer Herkunft, fragt das Blatt
+  dasselbe — „Neues Schuljahr öffnen“, „Früheres Schuljahr öffnen“ oder
+  „Andere Planung öffnen“. Planung, Jahresdatei und Archiv wechseln in einem
+  Übergang: Bricht er ab, findet der nächste Start alle drei alt oder alle
+  drei neu.
+- **Einmaliger Hinweis „Bitte bei Version 2 bleiben“** beim ersten Start ab
+  2.0.0: Eine Fassung bis 1.9.8 kennt die Lernendenverwaltung nicht — die
+  Bindungen an Tische und die Kopplung von Vorhaben und Termin gingen beim
+  Sichern verloren, Jahresdatei und Archiv nach „Schlüssel erneuern“ oder
+  „Verschlüsselung aufheben“. Vor einer Rückkehr die Lernenden exportieren.
+- Die Jahresdatei hat Platz für Arbeits- und Sozialverhalten je Halbjahr,
+  Leistungen und Beurteilungen; die App bearbeitet sie in dieser Fassung noch
+  nicht.
+
+### Changed
+
+- **Rückfragen:** Steht eine Rückfrage, wartet das Beenden auf ihre Antwort —
+  über ⌘Q, das Dock und AppleScript, das den Grund nennt. Befehle, die selbst
+  fragen oder darunter etwas ändern würden (⌘Z, ⇧⌘Z, Drucken und PDF des
+  Sitzplans, Beiseitelegen, Öffnen aus dem Finder), geben dann den Systemton;
+  eine weitere Frage wartet und erscheint nach der Antwort. Die App nimmt eine
+  angezeigte Rückfrage nie selbst weg.
+- **Beenden mit offenem Blatt „Lernende“:** Mit Änderungen fragt es
+  „Übernehmen“, „Verwerfen“ oder „Abbrechen“; eine getippte, nicht
+  eingetragene Namensliste und ein offener Bogen fragen vorher. Nach der
+  Antwort beendet sich die App von selbst.
+- **Aufheben der Verschlüsselung** geht nur, wenn Jahresdatei und Archiv leer
+  sind; Rettungskopien der Lernendendaten werden dabei nach einer Rückfrage
+  gelöscht, nie entsiegelt.
+- Das endgültige Löschen einer Person löst ihre Bindung an Tischen im
+  Sitzplan; der Name am Tisch bleibt.
+- „Neue Planung“ ohne Verschlüsselung fragt vorher: Ohne sie gibt es weder
+  Archiv noch Lernendenverwaltung.
+- **Prüfwerk:** Die Prüfstandsrunde hat 42 Läufe statt 29 — die
+  Lernendenverwaltung versiegelt und gesperrt, das Beenden mit geändertem
+  Blatt, der Schuljahreswechsel und sein Abbruch an jeder der vier Stellen
+  samt zweitem Start. `tresor_pruefen.py` kennt Jahresdatei und Export,
+  `leser_pruefen.py` die Termine am Vorhaben (die Web App übergeht sie ohne
+  Verlust).
+
 ## [1.9.8 (79)] - 2026-09-27
 
 Wartung am Prüfwerk nach einer externen Review der Fassung 1.9.7. Geplant und
