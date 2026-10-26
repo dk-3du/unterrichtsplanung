@@ -16,6 +16,72 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.1.0 (84)] - 2026-10-26
+
+Erweiterung der Lernendenverwaltung (Fassungsvertrag v84).
+
+### Added
+
+- **Lernende aus IServ beim Anlegen:** Das Blatt „Neue Planung“ hat einen
+  Abschnitt „Lernende“ mit „Aus IServ importieren …“ (nur mit
+  Verschlüsselung). Die Klassen der Datei kommen als Zeilen ins Feld;
+  geschrieben wird erst mit „Planung anlegen“ — die Lernendenverwaltung
+  entsteht dabei verschlüsselt, nie im Klartext, und neue Lerngruppen sind an
+  die Zeilen gleichen Namens gebunden.
+- **Ersteinrichtung:** Ohne Planung fragt die App vor „Neue Planung“ zuerst
+  nach der Verschlüsselung (Frage 1 von 4). „Planung anlegen“ schaltet sie mit
+  der neuen Planung ein; „Überspringen“ legt die Planung im Klartext an.
+- **Blatt „Lernende“:** Suche über Nachname, Vorname und Rufname (⌘F);
+  Ordnung per Klick auf den Spaltenkopf in den Tabellen des Blatts, auch im
+  Archiv;
+  ein Filter der Lerngruppen; in der Personenzeile ein Menü „Lerngruppen“
+  mit Häkchen und „Umziehen nach“; der Zusatz „auch in …“ in der
+  Mitgliederliste; eine Meldungszeile am unteren Rand des Blatts.
+- **Mehrere Lerngruppen je Zeile:** Eine Zeile kann mehreren Lerngruppen
+  zugeordnet sein und eine Lerngruppe mehreren Zeilen. Der Kopf der
+  Lerngruppe nennt ihre Zeilen; „Zeilen wählen …“ ordnet sie zu (höchstens
+  20), „Zusammenführen mit …“ legt zwei Lerngruppen zusammen — Mitglieder,
+  Zeilen und Anliegen gehen mit, die andere wird archiviert. Ist eine
+  Unterrichtszeile mit mehreren verknüpft, legt die Kurszelle die eine für den
+  Sitzplan fest: Eine Lerngruppe mit dem Namen der Zeile bleibt oder wird
+  verknüpft, sonst entsteht eine neue.
+- **Bogen „Lerngruppen zuordnen“** an den Blättern „Neue Planung“ und „Neues
+  Schuljahr öffnen“ (⌘O): links die Lerngruppen, rechts die Zeilen; zugeordnet
+  wird über ein Menü mit Häkchen oder durch Ziehen einer Lerngruppe auf eine
+  Zeile, „Vorschlag wiederherstellen“ stellt den Vorschlag wieder her. Ins
+  neue Schuljahr kommt mit, wer eine Zeile trägt oder im Import erkannt ist;
+  die übrigen Lerngruppen werden archiviert. Vertretungen tragen nie eine
+  Lerngruppe.
+- **⌘K** heißt „Lernende, Klassen/Kurse und Fächer“ und beginnt mit einem
+  Abschnitt „Lernende“; nach dem Blatt „Lernende“ steht ⌘K wieder. Am
+  Personen-Symbol einer Zeile je verknüpfter Lerngruppe „Lernende …“ und
+  „Bindung lösen“, dazu „An eine Lerngruppe binden“ und „Lerngruppe aus der
+  Zeile anlegen“.
+- **Import (⌘L):** „Neue Lerngruppen an gleichnamige Zeilen binden“ bei „Je
+  Klasse“. Der Bogen nennt alle Fehlenden und wie viele davon noch in einer
+  anderen Lerngruppe stehen; „Fehlende archivieren“ und „Fehlende aus der
+  Lerngruppe nehmen“ sind getrennt.
+
+### Changed
+
+- **Lerngruppen ohne Fach:** Eine Lerngruppe heißt wie ihre Klasse oder ihr
+  Kurs (etwa „6a“); das Fach kommt allein über die Zeile („6a · Biologie“).
+  Ein Fach aus einer älteren Jahresdatei wird beim Lesen geleert.
+- **„Übernehmen“ im Blatt „Lernende“:** Wer eine Lerngruppe verlassen hat,
+  dessen Tisch geht aus den Sitzplänen der gebundenen Zeilen, mit einer
+  Warnung; gebundene Tische folgen einer Namensänderung, ein von Hand
+  geänderter Tischname bleibt. Die Frage beim Beenden nennt diese Folgen.
+- **Wortlaute:** Kein sichtbarer Satz beginnt mit „Sie“ oder „Ihr“; nach
+  einem Doppelpunkt beginnt ein ganzer Satz groß. Die Rückfrage beim
+  CSV-Export ist neu gefasst.
+- **Prüfwerk:** Die Zeitgeber der App laufen über einen gemeinsamen
+  Taktgeber; die Prüfungen rücken die Zeit über eine Stelluhr vor, statt auf
+  Fristen zu warten, und jeder volle Prüflauf fährt die Suite zusätzlich
+  gestaucht und gedehnt. Bei einem ✗ stehen die Befundzeilen im Vermerk. Die
+  Prüfstandsrunde hat 43 Läufe (neu: die Dialogprobe verschlüsselt ohne
+  Jahresdatei); die Dialogprobe prüft die Bögen „Lerngruppen zuordnen“ und
+  „Zeilen wählen“.
+
 ## [2.0.3 (83)] - 2026-10-26
 
 Behebungen nach 2.0.2 (Fassungsvertrag v83, E449–E475).
