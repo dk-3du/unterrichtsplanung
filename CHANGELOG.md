@@ -16,6 +16,57 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.0.1 (81)] - 2026-10-26
+
+Behebungen nach 2.0.0 (Fassungsvertrag v81, E325–E348 und E391–E399).
+
+### Fixed
+
+- **Personenzeile im Blatt „Lernende“:** Im Teil „Lerngruppen“ waren die
+  Knöpfe zu „Aus…“, „Ar…“, „En…“ gekürzt. Die Personenzeile ist jetzt
+  zweizeilig — oben die Namen, unten „angelegt …“ und die Knöpfe mit voller
+  Beschriftung.
+- **„Trotzdem beenden“** beendet beim ersten Klick, nicht erst nach einem
+  zweiten ⌘Q.
+- **Löschungen im Archiv** geschehen erst, wenn die Rückfrage geschlossen ist,
+  und noch vor dem Beenden; lässt sich eine dabei nicht schreiben, bleibt die
+  App offen und sagt es. Damit entfällt die Ursache eines seltenen Absturzes,
+  der sich im Prüfstand zeigte.
+- **Rückfragen:** Eine wartende Frage, deren Blatt inzwischen geschlossen
+  wurde, sperrte das Menü still — sie entfällt jetzt und ein Hinweis sagt es.
+  Weist die App eine Datei aus dem Finder ab, weil eine Frage oder ein Blatt
+  offen ist, kommt der Hinweis, wenn beides zu ist. Eine Planung aus dem
+  Finder stellte hinter einem offenen Blatt eine unsichtbare Frage „… wird
+  ersetzt“, die das Menü sperrte; jetzt öffnet die App sie hinter einem
+  Blatt nicht, wenn sie erst fragen müsste, und der Hinweis kommt — wie vor dem
+  Entsperren — erst, wenn das Blatt zu ist.
+- **Verschlüsselte Datei aus dem Finder hinter einem Blatt:** Ein Export der
+  Lernendenverwaltung wurde hinter dem Blatt „Lernende“ eingelesen, und ein
+  „Übernehmen“ des Blatts nahm die eingelesenen Personen wieder heraus; eine
+  Datei unter fremdem Schlüssel schloss ein offenes Blatt samt Eingaben, um
+  entsperrt zu werden. Hinter einem Blatt öffnet die App beides jetzt nicht und
+  sagt es, wenn das Blatt zu ist — nur ohne Planung, wenn allein „Neue
+  Planungsdatei“ steht, entsperrt sie eine fremde Datei wie bisher.
+- **Beenden:** ⌘Q holt ein Fenster mit Rückfrage aus dem Dock. Ein Beenden
+  per AppleScript nennt, was sich nicht sichern ließ — die Planung, die
+  Sitzpläne, die Lernendendaten.
+- **Sitzpläne:** Ein Tisch, dessen Person die Jahresdatei nicht mehr trägt
+  (etwa weil die Sitzpläne beim Löschen gesperrt waren), verliert die Bindung;
+  der Name bleibt, und die App sagt es einmal. Die Namensliste des Editors
+  korrigiert keine Namen mehr.
+
+### Changed
+
+- **Lerngruppen stehen überall in derselben Ordnung:** Name, dann Fach,
+  Ziffern als Zahl wie im Finder — in den Listen des Blatts, im Menü „An eine
+  Lerngruppe binden ▸“ (⌘K), im Vorhaben-Blatt, beim Schuljahreswechsel, im
+  Archiv, nach einem Import und in der Spalte „Lerngruppen“ der CSV. Die
+  Jahresdatei bleibt in Anlegefolge.
+- **Prüfwerk:** Die Prüfstände antworten auf Rückfragen per Klick und warten
+  an mehr Stellen auf das, was sie prüfen, statt eine feste Zeit; neue Schritte für die Wege
+  des Beendens, das Dock und die Sitzplanbindungen. Die meisten Prüfstände
+  brauchen eine gesäte Planung — die LIESMICH der App zeigt, wie.
+
 ## [2.0.0 (80)] - 2026-10-26
 
 Die Lernendenverwaltung. Geplant und entschieden nach dem Fassungsvertrag
