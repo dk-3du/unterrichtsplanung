@@ -16,6 +16,51 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.2.2 (87)] - 2026-10-28
+
+Behebungen nach zwei externen Reviews von 2.2.1 und die Wahl, beim endgültigen Löschen einer Person ihre
+Tische mit zu entfernen (Fassungsvertrag v87).
+
+### Added
+
+- **Tische beim Löschen mit entfernen:** Ist an eine Person, die endgültig gelöscht wird, ein Tisch im Sitzplan
+  gebunden, bietet die Rückfrage neben „Löschen“ den Knopf „Löschen und Tisch entfernen“ bzw. „Löschen und Tische
+  entfernen“; er nimmt zusätzlich die gebundenen Tische aus dem Sitzplan, wirksam mit „Übernehmen“. Die übrigen Tische
+  behalten Platz, Name und Bindung, die Lücke bleibt; ⌘Z im Blatt nimmt beides zurück. Der Knopf zum Bestätigen heißt
+  in beiden Rückfragen (eine Person, mehrere) jetzt „Löschen“ und steht oben; keiner der beiden roten Knöpfe liegt
+  auf ⏎. Liegen die Tische in mehreren Sitzplänen, sagt die Rückfrage „in den Sitzplänen“.
+
+### Changed
+
+- **Kennwort des Sitzplan-PDFs:** dieselbe Regel wie bei der Rückmeldungsliste — mindestens 12, höchstens 32 Zeichen,
+  nur ASCII, nicht nur Leerraum, keine Steuerzeichen; ein Hinweis unter den Feldern nennt die Grenzen. Geschrieben wird
+  das PDF erst, wenn eine Nachprüfung am Ergebnis trägt (verschlüsselt mit AES-128, zu ohne Kennwort, offen mit genau
+  diesem); sonst sagt eine Meldung, warum kein PDF entstand.
+- **Import aus IServ:** Bleibt in der Datei ein Anführungszeichen bis zum Ende offen oder schließt es erst in einer
+  späteren Zeile, importiert der Bogen nichts und nennt die Zeile; der Bogen zerlegt eine große Datei nur noch einmal
+  statt bei jedem Neuzeichnen, auch die Vorschau rechnet ihre Bilanz einmal je Einstellung.
+- **Externe Leistungsdokumentation:** So heißt sie jetzt auch in Hilfen, Dialogtiteln, Schritten, ⌘K, VoiceOver und der
+  Tour; das Angebot in der Kurszelle bleibt „+ Leistungsdokumentation“.
+- **Termine:** Der Fuß im Bogen sagt, dass ein Name im Titel auch in der Planung und in der Web App steht.
+- **Web App:** nur die Nummer; sieben ihrer Prüfskripte und die Kommentare in ihrem Skript nennen sie jetzt durchgehend
+  „Web App“.
+
+### Fixed
+
+- **CSV-Export der Lernenden:** Ein Feld, das mit „=“, „+“, „-“, „@“, Tab oder Wagenrücklauf (CR) beginnt, bekommt ein
+  Hochkomma vorangestellt — Tabellenprogramme wie Excel und Numbers rechnen es dann nicht als Formel.
+- **Sitzplan-PDF:** Ein Kennwort mit einem Steuerzeichen (etwa einer NUL) wird abgewiesen — an einer NUL hätte Core
+  Graphics es gekürzt.
+- **Termine:** Ändert „Übernehmen“ im Blatt „Lernende“ die Planung, wird sie sofort gesichert — ein Absturz in der
+  Pause davor ließ sonst eine neue Jahresdatei neben einer alten Planung zurück. Ebenso, wenn ein Termin mit seinem
+  Vorhaben geht, zurückkommt oder neu entsteht (etwa Entfernen, Ausschneiden, „Als Termin führen“, ⌘Z): Sonst stand
+  nach einem Absturz das Vorhaben ohne seinen Termin im Raster oder der Termin ohne sein Vorhaben in der
+  Lernendenverwaltung.
+- **Ablage:** Auch die Prüfung einer Nebendatei liest gebunden — an einer benannten Pipe unter ihrem Namen wartet sie
+  nicht mehr.
+- **Prüfwerk:** Das Inventar verlangt jeden gedeckten Ordner und meldet eine gescheiterte Aufzählung; eine neue Regel
+  hält fest, dass die Ablage nur gebunden liest.
+
 ## [2.2.1 (86)] - 2026-10-26
 
 Lernendenverwaltung, Wochentag, externe Leistungsdokumentation und neue Tour
@@ -1537,7 +1582,7 @@ Planungswechsel, die Sitzplandatei und der Prüfvermerk.
   schrieb bis zum nächsten Start Klartext, ohne es zu sagen. (B17)
 - **PDF-Kennwort:** Der Sichern-Dialog weist ein Kennwort mit Zeichen außerhalb
   von ASCII oder mit mehr als 32 Zeichen ab und sagt warum — der
-  Kennwortschutz des PDF-Formats nimmt nichts anderes; bisher scheiterte die
+  Kennwortschutz des PDF-Formats nimmt nichts anderes; bisher scheiterte das
   PDF ohne Grund oder das Kennwort galt nur bis zum 32. Zeichen. (B18, E45)
 - **Ansicht fürs iPad:** Die Wiederaufnahme aus dem Browserspeicher gehört der
   Planung, für die sie begann — eine zweite Datei, während sie wartete, bekommt
@@ -1562,7 +1607,7 @@ Planungswechsel, die Sitzplandatei und der Prüfvermerk.
   sonst als Angebot „+ Verwaltungsdatei“, „+ Curriculum“, „+ Sitzplan“ in
   leiser Schrift. Ein Klick auf ein Angebot öffnet den Dateiwähler bzw. den
   Sitzplan-Editor; ein Klick auf „Sitzplan“ öffnet den Editor, das
-  Rechtsklickmenü sichert die PDF oder entfernt den Plan mit Rückfrage; das
+  Rechtsklickmenü sichert das PDF oder entfernt den Plan mit Rückfrage; das
   Rechtsklickmenü einer hinterlegten Datei kann jetzt auch eine andere Datei
   wählen. Der Weg über „Klassen/Kurse und Fächer“ (⌘K) bleibt. (E34, E35, E36)
 - **Tour:** eine siebte Karte „Die Kurszelle“ nach „Die Planung einrichten“,
@@ -1590,8 +1635,8 @@ Planungswechsel, die Sitzplandatei und der Prüfvermerk.
 Behebungen nach den beiden Reviews an 1.4.8 — der internen (B01–B08) und der
 externen (F01–F08, nachgeprüft als B09–B16): die Übergänge des Schutzes rund
 um die Sitzpläne symmetrisch und ehrlich, das Beenden wachsam, die Lesebilanz
-sichtbar, Tastatur und Werkzeuge nachgezogen. Dazu der Kennwortschutz der
-Sitzplan-PDF.
+sichtbar, Tastatur und Werkzeuge nachgezogen. Dazu der Kennwortschutz des
+Sitzplan-PDFs.
 
 ### Fixed
 
@@ -1634,7 +1679,7 @@ Sitzplan-PDF.
 
 ### Added
 
-- **Kennwortschutz der Sitzplan-PDF:** Im Sichern-Dialog lässt sich die PDF
+- **Kennwortschutz des Sitzplan-PDFs:** Im Sichern-Dialog lässt sich das PDF
   mit einem Kennwort schützen — Kennwort und Wiederholung, vorgewählt bei
   eingeschalteter Verschlüsselung; der Standard-Kennwortschutz des
   PDF-Formats, den Vorschau und andere Leser abfragen. (E40)
@@ -1663,7 +1708,7 @@ Sitzplan-PDF.
 
 Sitzplan — Jede Klasse und jeder Kurs kann einen Sitzplan tragen: Namen als
 Liste eingeben, Tische entstehen in Reihen und lassen sich frei verschieben,
-die Tafel steht unten, eine PDF DIN A4 quer kommt heraus. Nur in der
+die Tafel steht unten, ein PDF DIN A4 quer kommt heraus. Nur in der
 macOS-App; die Ansicht fürs iPad zeigt keine Sitzpläne und zieht nur in der
 Nummer mit.
 
@@ -1687,7 +1732,7 @@ Nummer mit.
 - **PDF und Druck** — „Als PDF sichern …“ (⇧⌘P) und „Drucken …“ (⌘P) im
   Editor: eine Seite DIN A4 quer mit der Kopfzeile „Klasse/Kurs · Fach ·
   Sitzplan · Stand“, die Fläche 1:1 wie im Editor, die Tafel unten. Bei
-  eingeschalteter Verschlüsselung fragt die App vorher: Die PDF trägt die
+  eingeschalteter Verschlüsselung fragt die App vorher: Das PDF trägt die
   Namen im Klartext.
 - **Ablage und Schutz** — Die Sitzpläne liegen als `sitzplaene.json` neben der
   Planung im Container und tragen denselben Schutz wie sie: Klartext, solange
@@ -1697,7 +1742,7 @@ Nummer mit.
   Datei mit — mit derselben Rücknahme wie bei den Lesezeichen). Solange die
   Verschlüsselung aus ist, empfiehlt der Editor sie beim Öffnen. Sitzpläne
   gehen nie in den Export, die Sicherungskopie oder die Ansicht fürs iPad;
-  eine gesicherte PDF ist ihre dauerhafte Form. Wird eine Klasse entfernt,
+  ein gesichertes PDF ist ihre dauerhafte Form. Wird eine Klasse entfernt,
   geht ihr Sitzplan mit (die Rückfrage nennt ihn); bei „Neue Planung“ folgen
   Sitzpläne nur den übernommenen Klassen.
 

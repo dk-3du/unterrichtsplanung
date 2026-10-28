@@ -19,14 +19,15 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # Unterrichtsplanung
 
-*Unterrichtsplanung* ist eine Jahresplanung im Wochenraster für Lehrkräfte:
-eine native macOS-App (Swift/SwiftUI, macOS 26 auf Apple Silicon, ohne fremden
-Code), in der Unterricht und weitere Vorhaben Woche für Woche geplant und die
-passenden Lehr- und Lernmaterialien kuratiert werden — Verweise auf Dateien und
-Ordner sowie Weblinks je Vorhaben, eine Verwaltungs- und eine Curriculumdatei
-je Klasse und Kurs —, dazu eine rein lesende Web App, fürs iPad optimiert und
-auch auf anderen Geräten nutzbar, die eine exportierte Planung anzeigt und
-Haken und Kommentare an die App zurückgibt.
+*Unterrichtsplanung* ist eine Jahresplanung im Wochenraster für Lehrkräfte: eine
+native macOS-App (Swift/SwiftUI, macOS 26 auf Apple Silicon, ohne fremden Code),
+in der Unterricht und weitere Vorhaben Woche für Woche geplant und die passenden
+Lehr- und Lernmaterialien kuratiert werden. Zudem lassen sich Kurse intern wie
+extern verwalten und externe Dateien, z. B. ein Curriculum und eine
+Leistungsdokumentation, spezifisch je Klasse und Kurs einbinden. Dazu wird eine
+lesende Web App mitgeliefert, fürs iPad optimiert und auch auf anderen Geräten
+nutzbar, die eine exportierte Planung anzeigt und eine Statusänderung an
+Vorhaben sowie Freitextkommentare an die App zurückgibt.
 
 Das Raster zeigt die Kalenderwochen des Schuljahres als Spalten und die Klassen
 und Kurse als Zeilen; Ferien, freie Tage und Sperrzeiträume sind darin
@@ -45,7 +46,8 @@ die Namen einer Lerngruppe. Zum Schuljahreswechsel werden die Lerngruppen
 den Zeilen des neuen Jahrs zugeordnet, die bisherige Planung geht samt ihren
 Lernendendaten in ein schreibgeschütztes Archiv.
 Lernendendaten gibt es nur mit eingeschalteter Verschlüsselung in der macOS App;
-die Web App zeigt die Lernendendaten hingegen nicht.
+die Web App zeigt die Lernendendaten hingegen nicht. Was in Titel oder
+Beschreibung eines Vorhabens steht, auch eines Termins, gehört zur Planung.
 
 Alle Daten bleiben auf dem Mac. Die Planung lässt sich mit AES-256
 verschlüsseln — auf dem Mac über Touch ID oder das Anmeldepasswort (Secure
@@ -63,7 +65,7 @@ selbst; und auf Klick im Vorhaben-Dialog lädt sie die Materialliste von
 
 ## Bauen, prüfen, weitergeben
 
-Die macOS-App (`macOS-App/v86/`) ist in Swift und SwiftUI geschrieben, für
+Die macOS-App (`macOS-App/v87/`) ist in Swift und SwiftUI geschrieben, für
 macOS 26 auf Apple Silicon und ohne fremde Bibliothek. `./bauen.sh` baut sie
 (Xcode wird gebraucht; `--dmg` schnürt zusätzlich ein Abbild),
 `PLANUNGSORDNER=$(mktemp -d) swift test` prüft sie. Dazu kommen Prüfstände am
@@ -85,12 +87,12 @@ sich je Fassung ändert, steht in [`CHANGELOG.md`](CHANGELOG.md).
 **Lizenzen.** Freie Software: die macOS-App und alles Übrige unter der GNU
 General Public License, Version 3 oder neuer ([`LICENSE`](LICENSE)), die
 Web App unter der GNU Affero General Public License, Version 3 oder neuer
-([`Web-App/v86/LICENSE.txt`](Web-App/v86/LICENSE.txt)). Die Zuordnung je Datei
+([`Web-App/v87/LICENSE.txt`](Web-App/v87/LICENSE.txt)). Die Zuordnung je Datei
 steht in [`REUSE.toml`](REUSE.toml), die Lizenztexte liegen in
 [`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code.
 
-**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v86/`,
-`Web-App/v86/`; ältere Fassungen bleiben daneben stehen); die Nummer im
+**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v87/`,
+`Web-App/v87/`; ältere Fassungen bleiben daneben stehen); die Nummer im
 Ordnernamen ist der Build der Version. Was sich je Fassung ändert, steht in
 [`CHANGELOG.md`](CHANGELOG.md). Oberfläche und
 Dokumentation sind deutsch.
@@ -107,7 +109,8 @@ devices, that displays an exported plan and hands check marks and comments back
 to the app. Since 2.0.0 the app also manages students – entered by hand or imported
 from IServ –, replies to notices, measures with deadlines, appointments, seating plans
 from a group, and a read-only archive of past school years; student data exists only
-with encryption switched on and never reaches the web app. All data stays on the Mac.
+with encryption switched on and never reaches the web app; whatever is written in an
+item's title or description, appointments included, belongs to the plan. All data stays on the Mac.
 Plans can be encrypted with AES-256 (Touch ID or the login password via the
 Secure Enclave, a passphrase elsewhere, a printed recovery key for
 emergencies); the app runs in the macOS App Sandbox and reaches files and
