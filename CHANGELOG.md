@@ -16,6 +16,45 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.4.0 (89)] - 2026-10-31
+
+Das Archiv der Lernendenverwaltung wird bei einer bestätigten Löschung und vor „Verschlüsselung aufheben …“ abseits
+des Hauptstrangs gelesen; Dateinamen mit Leerraum am Ende bleiben beim Ablegen und bei der Dateiwahl unverkürzt
+(Fassungsvertrag v89).
+
+### Changed
+
+- **Löschen im Archiv:** Eine bestätigte Löschung im Archiv — ein Schuljahr, eine Person in allen archivierten
+  Schuljahren, ein Anliegen — liest das Archiv abseits des Hauptstrangs; die App bleibt dabei bedienbar. Bei einem
+  Archiv von 100 MB (üblich sind nach zehn Jahren rund 8 MB) stockte sie fürs Lesen bisher rund 2 Sekunden, jetzt im
+  üblichen Ablauf höchstens einige Hundertstel; nur in Rückfällen — Archiv oder Schlüssel änderten sich beim Lesen, sie
+  wartete ein zweites Mal hinter einer Rückfrage, die App wird beendet — liest sie wie bisher auf dem Hauptstrang.
+  Geschrieben wird wie bisher auf dem Hauptstrang, bei 100 MB rund 8 Sekunden. Die Löschung geschieht, sobald die
+  Rückfrage zu ist und das Archiv gelesen ist, spätestens beim Beenden; endet die App vorher ohne Beenden (Absturz,
+  Stromausfall), unterbleibt sie. Steht nach dem Lesen eine andere Rückfrage offen oder blendet ein Alert noch aus,
+  wartet sie dahinter und liest danach neu.
+- **„Verschlüsselung aufheben …“:** Die Prüfung des Archivs vor der Frage liest abseits des Hauptstrangs; der Knopf
+  ist solange gesperrt. Geht das Blatt vorher zu, entfällt die Frage.
+- **Meldungen in ⌘K:** „Lernende, Klassen/Kurse und Fächer“ zeigt seine Meldungen selbst, unten im Fuß, wie „Lernende“
+  und das Vorhaben-Blatt; liegt der Bogen „Farbe wählen“ darauf, zeigt er sie. Bisher standen sie in der Kapsel des
+  Hauptfensters, bei kleinem Fenster unter dem Blatt.
+- **Prüfstand:** Die Probe der Lernendenverwaltung (Lauf 31) führt ihre Schritte als eigene Funktionen; ihr
+  Übersetzen braucht rund 2 statt 71 GB Speicher.
+- **Web App:** nur die Nummer.
+
+### Fixed
+
+- **Dateinamen mit Leerzeichen am Ende:** Ein Name wie „Bericht.pdf “ verlor beim Ablegen (im Blatt und auf der Kachel),
+  bei „Datei wählen …“ und „Ordner wählen …“ und bei der Verwaltungsdatei, dem Curriculum oder der externen
+  Leistungsdokumentation einer Zeile das Leerzeichen, ebenso ein gerades Anführungszeichen (" oder ') am Ende; der
+  Verweis zeigte auf eine Datei, die es nicht gibt, und das Öffnen endete in einer Rückfrage zum Zugriff, die nicht
+  half. Jetzt bleibt der Pfad unverkürzt; der angezeigte Titel bleibt zugeschnitten. Ein so verknüpftes Material aus
+  2.3.0 oder früher einmal neu ablegen und den alten Eintrag entfernen, eine Datei einer Zeile mit
+  „Andere Datei wählen …“ neu wählen.
+- **Datei einer Zeile mit Steuer- oder Richtungszeichen im Pfad:** Beim nächsten Öffnen fiel das Zeichen fort, und der
+  Verweis zeigte ins Leere. Jetzt nimmt die App so eine Datei nicht an und sagt es — mit der Art der Datei und, steht
+  das Zeichen in einem Ordner, mit dessen Namen; Datei oder Ordner im Finder umbenennen und neu wählen.
+
 ## [2.3.0 (88)] - 2026-10-31
 
 Ablegen von Dateien und Links auf ein Vorhaben im Raster und ein Stand für mehrere Gewählte bei den Mitteilungen
