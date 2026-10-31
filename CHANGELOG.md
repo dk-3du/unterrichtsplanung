@@ -16,6 +16,44 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.3.0 (88)] - 2026-10-31
+
+Ablegen von Dateien und Links auf ein Vorhaben im Raster und ein Stand für mehrere Gewählte bei den Mitteilungen
+(Fassungsvertrag v88).
+
+### Added
+
+- **Ablegen auf ein Vorhaben:** Dateien und Ordner aus dem Finder, Anhänge aus Mail und Links aus dem Browser lassen
+  sich auf eine Kachel im Raster ziehen — Dateien und Ordner kommen nach „Material“, http- und https-Adressen nach
+  „Links“, in einem Schritt, den ⌘Z zurücknimmt. Die Zielkachel trägt beim Ziehen einen Ring; ein „+“ zeigt sich nur
+  über einer Kachel, nicht daneben, nicht in einer leeren Zelle und nicht, solange ein Blatt offen ist. Es gelten die
+  Grenzen des Blatts, schon Verknüpftes kommt nicht doppelt; die Meldung nennt das Vorhaben mit Zeile und Woche, etwa
+  „„Photosynthese“ (F5b Biologie · KW 35): 1 Material verknüpft.“ Abgelegt wird nur auf die Kachel unter dem Zeiger,
+  gleich, was angewählt ist; die Kachel nimmt kein Dateiversprechen an (eine Datei, die die andere App erst beim
+  Ablegen schreibt), wie das Blatt.
+- **Stand für mehrere bei den Mitteilungen:** Die Rücklaufliste wählt mehrere mit ⌘- oder ⇧-Klick auf den Namen und
+  mit ⌘A; ab zwei Gewählten steht unter ihr „3 gewählt“ mit dem Menü „Stand für „…““ — offen, erledigt oder abgelehnt
+  für alle in einem Schritt, der nach der Zahl derer heißt, deren Rücklauf sich ändert („Rücklauf von 2 Personen
+  ändern“). Bei erledigt oder abgelehnt bekommt den heutigen Tag, wer noch keinen hatte; ein eingetragener Tag bleibt.
+  Bei offen ohne Notiz geht der Rücklauf samt Tag weg, wie bei einer Person. Einen Haken trägt das Menü nur, wenn alle
+  betroffenen, aktiven Gewählten denselben Stand haben. Wen die Mitteilung nicht betrifft oder wer archiviert ist,
+  bleibt unverändert, ein Hinweis nennt die Zahl; ist niemand Betroffenes und Aktives gewählt, ist das Menü gesperrt.
+
+### Changed
+
+- **Material aus fremden Orten:** Liegt eine Datei im Ordner einer anderen App (etwa ein Anhang im Download-Ordner von
+  Mail) oder im temporären Ordner, den macOS je Benutzer führt (`/var/folders`), warnt die App beim Verknüpfen — im
+  Blatt wie auf der Kachel —, dass sie dort verschwinden kann, und rät, sie zuerst im Finder zu sichern.
+- **Tour:** Die Karte „Die Kacheln“ nennt das Ablegen.
+- **Web App:** nur die Nummer.
+
+### Fixed
+
+- **Raster:** Verließ das Verschieben einer Kachel die Fläche oder endete es mit ⎋, blieb die Hervorhebung stehen —
+  jetzt räumt das Raster sie auf, ebenso beim Ablegen.
+- **Lernende:** Nach ⌘A leerten ↓ und ↑ unter „Alle Lernenden“ die Auswahl; jetzt wählt ↓ die letzte und ↑ die
+  vorletzte Zeile, wie in den Mitgliedern — ebenso in der Rücklaufliste der Mitteilungen.
+
 ## [2.2.2 (87)] - 2026-10-28
 
 Behebungen nach zwei externen Reviews von 2.2.1 und die Wahl, beim endgültigen Löschen einer Person ihre
