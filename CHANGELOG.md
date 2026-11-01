@@ -16,6 +16,56 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.5.0 (90)] - 2026-11-01
+
+Die Obergrenzen für Personen je Lerngruppe, Anliegen und Termin und für die Tische je Sitzplan fallen; es bleiben
+technische Grenzen mit Warnung. Lernendendaten und Sitzpläne liegen dafür in einer neuen Fassung; dazu Behebungen nach
+einer externen Review der Änderungen seit 2.2.1 (Fassungsvertrag v90).
+
+### Changed
+
+- **Keine Obergrenze der Personen:** Eine Lerngruppe, eine Mitteilung, eine Maßnahme, eine Vereinbarung und ein Termin
+  nehmen jede Zahl von Personen auf — beim Eingeben, beim Import aus IServ, bei den Sammelgriffen, beim Zusammenführen
+  und im Termin. Unter der Mitgliederliste steht „10 Mitglieder, dazu 2 archiviert“ statt „12 von 40 Plätzen“; die
+  Menüs nennen keine Lerngruppe mehr „(voll)“. Es bleibt die Grenze des Schuljahrs: 2 000 Personen, archivierte
+  eingeschlossen.
+- **Keine Obergrenze der Tische:** Ein Sitzplan nimmt jede Zahl von Tischen — beim Eingeben der Namen, aus der
+  Lerngruppe und mit „Tisch hinzufügen“. Mehr als 40 Tische belegen zuerst die Gänge, dann den oberen Rand; was das
+  Raster dann nicht mehr fasst, liegt übereinander oben links und lässt sich von dort verschieben. Die Unterzeile
+  nennt „‹n› Plätze · Lehrertisch“.
+- **Technische Grenzen mit Warnung:** Ab 1 800 Personen steht vor der Eintrags-, Import- und Einlesemeldung „Die
+  Lernendenverwaltung umfasst jetzt 1 801 Personen — höchstens 2 000 je Schuljahr.“; Lernendendaten (16 MB) und
+  Sitzpläne (1 MB) warnen ab 90 % einmal je Sitzung, das Archiv (128 MB) nach dem Jahreswechsel. Wird eine Grenze
+  überschritten, nennt die App den Grund — etwa „… wären mit 16,1 MB größer als die Grenze von 16 MB“ — und schreibt
+  nicht.
+- **Neue Fassung der Daten:** Jahresdatei, Archiv und Sitzpläne tragen die Fassung 2. Beim ersten Lesen einer Datei
+  aus 2.4.0 oder früher schreibt die App sie um; vorher legt sie das Original als `lernende-fassung1-…`,
+  `archiv-fassung1-…` bzw. `sitzplaene-fassung1-<Stempel>.json` neben die Planung, und eine Meldung nennt die Kopie.
+  Versionen bis 2.4.0 lesen die Fassung 2 nicht; sie sperren die Lernenden und lassen die Dateien unangetastet.
+- **Hinweis „Bitte bei Version 2.5.0 oder höher bleiben“** (statt „Bitte bei Version 2 bleiben“): einmal beim ersten
+  Start mit 2.5.0 — nach einem Update von 2.0.0 bis 2.4.0 mit drei Absätzen, nach einem Update von früher oder einer
+  Neuinstallation mit vier; ohne Anleitung zum Rückweg.
+- **Zählzeile** im Blatt „Lernende“, in ⌘K und in der Einlesemeldung mit Tausenderabstand, etwa „1 999 Personen in 2
+  Lerngruppen“.
+- **Schneller bei vielen Namen:** die Vorschau von „Namen eingeben …“, der Abgleich beim Import aus IServ und „Stand
+  für mehrere“ bei den Mitteilungen.
+- **Löschfragen im Archiv:** „Das geschieht gleich nach dieser Frage, unabhängig von „Übernehmen“, und lässt sich
+  nicht widerrufen.“ statt „Das gilt sofort, …“.
+- **Material:** Ablagefläche, „Datei wählen …“ und „Ordner wählen …“ im Vorhaben-Blatt und das Ablegen auf eine Kachel
+  im Raster legen den dauerhaften Zugriff erst für verknüpfte Dateien an — nicht mehr vorab und nicht für die über der
+  Grenze; eine schon verknüpfte Datei, erneut gezogen oder gewählt, frischt ihn auf. Fehlt er, sagt die App es; im
+  Blatt steht dann ein fremder Ort zuerst und der Zugriff kurz („Für ein Material fehlt der dauerhafte Zugriff.“).
+- **Prüfstand:** `runde.py` beendet eine Probe über der Frist selbst, ohne `pkill -f`.
+- **Web App:** nur die Nummer.
+
+### Fixed
+
+- **Ziehen aufs Raster:** Ein fremdes Programm, das Daten mit dem Typ der Vorhaben zog, verschob eine Kachel; jetzt
+  wird es abgewiesen wie ein Ziehen ohne Datei und Link.
+- **Dauerhafter Zugriff auf Material:** Ließ er sich für eine verknüpfte Datei nicht sichern, fragte die App erst nach
+  einem Neustart beim Öffnen danach. Jetzt sagt sie es gleich: „„a.pdf“ ist verknüpft, der dauerhafte Zugriff ließ
+  sich aber nicht sichern — nach einem Neustart fragt die App beim Öffnen danach.“
+
 ## [2.4.0 (89)] - 2026-10-31
 
 Das Archiv der Lernendenverwaltung wird bei einer bestätigten Löschung und vor „Verschlüsselung aufheben …“ abseits
