@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <!-- SPDX-FileCopyrightText: 2026 Dominik Kluge -->
+  <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+  <defs>
+    <linearGradient id="blatt" x1="252" y1="204" x2="771" y2="813" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFDFB"/>
+      <stop offset="1" stop-color="#E7EDFF"/>
+    </linearGradient>
+  </defs>
+  <path d="M214 283c156-53 285-12 298 21v469c-13-33-142-74-298-21V283z" fill="url(#blatt)"/>
+  <path d="M810 283c-156-53-285-12-298 21v469c13-33 142-74 298-21V283z" fill="#F8F4FF"/>
+  <path d="M512 304v469" stroke="#7594D1" stroke-opacity=".38" stroke-width="15"/>
+</svg>

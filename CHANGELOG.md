@@ -16,11 +16,72 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.6.0 (91)] - 2026-11-05
+
+Die Mitteilungen einer Lerngruppe erscheinen einzeln, mit wahlweiser Rückmeldefrist und wählbaren Adressaten; die
+Eingabezeilen der Vereinbarungen und Maßnahmen sind zweizeilig, die Listen der Lerngruppen und Mitglieder Tabellen. Die
+Daten bleiben in Fassung 2.
+
+### Added
+
+- **Rückmeldefrist an Mitteilungen:** Beim Anlegen und unter der Tabelle wahlweise „Rückmeldung bis“ mit Datum
+  (vorgeschlagen in einer Woche). Eine verstrichene Frist steht orange, solange die Person offen ist — wie bei den
+  Maßnahmen. Die Frist erscheint auch in „Offen: …“ unter „Alle Lernenden“, im Archiv („07.09.2026, Rückmeldung bis
+  14.09.2026“) und im Spaltenkopf der Rückmeldungsliste („bis 14.09.2026“). Mitteilungen ohne Frist zeigen „—“.
+- **Adressaten einer Mitteilung:** „an alle Mitglieder“ ist vorgegeben; „Einzelne …“ öffnet einen Bogen mit den aktiven
+  Mitgliedern zum Ankreuzen — auch für eine einzelne Person. Betroffen ist, wer beim Anlegen gewählt ist: Wer später in die
+  Lerngruppe kommt, ist nicht betroffen; „Auch an …“ nimmt von Hand auf, mit „Alle Mitglieder der Lerngruppe“ in einem
+  Schritt. Nach dem Anlegen und beim Wechsel der Lerngruppe steht die Wahl wieder auf „an alle Mitglieder“.
+
+### Changed
+
+- **Mitteilungen einzeln:** Ein Auswahlfeld über der Tabelle wählt, welche Mitteilung die Tabelle zeigt und welche
+  „Löschen …“ betrifft; beim Öffnen und nach dem Wechsel der Lerngruppe die zuletzt angelegte, nach ⌘Z oder ⇧⌘Z die
+  zurückgekehrte. Die Tabelle hat die Spalten der Maßnahmen — Person, Mitteilung, Frist, Stand — und zeigt die
+  Betroffenen, statt einer Spalte je Mitteilung für alle Mitglieder; „Person“ und „Stand“ ordnen per Kopfklick wie dort.
+  Stand für mehrere, die Leiste einer Person, ↓/↑ nach ⌘A und „Rückmeldungsliste …“ bleiben; der Knopf steht jetzt in
+  der Zeile über der Tabelle.
+- **Eingabezeile „Neue Mitteilung“** in zwei Zeilen: oben Titel und „an …“, darunter „Rückmeldung bis“, Datum und
+  „+ Anlegen“.
+- **Vereinbarungen:** „Neue Vereinbarung“ steht in der Breite der Zeile neben „für“; „gültig bis einschließlich“, Datum
+  und „+ Anlegen“ rücken in eine zweite Zeile. Ein langer Name in „für“ wird gekürzt, statt das Feld zu verdrängen.
+- **Maßnahmen:** Die Eingabezeile ist zweizeilig wie bei den Vereinbarungen — ein langer Name in „für“ drückt das Feld
+  und „+ Anlegen“ nicht mehr zusammen. Ob eine Frist verstrichen ist, entscheidet dieselbe Regel wie bei den
+  Mitteilungen — am Tag des angezeigten Stands, wie bei den Vereinbarungen.
+- **Tabellen der Lernendenverwaltung:** Alle zwölf — Lerngruppen, Mitglieder, „Alle Lernenden“, die Tabelle einer
+  Mitteilung, Maßnahmen, Vereinbarungen, Anliegen einer Person und die Tabellen des Archivs — sind Tabellen von AppKit mit
+  Zellen aus SwiftUI und sehen aus wie zuvor. Ein Klick auf eine von mehreren Gewählten wählt sofort genau sie; ein
+  Doppelklick lässt danach nur sie gewählt. ⌘- und ⇧-Klick, ⌘A, ↓/↑, Aufziehen und VoiceOver wählen wie in jeder Tabelle
+  von macOS.
+- **Daten:** keine neue Fassung — Frist und Adressaten stehen in Feldern, die Fassung 2 schon trägt. 2.5.0 liest und
+  schreibt eine Datei aus 2.6.0 ohne Verlust; die Frist einer Mitteilung zeigt es nicht an.
+- **Prüfstand:** Die Fensterprobe der Lernenden schließt nach der Probe am Importbogen das Blatt „Lernende“ mit ⌘Z und ⎋,
+  statt in der Rückfrage auf „Verwerfen“ zu klicken — dieser Klick brachte die Probe gelegentlich zum Absturz. Sie bedient
+  die Auswahlfelder und Menüs der Lernendenverwaltung wie von Hand, mit einem Klick an ihren Platz — auch unter macOS 27,
+  wo SwiftUI sie ohne eigene Steuerung aus AppKit zeichnet.
+- **Web App:** nur die Nummer.
+
+### Removed
+
+- **„In die Mitteilung aufnehmen“** an einer nicht betroffenen Person — die Tabelle zeigt nur Betroffene; „Auch an …“
+  unter der Tabelle nimmt auf, mit „Archivierte zeigen“ auch archivierte Mitglieder.
+
+### Fixed
+
+- **Auswahl geleert:** Unter „Alle Lernenden“ leerte ein Klick auf eine von mehreren gewählten Personen die ganze
+  Auswahl (so schon in 2.5.0, unter macOS 26 und 27); jetzt wählt er genau diese Person, mit ihrer Leiste.
+- **Maßnahmen und Vereinbarungen nach dem Wechsel der Lerngruppe:** „für“ steht auf einem Mitglied der neuen Lerngruppe.
+  Bisher blieb dort eine Person der vorigen, und „Anlegen“ legte für sie an — der Eintrag erschien dann in der vorigen
+  Lerngruppe.
+- **Lerngruppen und Mitglieder im Blatt „Lernende“:** Die beiden Listen sind jetzt Tabellen wie die übrigen des Blatts.
+  In großen Lerngruppen meldete macOS beim Schließen des Blatts eine interne Warnung, die künftig zum Abbruch der App
+  führen soll. Aussehen und Bedienung bleiben.
+
 ## [2.5.0 (90)] - 2026-11-01
 
 Die Obergrenzen für Personen je Lerngruppe, Anliegen und Termin und für die Tische je Sitzplan fallen; es bleiben
 technische Grenzen mit Warnung. Lernendendaten und Sitzpläne liegen dafür in einer neuen Fassung; dazu Behebungen nach
-einer externen Review der Änderungen seit 2.2.1 (Fassungsvertrag v90).
+einer externen Review der Änderungen seit 2.2.1.
 
 ### Changed
 
@@ -69,8 +130,7 @@ einer externen Review der Änderungen seit 2.2.1 (Fassungsvertrag v90).
 ## [2.4.0 (89)] - 2026-10-31
 
 Das Archiv der Lernendenverwaltung wird bei einer bestätigten Löschung und vor „Verschlüsselung aufheben …“ abseits
-des Hauptstrangs gelesen; Dateinamen mit Leerraum am Ende bleiben beim Ablegen und bei der Dateiwahl unverkürzt
-(Fassungsvertrag v89).
+des Hauptstrangs gelesen; Dateinamen mit Leerraum am Ende bleiben beim Ablegen und bei der Dateiwahl unverkürzt.
 
 ### Changed
 
@@ -107,8 +167,7 @@ des Hauptstrangs gelesen; Dateinamen mit Leerraum am Ende bleiben beim Ablegen u
 
 ## [2.3.0 (88)] - 2026-10-31
 
-Ablegen von Dateien und Links auf ein Vorhaben im Raster und ein Stand für mehrere Gewählte bei den Mitteilungen
-(Fassungsvertrag v88).
+Ablegen von Dateien und Links auf ein Vorhaben im Raster und ein Stand für mehrere Gewählte bei den Mitteilungen.
 
 ### Added
 
@@ -146,7 +205,7 @@ Ablegen von Dateien und Links auf ein Vorhaben im Raster und ein Stand für mehr
 ## [2.2.2 (87)] - 2026-10-28
 
 Behebungen nach zwei externen Reviews von 2.2.1 und die Wahl, beim endgültigen Löschen einer Person ihre
-Tische mit zu entfernen (Fassungsvertrag v87).
+Tische mit zu entfernen.
 
 ### Added
 
@@ -190,8 +249,7 @@ Tische mit zu entfernen (Fassungsvertrag v87).
 
 ## [2.2.1 (86)] - 2026-10-26
 
-Lernendenverwaltung, Wochentag, externe Leistungsdokumentation und neue Tour
-(Fassungsvertrag v86).
+Lernendenverwaltung, Wochentag, externe Leistungsdokumentation und neue Tour.
 
 ### Added
 
@@ -238,7 +296,7 @@ Lernendenverwaltung, Wochentag, externe Leistungsdokumentation und neue Tour
 
 ## [2.2.0 (85)] - 2026-10-26
 
-Vorhaben-Blatt mit Abschnitten und Rückmeldungslisten (Fassungsvertrag v85).
+Vorhaben-Blatt mit Abschnitten und Rückmeldungslisten.
 
 ### Added
 
@@ -277,7 +335,7 @@ Vorhaben-Blatt mit Abschnitten und Rückmeldungslisten (Fassungsvertrag v85).
 
 ## [2.1.0 (84)] - 2026-10-26
 
-Erweiterung der Lernendenverwaltung (Fassungsvertrag v84).
+Erweiterung der Lernendenverwaltung.
 
 ### Added
 
@@ -343,7 +401,7 @@ Erweiterung der Lernendenverwaltung (Fassungsvertrag v84).
 
 ## [2.0.3 (83)] - 2026-10-26
 
-Behebungen nach 2.0.2 (Fassungsvertrag v83, E449–E475).
+Behebungen nach 2.0.2 (E449–E475).
 
 ### Fixed
 
@@ -389,7 +447,7 @@ Behebungen nach 2.0.2 (Fassungsvertrag v83, E449–E475).
 
 ## [2.0.2 (82)] - 2026-10-26
 
-Behebungen nach 2.0.1 (Fassungsvertrag v82, E413–E446).
+Behebungen nach 2.0.1 (E413–E446).
 
 ### Fixed
 
@@ -433,7 +491,7 @@ Behebungen nach 2.0.1 (Fassungsvertrag v82, E413–E446).
 
 ## [2.0.1 (81)] - 2026-10-26
 
-Behebungen nach 2.0.0 (Fassungsvertrag v81, E325–E348 und E391–E399).
+Behebungen nach 2.0.0 (E325–E348 und E391–E399).
 
 ### Fixed
 
@@ -480,12 +538,11 @@ Behebungen nach 2.0.0 (Fassungsvertrag v81, E325–E348 und E391–E399).
 - **Prüfwerk:** Die Prüfstände antworten auf Rückfragen per Klick und warten
   an mehr Stellen auf das, was sie prüfen, statt eine feste Zeit; neue Schritte für die Wege
   des Beendens, das Dock und die Sitzplanbindungen. Die meisten Prüfstände
-  brauchen eine gesäte Planung — die LIESMICH der App zeigt, wie.
+  brauchen eine gesäte Planung.
 
 ## [2.0.0 (80)] - 2026-10-26
 
-Die Lernendenverwaltung. Geplant und entschieden nach dem Fassungsvertrag
-(E246–E257, E270–E320). **Lernendendaten gibt es nur mit eingeschalteter
+Die Lernendenverwaltung. Geplant und entschieden (E246–E257, E270–E320). **Lernendendaten gibt es nur mit eingeschalteter
 Verschlüsselung, und sie liegen nie im Klartext auf der Platte** — außer in
 einer CSV-Datei, die man nach einer Warnung ausdrücklich sichert. Die Web App
 sieht keine Lernendendaten.
@@ -585,7 +642,7 @@ sieht keine Lernendendaten.
 ## [1.9.8 (79)] - 2026-09-27
 
 Wartung am Prüfwerk nach einer externen Review der Fassung 1.9.7. Geplant und
-entschieden nach dem Fassungsvertrag (E244, E245). Der eine Befund ist mild
+entschieden (E244, E245). Der eine Befund ist mild
 und betrifft ein Werkzeug, nicht die App: **An der App ist keine Zeile
 geändert.**
 
@@ -609,7 +666,7 @@ geändert.**
 ## [1.9.7 (78)] - 2026-09-20
 
 Wartung nach einer externen Review der Fassung 1.9.6. Geplant und entschieden
-nach dem Fassungsvertrag (E241–E243). Beide Befunde sind mild und keiner
+(E241–E243). Beide Befunde sind mild und keiner
 betrifft die Arbeit mit der App: **Am Verhalten ändert sich nichts.**
 
 ### Changed
@@ -641,7 +698,7 @@ betrifft die Arbeit mit der App: **Am Verhalten ändert sich nichts.**
 ## [1.9.6 (77)] - 2026-09-20
 
 Behebungen nach einer externen Review der Fassung 1.9.5 und einem Fund des
-Nutzers. Geplant und entschieden nach dem Fassungsvertrag (E235–E240); jeder
+Nutzers. Geplant und entschieden (E235–E240); jeder
 Befund am Verhalten wurde am Lauf nachgestellt, bevor er behoben wurde.
 
 ### Fixed
@@ -689,7 +746,7 @@ Befund am Verhalten wurde am Lauf nachgestellt, bevor er behoben wurde.
 ## [1.9.5 (76)] - 2026-09-19
 
 Behebungen nach einer externen Review der Fassung 1.9.4 und eigenen Funden.
-Geplant und entschieden nach dem Fassungsvertrag (E225–E233); jeder Befund
+Geplant und entschieden (E225–E233); jeder Befund
 wurde am Lauf nachgestellt, bevor er behoben wurde — einer im Live-Test.
 
 ### Fixed
@@ -721,7 +778,7 @@ wurde am Lauf nachgestellt, bevor er behoben wurde — einer im Live-Test.
 
 Die Übernahme aus der Web App bei geöffneter App, dazu Behebungen nach einer
 externen Review der Fassung 1.9.3 und eigenen Funden. Geplant und entschieden
-nach dem Fassungsvertrag (E213–E224); jeder Befund wurde am Lauf nachgestellt,
+(E213–E224); jeder Befund wurde am Lauf nachgestellt,
 bevor er behoben wurde.
 
 ### Added
@@ -785,7 +842,7 @@ Entscheidungen, keine Mängel:
 ## [1.9.3 (74)] - 2026-09-19
 
 Behebungen nach einer externen Review der Fassung 1.9.2 und zwei eigenen
-Funden. Geplant und entschieden nach dem Fassungsvertrag (E206–E209); jeder
+Funden. Geplant und entschieden (E206–E209); jeder
 Befund wurde am Lauf nachgestellt, bevor er behoben wurde.
 
 ### Fixed
@@ -813,7 +870,7 @@ Befund wurde am Lauf nachgestellt, bevor er behoben wurde.
 ## [1.9.2 (73)] - 2026-09-18
 
 Behebungen nach einer externen Review der Fassung 1.9.1 und drei eigenen
-Funden. Geplant und entschieden nach dem Fassungsvertrag (E196–E200); jeder
+Funden. Geplant und entschieden (E196–E200); jeder
 Befund wurde am Lauf nachgestellt, bevor er behoben wurde.
 
 ### Fixed
@@ -849,8 +906,7 @@ Befund wurde am Lauf nachgestellt, bevor er behoben wurde.
 ## [1.9.1 (72)] - 2026-09-18
 
 Behebungen nach einer externen Review der Fassung 1.9.0 und ein neues Merkmal:
-Vorhaben als Korrektur kennzeichnen. Geplant und entschieden nach dem
-Fassungsvertrag (E184–E192); jeder Befund wurde am Lauf nachgestellt, bevor er
+Vorhaben als Korrektur kennzeichnen. Geplant und entschieden (E184–E192); jeder Befund wurde am Lauf nachgestellt, bevor er
 behoben wurde.
 
 ### Added
@@ -898,8 +954,7 @@ behoben wurde.
 ## [1.9.0 (71)] - 2026-09-18
 
 Materialien von 3ducation.org zu Vorhaben hinzufügen — mit Opt-in wie bei der
-Prüfung auf Updates. Geplant und entschieden nach dem Fassungsvertrag
-(E174–E183).
+Prüfung auf Updates. Geplant und entschieden (E174–E183).
 
 ### Added
 
@@ -972,7 +1027,7 @@ Unterrichtsstunde.
 Sonderzeilen „Klassenleitung“, „Weiteres“ und „Vertretungen“ unterhalb der
 Klassen/Kurse — und das Prüfwerk beweist den Abschluss jedes Prüfstands (die
 Behebungen nach der vierzehnten externen Code-Review an 1.7.9). Geplant und
-entschieden nach dem Fassungsvertrag, je Fassung eine eigene Datei.
+entschieden je Fassung für sich.
 
 ### Added
 
@@ -1025,7 +1080,7 @@ Das Prüfwerk beweist Start und Ende: Ein Lauf der Prüfstandsrunde gilt erst al
 bestanden, wenn er sein Ende bewiesen hat, und das Rundenpaket beweist auf dem
 zweiten Mac, dass es das gepackte ist. Am Verhalten der App ändert sich nichts.
 Die Behebungen nach der dreizehnten externen Code-Review an 1.7.8 — die erste
-Fassung nach dem Fassungsvertrag.
+Fassung mit einem vorab festgelegten Plan.
 
 ### Fixed
 
@@ -1310,7 +1365,7 @@ dann da ist.
 
 - **Benannt, nicht gebaut:** Die Rettung „Fassung davor“ (`planung-vorher.json`)
   hält genau eine Sicherung; ⌘Z, während das Vorhaben-Blatt offen steht,
-  ändert die Planung hinter dem Blatt. Beides steht in der LIESMICH; das
+  ändert die Planung hinter dem Blatt. Das
   Zweite wird in 1.7.2 gebaut.
 
 ## [1.7.0 (59)] - 2026-09-15
@@ -2130,7 +2185,7 @@ iPad ist als Release-Asset prüfbar.
 ### Documentation
 
 - **Was die Verschlüsselung verspricht** und das **Vertrauensmodell der
-  Ansicht** in LIESMICH und README: Die Hash-CSP schützt vor eingeschleustem
+  Ansicht**: Die Hash-CSP schützt vor eingeschleustem
   Code, nicht vor einem ersetzten Server — darum liegt die Ansicht jedem
   Release als Datei mit SHA-256-Prüfsumme bei, samt Anleitung zum Abgleich.
 
