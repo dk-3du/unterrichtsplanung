@@ -1,0 +1,567 @@
+// SPDX-FileCopyrightText: 2026 Dominik Kluge
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import AppKit
+import Foundation
+
+/// Die Schranke vor den Prüfständen.
+///
+/// Ohne `PLANUNGSORDNER` liefe jeder Prüfstand gegen die echte Planung:
+/// `--klicktest`, `--messreihe`, `--menuetest`, `--dauertest`, `--ziehtest`,
+/// `--sitzplantest`, `--uebergangstest`, `--dialogtest`, `--erststarttest`, `--statustest` und `--lernendentest` änderten sie, die lesenden Stände (`--abbild`,
+/// `--rolltest`, `--rastermasse`, `--auswahltest`, `--mischtest`,
+/// `--titeltest`, `--entsperrtest`, `--tourtest`, `--materialtest`) bildeten sie ungefragt ab. Darum stehen alle
+/// hinter derselben Schranke.
+///
+/// Eine Ausnahme, und nur eine (E78): `--erststarttest` in einem **Probepaket**.
+/// Dort ist der voreingestellte Ablageort der Container der Probe — genau der
+/// Weg, den eine frisch eingerichtete App geht und den ein gesetzter
+/// `PLANUNGSORDNER` nie berührt. An der echten Kennung bleibt die Schranke zu.
+/// Was auch dieser Weg nicht deckt, steht bei `Erststartprobe`: Das Probepaket
+/// ist nicht die ausgelieferte App.
+@MainActor
+enum Pruefstandsschranke {
+
+    /// Die Kennung eines Probepakets endet so; das echte Paket nie.
+    static let probenachsatz = ".probe"
+
+    /// Abgewiesen: drucken, ausspülen, gehen.
+    ///
+    /// Nicht `NSApp.terminate`: In einem leeren Ordner geht gleich nach dem
+    /// Start das Blatt „Neue Planung“ auf, und ein angeheftetes Blatt weist das
+    /// Beenden ab — der abgewiesene Lauf bliebe mit offenem Fenster stehen, und
+    /// seine Meldung versackt im Puffer, wenn die Ausgabe in eine Datei geht
+    /// (beides am 14.09.2026 nachgemessen). Ein Lauf, der gar nicht erst
+    /// anfängt, hat nichts zu sichern.
+    private static func abweisen(_ text: String) -> Never {
+        print(text)
+        fflush(stdout)
+        exit(2)
+    }
+
+    /// Darf dieser Prüfstand ohne eigenen Ordner laufen? Die Regel ohne ihre
+    /// drei Quellen, damit sie prüfbar ist.
+    ///
+    /// **Die Kennung allein genügt nicht.** Ohne App Sandbox zeigt der
+    /// voreingestellte Ort nicht in einen Container, sondern auf
+    /// `~/Library/Application Support/Unterrichtsplanung` — den Ablageort der
+    /// Fassungen vor v37. Ein Probepaket, dessen Berechtigungen beim Umsignieren
+    /// verlorengingen, schriebe also in das Benutzerverzeichnis (am 14.09.2026
+    /// genau so passiert). Also wird der Container verlangt, nicht vermutet.
+    static func ohneEigenenOrdnerZulaessig(_ auftrag: Pruefstaende.Auftrag,
+                                           kennung: String?, imContainer: Bool) -> Bool {
+        guard case .erststarttest = auftrag, imContainer else { return false }
+        return kennung?.hasSuffix(probenachsatz) ?? false
+    }
+
+    static func eigenerOrdnerVerlangt(_ auftrag: Pruefstaende.Auftrag) -> Bool {
+        let name = auftrag.name
+        guard Ablage.istPruefstand else {
+            guard ohneEigenenOrdnerZulaessig(auftrag, kennung: Bundle.main.bundleIdentifier,
+                                             imContainer: Ablage.container != nil) else {
+                abweisen("\(name) abgebrochen: PLANUNGSORDNER ist nicht gesetzt. Prüfstände "
+                         + "laufen nur gegen eine eigene Ablage, nie gegen die echte Planung. "
+                         + "Ohne Ordner läuft allein --erststarttest, und nur in einem "
+                         + "Probepaket im Sandbox (Kennung auf \(probenachsatz), Container "
+                         + "vorhanden) — hier: Kennung \(Bundle.main.bundleIdentifier ?? "—"), "
+                         + "Container \(Ablage.container?.path ?? "keiner").")
+            }
+            print("\(name): ohne PLANUNGSORDNER im Probepaket "
+                  + "\(Bundle.main.bundleIdentifier ?? "—") — der Lauf geht an den "
+                  + "voreingestellten Ort im Container der Probe (E78).")
+            return true
+        }
+        // Im Sandbox erreicht der Prüfstand nur seinen Container — `starten()`
+        // hat nichts geladen und kein Blatt geöffnet, das Beenden geht durch.
+        guard Ablage.pruefordnerZulaessig else {
+            abweisen("\(name) abgebrochen: PLANUNGSORDNER liegt außerhalb des Containers. Im "
+                     + "Sandbox arbeitet ein Prüfstand nur unterhalb von "
+                     + "\(Ablage.container?.path ?? "—") — etwa in dessen tmp/; "
+                     + "`Unterrichtsplanung --container` nennt den Pfad.")
+        }
+        return true
+    }
+}
+
+/// Die Prüfstände am gebauten Paket — ein Aufruf, ein Prüfstand je Lauf.
+///
+/// Die Prüfstände laufen gegen den echten, signierten Bau, ohne Compile-Out:
+/// Nur so kam heraus, was das Prüfziel von `swift test` nicht zeigt (Sandbox,
+/// Blätter, Menüs, Enklave). Der Verteiler liest die Argumente einmal, prüft
+/// die Schranke einmal und ruft genau einen Prüfstand; der Beipackzettel nennt
+/// sie weiterhin nicht.
+@MainActor
+enum Pruefstaende {
+
+    /// Was ein Aufruf verlangt — genau eines.
+    enum Auftrag: Equatable {
+        case abbild(URL)
+        case rolltest, klicktest, auswahltest, mischtest, ziehtest, titeltest, menuetest
+        case entsperrtest(String)
+        case tourtest, updatetest, materialtest, ordnertest, messreihe, rastermasse, dauertest
+        case sitzplantest, erststarttest, widerruftest, dialogtest, statustest
+        case uebergangstest(String)
+        /// `versiegelt` (Vorgabe), `gesperrt`, `jahreswechsel` (v80), `jahreswechsel-pruefen`
+        /// (E306), `e300verwerfen` oder `e300uebernehmen` (E319).
+        case lernendentest(String)
+
+        /// Der Name vor der Schranke und in der Ausgabe.
+        var name: String {
+            switch self {
+            case .abbild: "ABBILD"
+            case .rolltest: "ROLLTEST"
+            case .klicktest: "KLICKTEST"
+            case .auswahltest: "AUSWAHLTEST"
+            case .mischtest: "MISCHTEST"
+            case .ziehtest: "ZIEHTEST"
+            case .titeltest: "TITELTEST"
+            case .menuetest: "MENUETEST"
+            case .entsperrtest: "ENTSPERRTEST"
+            case .tourtest: "TOURTEST"
+            case .updatetest: "UPDATETEST"
+            case .materialtest: "MATERIALTEST"
+            case .ordnertest: "ORDNERTEST"
+            case .messreihe: "MESSREIHE"
+            case .rastermasse: "RASTERMASSE"
+            case .dauertest: "DAUERTEST"
+            case .sitzplantest: "SITZPLANTEST"
+            case .erststarttest: "ERSTSTARTTEST"
+            case .widerruftest: "WIDERRUFTEST"
+            case .dialogtest: "DIALOGTEST"
+            case .statustest: "STATUSTEST"
+            case .uebergangstest: "UEBERGANGSTEST"
+            case .lernendentest: "LERNENDENTEST"
+            }
+        }
+
+        /// Aus den Argumenten, in fester Reihenfolge — der erste Treffer zählt.
+        /// `--mischtest` geht `--abbild` vor: Er legt sein Bild selbst ab
+        /// (`MISCHBILD`); ein Abbild nebenher störte ihn nur. `--abbild` ohne
+        /// Ziel und `--entsperrtest` ohne Weg: kein Abbild, Weg `passphrase`;
+        /// `--uebergangstest` ohne Art: `pruefen` (der zweite Start).
+        static func lesen(_ argumente: [String]) -> Auftrag? {
+            func wert(nach flagge: String) -> String? {
+                guard let stelle = argumente.firstIndex(of: flagge), stelle + 1 < argumente.count
+                else { return nil }
+                return argumente[stelle + 1]
+            }
+            if argumente.contains("--mischtest") { return .mischtest }
+            if argumente.contains("--abbild") {
+                return wert(nach: "--abbild").map { .abbild(URL(fileURLWithPath: $0)) }
+            }
+            let einfache: [(String, Auftrag)] = [
+                ("--rolltest", .rolltest), ("--klicktest", .klicktest), ("--auswahltest", .auswahltest),
+                ("--ziehtest", .ziehtest), ("--titeltest", .titeltest), ("--menuetest", .menuetest),
+            ]
+            for (flagge, auftrag) in einfache where argumente.contains(flagge) { return auftrag }
+            if argumente.contains("--entsperrtest") {
+                return .entsperrtest(wert(nach: "--entsperrtest") ?? "passphrase")
+            }
+            if argumente.contains("--uebergangstest") {
+                return .uebergangstest(wert(nach: "--uebergangstest") ?? "pruefen")
+            }
+            if argumente.contains("--lernendentest") {
+                // Eine Art ist ein Wort ohne Bindestrich davor; sonst die Vorgabe.
+                let art = wert(nach: "--lernendentest").flatMap { $0.hasPrefix("-") ? nil : $0 }
+                return .lernendentest(art ?? "versiegelt")
+            }
+            let weitere: [(String, Auftrag)] = [
+                ("--tourtest", .tourtest), ("--updatetest", .updatetest), ("--materialtest", .materialtest),
+                ("--ordnertest", .ordnertest),
+                ("--messreihe", .messreihe), ("--rastermasse", .rastermasse), ("--dauertest", .dauertest),
+                ("--sitzplantest", .sitzplantest), ("--erststarttest", .erststarttest),
+                ("--widerruftest", .widerruftest), ("--dialogtest", .dialogtest),
+                ("--statustest", .statustest),
+            ]
+            for (flagge, auftrag) in weitere where argumente.contains(flagge) { return auftrag }
+            return nil
+        }
+    }
+
+    /// Welches Paket läuft — die erste Zeile jedes Prüfstands (E128, v63).
+    ///
+    /// Die Prüfstände laufen an einer Probe-Kopie des signierten Pakets; bis
+    /// v62 hielt nur das Rezept fest, *welches*. Jetzt sagt es der Lauf selbst,
+    /// aus der Info.plist des laufenden Bündels: Kennung, Fassung, Quellenstand
+    /// und Werkzeugstand (beide von `bauen.sh` mitsigniert; die Probe-Kopie
+    /// ändert nur die Kennung). So steht im Protokoll der Runde und im
+    /// Releasebericht, welches Paket die Rauchtests bekam (N61-01). Der
+    /// Entwicklungsbau aus `swift run` hat keine Plist mit Kennung — er heißt so.
+    /// Seit v66 steht sie auch vor der Schranke (E144): Jeder Lauf, der einen
+    /// Prüfstand nennt, beginnt mit ihr — auch der abgewiesene.
+    static func paketzeile(_ angaben: [String: Any]?) -> String {
+        guard let angaben, let kennung = angaben["CFBundleIdentifier"] as? String else {
+            return "Paket: kein Bündel (Entwicklungsbau)"
+        }
+        func kurz(_ schluessel: String) -> String {
+            guard let wert = angaben[schluessel] as? String, !wert.isEmpty else { return "fehlt" }
+            return wert.count > 12 ? String(wert.prefix(12)) + "…" : wert
+        }
+        let fassung = angaben["CFBundleShortVersionString"] as? String ?? "?"
+        let stufe = angaben["CFBundleVersion"] as? String ?? "?"
+        return "Paket: \(kennung) \(fassung) (\(stufe)), Quellenstand \(kurz("UPQuellenstand")), "
+            + "Werkzeugstand \(kurz("UPWerkzeugstand"))"
+    }
+
+    /// Der Auftrag dieses Laufs — gesetzt in `starten`, gelesen beim Beenden.
+    static var laufender: Auftrag?
+
+    /// Der Prüfstand hat sich abgemeldet (N67-01 Rest, v69): Erst dann heißt
+    /// die letzte Zeile ENDE. Gesetzt allein von `abschliessen()`, das jede
+    /// gewollte Endstelle über `abschliessenUndBeenden` ruft.
+    static var abgeschlossen = false
+
+    /// Die letzte Zeile eines Prüfstands (N67-01, v68/v69).
+    ///
+    /// Die Paketzeile steht *vor* dem Prüfstand und beweist den Start; bis v67
+    /// bewies nichts das Ende — ein Prüfstand, der nach ihr still mit Rückgabe 0
+    /// endete, galt dem Rundentreiber als bestanden. Seit v68 druckt der Delegat
+    /// beim Beenden (`applicationWillTerminate`) die Schlusszeile, und `runde.py`
+    /// verlangt „ENDE <Name>“. Bis v68 kam sie, sobald ein Prüfstand lief — der
+    /// Rückruf beweist aber nur das reguläre Beenden der App, nicht den
+    /// Abschluss des Prüfstands (vierzehnte Review): Ein regulärer Ausstieg
+    /// nach der ersten Zusicherung bestand. Jetzt heißt die Zeile ENDE nur,
+    /// wenn der Prüfstand sich abgemeldet hat, sonst „ABGEBROCHEN <Name> ✗ —
+    /// beendet vor dem Abschluss“; der Treiber weist sie ab. Ein gewollter
+    /// Abbruch (`exit(3)` im Dienst) und die Schranke (`exit(2)`) kommen nicht
+    /// hierher — so soll es sein: Dort beweist die Zeile des Dienstes, dass der
+    /// Abbruch an der verlangten Stelle geschah. Ebenso wenig ein endgültig
+    /// abgelehntes Beenden an der Endstelle und die Reißleinen: `exit(3)` mit ✗ (B97).
+    static func schlusszeile(_ auftrag: Auftrag, abgeschlossen: Bool) -> String {
+        abgeschlossen ? "ENDE \(auftrag.name)"
+                      : "ABGEBROCHEN \(auftrag.name) ✗ — beendet vor dem Abschluss"
+    }
+
+    /// Die Ende-Zeile eines abgeschlossenen Prüfstands — was `runde.py` verlangt.
+    static func endezeile(_ auftrag: Auftrag) -> String { schlusszeile(auftrag, abgeschlossen: true) }
+
+    /// Der Prüfstand meldet sich ab: Seine Zusicherungen sind gedruckt, was
+    /// jetzt noch kommt, ist das Beenden. Genau einmal je Lauf, an der Endstelle.
+    static func abschliessen() { abgeschlossen = true }
+
+    /// Was ein Prüfstand beim Beenden noch zusichert, wenn die App über ihren
+    /// eigenen Weg endet — `beendet()` druckt es vor der Schlusszeile (E319).
+    static var schlusspruefung: (@MainActor () -> [String])?
+
+    /// Der Prüfstand kündigt an, dass die Endstelle auf die Verlustfrage trifft — nur dann bestätigt sie
+    /// sie ohne ✗ und ohne Auskunftszeile; abgeräumt und noch einmal beendet wird in jedem Fall
+    /// (Z-AS4-12, Z-AS4a-01, Z-AS4a-10).
+    static var verlustfrageErwartet = false
+    /// Die Endstelle bestätigte die Verlustfrage per Klick — nicht mit der Ersatzantwort (Z-AS4a-02).
+    static var verlustfrageGeklickt = false
+    /// Die Endstelle musste nach einem abgelehnten Beenden noch einmal beenden (Z-AS4-06).
+    static var erneutBeendet = false
+
+    /// Vom Delegaten beim Beenden gerufen — druckt die Schlusszeile, wenn ein
+    /// Prüfstand lief (ENDE nach dem Abschluss, sonst ABGEBROCHEN); im Betrieb
+    /// ohne Prüfstand nichts. Liefert die Zeile, damit die Prüfung sie liest.
+    @discardableResult
+    static func beendet() -> String? {
+        guard let laufender else { return nil }
+        // Ein Prüfstand, der die App über ihren eigenen Weg beenden lässt, sichert hier zu (E319).
+        if let zeilen = schlusspruefung?() {
+            print(zeilen.joined(separator: "\n"))
+        }
+        let zeile = schlusszeile(laufender, abgeschlossen: abgeschlossen)
+        print(zeile)
+        fflush(stdout)
+        return zeile
+    }
+
+    /// Die gewollte Endstelle eines Prüfstands ohne offene Blätter: abmelden,
+    /// dann regulär beenden — ENDE folgt aus dem Delegaten.
+    static func abschliessenUndBeenden() {
+        abschliessen()
+        // Eine verschobene Handlung läuft noch — erst sie, sonst prallte das Beenden in der Lücke ab (E436, Z-AU4c-20).
+        // Eine eben gesetzte Frage ist vielleicht noch nicht angeheftet — kurz auf sie warten, sonst ginge sie mit dem
+        // Beenden unter (H3-03).
+        if let speicher = speicherDesLaufs, speicher.handlungAussteht || speicher.rueckfrage != nil && !speicher.alertSteht {
+            Task { @MainActor in
+                for _ in 0..<24 where speicher.handlungAussteht { try? await Task.sleep(for: .milliseconds(125)) }
+                for _ in 0..<8 where speicher.rueckfrage != nil && !speicher.alertSteht {
+                    try? await Task.sleep(for: .milliseconds(125))
+                }
+                // Nie angeheftet — ihr Ort ging: im Protokoll zu sehen, ohne den Lauf zu röten (Z-AU11-03).
+                if let frage = speicher.rueckfrage, !speicher.alertSteht {
+                    print("  Endstelle: Frage „\(frage.text.split(separator: "\n").first ?? "")“ gesetzt, nicht angeheftet")
+                    fflush(stdout)
+                }
+                beendenOhneBlaetter()
+            }
+            return
+        }
+        beendenOhneBlaetter()
+    }
+
+    /// Das Beenden der Endstelle ohne offene Blätter — nach dem Abmelden.
+    private static func beendenOhneBlaetter() {
+        // Eine sichtbare Rückfrage ließe `applicationShouldTerminate` warten (E315) —
+        // erst ablehnen wie von Hand, sonst stünde der Prüfstand bis zur Frist (Z14c3-05).
+        guard let speicher = speicherDesLaufs, speicher.alertSteht else {
+            NSApp.terminate(nil)
+            // Zurück heißt abgelehnt — mit Grund gehen, nicht bis zur Frist stehen (B97, E424).
+            let blatt = Planungsspeicher.blattHaengt()
+            Task { @MainActor in
+                await aufgeben("das Beenden an der Endstelle wurde abgelehnt", speicherDesLaufs, blatt: blatt)
+            }
+            return
+        }
+        Task { @MainActor in
+            await sichtbareFrageAblehnen(speicher)
+            NSApp.terminate(nil)
+            await aufgeben("das Beenden an der Endstelle wurde abgelehnt", speicher, blatt: Planungsspeicher.blattHaengt())
+        }
+    }
+
+    /// Die gewollte Endstelle eines Prüfstands, der Blätter offen haben kann
+    /// (auch ein ✗-Frühausstieg ist ein Ergebnis, kein Abbruch): abmelden, die
+    /// Blätter schließen, dann regulär beenden.
+    static func abschliessenUndBeenden(_ speicher: Planungsspeicher) async {
+        abschliessen()
+        await blaetterSchliessenUndBeenden(speicher)
+    }
+
+    /// Nur für die Gegenprobe der Runde (N67-01, v69): Mit `PRUEFSTAND_FRUEHES_ENDE`
+    /// in der Umgebung endet der Klicktest regulär nach seiner ersten Zusicherung
+    /// — ein Ausstieg außer der Reihe, wie ihn ein `terminate` aus einem anderen
+    /// Pfad brächte. Der Treiber verlangt, dass ein solcher Lauf *nicht* besteht.
+    /// Nach dem Vorbild `Uebergang.abbruchFallsVerlangt`: nur hinter der Schranke.
+    static func fruehesEndeFallsVerlangt() {
+        guard Ablage.istPruefstand,
+              ProcessInfo.processInfo.environment["PRUEFSTAND_FRUEHES_ENDE"] != nil else { return }
+        print("\(laufender?.name ?? "PRUEFSTAND") PRUEFSTAND_FRUEHES_ENDE: Der Prozess endet jetzt regulär, "
+              + "vor dem Abschluss des Prüfstands")
+        fflush(stdout)
+        NSApp.terminate(nil)
+    }
+
+    /// Der eine Aufruf aus `applicationDidFinishLaunching`.
+    static func starten(_ speicher: Planungsspeicher,
+                        argumente: [String] = ProcessInfo.processInfo.arguments) {
+        guard let auftrag = Auftrag.lesen(argumente) else { return }
+        laufender = auftrag
+        // Zuerst das Paket, dann die Schranke, dann der Prüfstand — sofort
+        // ausgespült, damit auch ein Absturz oder eine Abweisung die Zeile
+        // stehen lässt (E128: die *erste* Zeile; bis v65 sprach im Erststart
+        // ohne PLANUNGSORDNER die Schranke davor, E144).
+        print(paketzeile(Bundle.main.infoDictionary))
+        fflush(stdout)
+        guard Pruefstandsschranke.eigenerOrdnerVerlangt(auftrag) else { return }
+        speicherDesLaufs = speicher
+        // Abbilder außerhalb des Containers wandern in den Prüfordner.
+        Selbstabbild.pruefordner = speicher.sicherung.ablage.ordner
+        switch auftrag {
+        case .abbild(let ziel): Selbstabbild.ablegenUndBeenden(speicher, ziel: ziel)
+        case .rolltest: Klickproben.rolltestUndBeenden(zerlegen: argumente.contains("--zerlegen"))
+        case .klicktest: Klickproben.klicktestUndBeenden(speicher)
+        case .auswahltest: Klickproben.auswahltestUndBeenden(speicher)
+        case .mischtest: Klickproben.mischtestUndBeenden(speicher)
+        case .ziehtest: Klickproben.ziehtestUndBeenden(speicher)
+        case .titeltest: Klickproben.titeltestUndBeenden(speicher)
+        case .menuetest: Klickproben.menuetestUndBeenden(speicher)
+        case .entsperrtest(let weg): Entsperrprobe.laufenUndBeenden(speicher, weg: weg)
+        case .tourtest: Tourprobe.laufenUndBeenden(speicher)
+        case .updatetest: Updateprobe.laufenUndBeenden(speicher)
+        case .materialtest: Materialprobe.laufenUndBeenden(speicher)
+        case .ordnertest: Ordnerprobe.laufenUndBeenden(speicher)
+        case .messreihe: Messreihe.laufenUndBeenden(speicher)
+        case .rastermasse: Messreihe.masseUndBeenden()
+        case .dauertest: Dauerprobe.laufenUndBeenden(speicher)
+        case .sitzplantest: Sitzplanprobe.laufenUndBeenden(speicher)
+        case .erststarttest: Erststartprobe.laufenUndBeenden(speicher)
+        case .widerruftest: Widerrufprobe.laufenUndBeenden(speicher)
+        case .dialogtest: Dialogprobe.laufenUndBeenden(speicher)
+        case .statustest: Statusprobe.laufenUndBeenden(speicher)
+        case .uebergangstest(let art): Uebergangsprobe.laufenUndBeenden(speicher, art: art)
+        case .lernendentest(let art): Lernendenprobe.laufenUndBeenden(speicher, art: art)
+        }
+    }
+
+    /// Ein angeheftetes Blatt lässt AppKit `terminate` abweisen, noch bevor
+    /// der Delegat gefragt wird. Ohne diese Stelle bliebe der Prüfstand nach
+    /// `--dialog …` mit fertigen Abbildern stehen. Also erst die
+    /// Blätter schließen, das Ablösen abwarten, dann gehen. Meldet nicht ab —
+    /// das tut `abschliessenUndBeenden(_:)`, der einzige Rufer aus den Prüfständen.
+    private static func blaetterSchliessenUndBeenden(_ speicher: Planungsspeicher) async {
+        // Ein vorgegebenes Release käme mit dem Schließen als Blatt wieder und
+        // hielte AppKit am Beenden fest — erst beantworten, dann schließen.
+        // Dasselbe gilt für die Nachwahl: „Später“ hält sie für die Sitzung fern.
+        speicher.updateSpaeter()
+        speicher.nachwahlSpaeter()
+        // Eine sichtbare Rückfrage zuerst ablehnen wie von Hand — im Programm weggenommen,
+        // schlösse SwiftUI ihr Alert-Blatt mitten im Layout (B82, Z14c3-04).
+        await sichtbareFrageAblehnen(speicher)
+        // Eine verschobene Handlung läuft noch — erst sie, sonst prallte das Beenden in der Lücke ab (E436, Z-AU4c-09).
+        for _ in 0..<24 where speicher.handlungAussteht { try? await Task.sleep(for: .milliseconds(125)) }
+        speicher.alleDialogeSchliessen()
+        await Planungsspeicher.blaetterAbloesenAbwarten()
+        NSApp.terminate(nil)
+        // Zurück heißt abgelehnt.
+        let (verlust, grund) = await ablehnungMessen(speicher, blatt: Planungsspeicher.blattHaengt())
+        // Ohne ✗ nur bei der angekündigten Verlustfrage, die erst `terminate` stellte und die als Alert steht
+        // (Z-AS4-12, Z-AS4a-11); jeder andere Grund ist ein Befund — mit Grund und gleich, nicht erst nach
+        // der Frist (Z-AS4a-01). Abgeräumt und noch einmal beendet wird in jedem Fall (Z-AS4a-10).
+        if !(verlustfrageErwartet && verlust && speicher.alertSteht) {
+            print("  ✗ das Beenden an der Endstelle wurde abgelehnt — " + grund)
+            fflush(stdout)
+        }
+        await sichtbareFrageAblehnen(speicher)
+        erneutBeendet = true
+        NSApp.terminate(nil)
+        // Lehnt AppKit auch das zweite ab, endet nichts mehr — der Lauf stünde bis zur Frist (B97, E413).
+        await aufgeben("auch das zweite Beenden an der Endstelle wurde abgelehnt", speicher, blatt: Planungsspeicher.blattHaengt())
+    }
+
+    /// Ob ein abgelehntes `terminate` auf die Verlustfrage traf, und warum es abgelehnt wurde — eine Frage, die
+    /// erst `terminate` stellte, steht binnen 3 s als Alert.
+    private static func ablehnungMessen(_ speicher: Planungsspeicher, blatt: Bool) async -> (verlust: Bool, grund: String) {
+        for _ in 0..<24 where !speicher.alertSteht { try? await Task.sleep(for: .milliseconds(125)) }
+        let verlust = speicher.verlustDroht && speicher.rueckfrage?.bestaetigung == "Trotzdem beenden"
+        return (verlust, ablehnungsgrund(speicher, verlust: verlust, blatt: blatt))
+    }
+
+    /// Ein abgelehntes Beenden, nach dem nichts mehr kommt (B97, E413, E424): ✗ mit Grund und `exit(3)`, statt
+    /// bis zur Frist des Treibers (420 s) zu stehen. Ein gelungenes `terminate` kehrt nie zurück. Das ✗ macht den
+    /// Lauf in jeder Runde rot; ENDE und die Abbruchzeile des Dienstes fehlen. `exit` leert auch den Puffer der Ausgabe.
+    private static func aufgeben(_ was: String, _ speicher: Planungsspeicher?, blatt: Bool) async -> Never {
+        var grund = blatt ? "ein Blatt oder ein modales Fenster hing noch" : "Grund unbekannt"
+        if let speicher { grund = await ablehnungMessen(speicher, blatt: blatt).grund }
+        print("  ✗ \(was) — \(grund); der Lauf endet mit exit(3)")
+        fflush(stdout)
+        exit(3)
+    }
+
+    /// Warum die Endstelle nicht beenden durfte — für das ✗ (Z-AS4a-01).
+    /// Die Folge ist die der Gewissheit: erst, was als Frage oder Alert steht, dann der Merker des
+    /// Archivs — nur gültig, wenn AppKit den Delegaten fragte —, dann das gemessene Blatt (Z-AS4a-09).
+    private static func ablehnungsgrund(_ speicher: Planungsspeicher, verlust: Bool, blatt: Bool) -> String {
+        if verlust {
+            return speicher.alertSteht
+                // Angekündigt, aber erst beim zweiten Beenden gestellt, wenn das erste aus einem anderen Grund scheiterte
+                // (Blatt, Alert, Archiv; Z-AU1-02).
+                ? "\(verlustfrageErwartet ? "die angekündigte" : "eine unangekündigte") Verlustfrage "
+                    + "(\(speicher.rueckfrage?.skriptgrund ?? "ohne Grund"))"
+                : "die Verlustfrage erschien nicht als Alert"
+        }
+        if let frage = speicher.rueckfrage {
+            // Nur die erste Zeile — ein Befund, eine Zeile (Z-AS4a-08).
+            return "eine Rückfrage steht („\(frage.text.split(separator: "\n").first?.prefix(80) ?? "")“)"
+        }
+        if alertfenster() != nil { return "ein eigener Alert steht" }
+        if speicher.handlungAussteht { return "eine bestätigte Handlung lief noch (Lücke nach einer Antwort)" }
+        if speicher.beendenAmArchivAngehalten && !blatt { return "Halt an einer Löschung im Archiv" }
+        if blatt { return "ein Blatt oder ein modales Fenster hing noch" }
+        return "Grund unbekannt"
+    }
+
+    // ── Rückfragen wie von Hand (B82) ─────────────────────────────────────
+
+    /// Der Speicher des laufenden Prüfstands — für die Endstelle ohne Speicher.
+    private static weak var speicherDesLaufs: Planungsspeicher?
+
+    /// Das Alert-Fenster, wenn eines als Blatt steht.
+    static func alertfenster() -> NSWindow? { Planungsspeicher.alertfenster() }
+
+    /// Eine stehende Rückfrage beantworten wie ein Mensch: Klick auf den Knopf
+    /// des Alerts. Im Programm weggenommen, schloss SwiftUI das Alert-Blatt mitten
+    /// im Layout — und der Aktualisierungszyklus von macOS 26 stürzte dabei
+    /// gelegentlich ab (B82). `nil`, wenn geklickt; sonst der Titel des Knopfs,
+    /// der fehlte — dann wird im Programm geantwortet, damit der Lauf weitergeht.
+    static func vonHandAntworten(_ speicher: Planungsspeicher, _ bestaetigt: Bool) async -> String? {
+        guard let frage = speicher.rueckfrage else { return nil }
+        // Ein Hinweis hat nur einen Knopf — er ist auch die Ablehnung (Z14c3-09).
+        let knopf = bestaetigt || frage.ablehnung.isEmpty ? frage.bestaetigung : frage.ablehnung
+        return await vonHandDruecken(speicher, frage.id, knopf) { speicher.rueckfrageBeantworten(bestaetigt) }
+    }
+
+    /// Der dritte Knopf einer Rückfrage („Verwerfen“ in E300) — wie von Hand (E319).
+    /// Fehlt die Frage oder ihr dritter Knopf, ist das ein Befund wie ein fehlender Knopf (Z14d2-06).
+    static func vonHandWeitere(_ speicher: Planungsspeicher) async -> String? {
+        guard let frage = speicher.rueckfrage, let knopf = frage.weitere else { return "dritter Knopf" }
+        return await vonHandDruecken(speicher, frage.id, knopf) { speicher.rueckfrageWeitere() }
+    }
+
+    /// Ein eigenes Alert eines Blatts (keine Rückfrage des Speichers): Klick auf den Knopf `titel`,
+    /// sobald das Alert steht, höchstens 2 s gewartet (AU4b). Zurück kommt `imKlick`, gelesen gleich nach
+    /// dem Klick, ehe die Ereignisschleife weiterläuft — eine Pause kehrte womöglich erst nach einer
+    /// verschobenen Handlung zurück (gemessen AU4b); `nil`, wenn kein Knopf kam.
+    static func eigenesAlertDruecken(_ titel: String, imKlick: () -> Bool) async -> Bool? {
+        for _ in 0..<16 {
+            if let alert = alertfenster(), let k = knopfSuchen(alert.contentView, titel) {
+                k.performClick(nil)
+                return imKlick()
+            }
+            try? await Task.sleep(for: .milliseconds(125))
+        }
+        return nil
+    }
+
+    /// Klickt den Knopf im Alert; fehlt er, antwortet `ersatz` — und der Titel kommt zurück.
+    private static func vonHandDruecken(_ speicher: Planungsspeicher, _ frage: UUID, _ knopf: String,
+                                        ersatz: () -> Void) async -> String? {
+        for _ in 0..<16 {
+            if let alert = alertfenster(), let k = knopfSuchen(alert.contentView, knopf) {
+                k.performClick(nil)
+                for _ in 0..<16 where speicher.rueckfrage?.id == frage {
+                    try? await Task.sleep(for: .milliseconds(125))
+                }
+                return nil
+            }
+            try? await Task.sleep(for: .milliseconds(125))
+        }
+        ersatz()
+        return knopf
+    }
+
+    private static func knopfSuchen(_ ansicht: NSView?, _ titel: String) -> NSButton? {
+        guard let ansicht else { return nil }
+        if let knopf = ansicht as? NSButton, knopf.title == titel { return knopf }
+        for unter in ansicht.subviews {
+            if let knopf = knopfSuchen(unter, titel) { return knopf }
+        }
+        return nil
+    }
+
+    /// Steht an der Endstelle eine Rückfrage sichtbar, wird sie abgelehnt wie von
+    /// Hand — und eine Folgefrage ebenso, höchstens dreimal (Z14c3-15). Erst wenn
+    /// das Alert-Blatt fort ist, geht es weiter (Z14c3-14).
+    private static func sichtbareFrageAblehnen(_ speicher: Planungsspeicher) async {
+        for _ in 0..<3 where speicher.alertSteht {
+            if speicher.rueckfrage != nil {
+                // Die Frage nach drohendem Verlust bestätigen — abgelehnt, stellte `beendenErlauben()`
+                // sie erneut, und der Prüfstand stünde bis zur Frist (Z14c3-15). Nur sie (Z14d-05).
+                let verlust = speicher.verlustDroht && speicher.rueckfrage?.bestaetigung == "Trotzdem beenden"
+                if verlust && !verlustfrageErwartet {
+                    // Unangekündigt: zu sehen, nicht still (Z-AS4a-01).
+                    print("  Endstelle: Verlustfrage bestätigt — \(speicher.rueckfrage?.skriptgrund ?? "ohne Grund")")
+                    fflush(stdout)
+                }
+                let fehlt = await vonHandAntworten(speicher, verlust)
+                if verlust {
+                    // Nur ein Klick zählt; die Ersatzantwort im Programm ist ein Befund (Z-AS4a-02, Z14d2-06).
+                    if let fehlt {
+                        print("  ✗ Knopf „\(fehlt)“ im Alert gefunden")
+                        fflush(stdout)
+                    } else {
+                        verlustfrageGeklickt = true
+                    }
+                }
+            } else if let alert = alertfenster(), let knopf = abbrechenknopf(alert.contentView) {
+                // Ein eigener Alert eines Dialogs: abbrechen wie mit ⎋ (Z14c4-10).
+                knopf.performClick(nil)
+            }
+            for _ in 0..<16 where alertfenster() != nil { try? await Task.sleep(for: .milliseconds(125)) }
+            // Eine eingereihte Folgefrage erscheint erst nach der Nachholfrist (Z14c4-11).
+            try? await Task.sleep(for: .milliseconds(Int(Planungsspeicher.nachholfrist * 1000) + 100))
+        }
+    }
+
+    private static func abbrechenknopf(_ ansicht: NSView?) -> NSButton? {
+        guard let ansicht else { return nil }
+        if let knopf = ansicht as? NSButton, knopf.keyEquivalent == "\u{1b}" || knopf.title == "Abbrechen" { return knopf }
+        for unter in ansicht.subviews {
+            if let knopf = abbrechenknopf(unter) { return knopf }
+        }
+        return nil
+    }
+}

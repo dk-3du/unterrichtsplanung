@@ -9,7 +9,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 <h1 align="center">Unterrichtsplanung</h1>
 
-<p align="center">Unterricht planen, weitere Vorhaben organisieren und passende Lehr- und Lernmaterialien kuratieren</p>
+<p align="center">Das ganze Schuljahr auf einen Blick — und zu jeder Stunde das passende Material</p>
 
 <p align="center">
 · <a href="https://github.com/dk-3du/unterrichtsplanung/releases">Releases</a> ·
@@ -17,119 +17,102 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 ---
 
-# Unterrichtsplanung
+Ein Schuljahr hat viele Lerngruppen, noch mehr Vorhaben und unzählige Materialien, Links und Notizen. *Unterrichtsplanung*
+bringt all das an einen Ort. So ist sofort zu sehen, was diese Woche in der 7c dran ist, wann die nächste Klassenarbeit
+ansteht und was noch korrigiert werden muss. Und zu jeder Stunde liegt das Material gleich dabei — ein Klick, und das
+Arbeitsblatt ist offen.
 
-*Unterrichtsplanung* ist eine Jahresplanung im Wochenraster für Lehrkräfte: eine
-native macOS-App (Swift/SwiftUI, macOS 26 auf Apple Silicon, ohne fremden Code),
-in der Unterricht und weitere Vorhaben Woche für Woche geplant und die passenden
-Lehr- und Lernmaterialien kuratiert werden. Zudem lassen sich Kurse intern wie
-extern verwalten und externe Dateien, z. B. ein Curriculum und eine
-Leistungsdokumentation, spezifisch je Klasse und Kurs einbinden. Dazu wird eine
-lesende Web App mitgeliefert, fürs iPad optimiert und auch auf anderen Geräten
-nutzbar, die eine exportierte Planung anzeigt und eine Statusänderung an
-Vorhaben sowie Freitextkommentare an die App zurückgibt.
+<p align="center">
+  <img src="Bildschirmfotos/01-wochenraster.png" width="100%" alt="Das Hauptfenster der App mit der Planung der Klassen 5b, 6a, 7c und 8b für die Wochen 45 bis 48: farbige Karten mit den Themen jeder Woche, daran Arbeitsblätter und Links, dazu Kennzeichen für Prüfung, Korrektur, Vorbereitung und Hausaufgabe.">
+</p>
+<p align="center"><sub>Das Schuljahr auf einen Blick — und an jeder Stunde das passende Material.</sub></p>
 
-Das Raster zeigt die Kalenderwochen des Schuljahres als Spalten und die Klassen
-und Kurse als Zeilen; Ferien, freie Tage und Sperrzeiträume sind darin
-eingetragen. Ein Vorhaben besteht aus Titel und Beschreibung und kann einen
-Wochentag oder ein Datum, eine Dringlichkeit, einen Prüfungstermin oder eine
-Hausaufgabe tragen und als Korrektur gekennzeichnet werden. Mit dem integrierten
-Sitzplan-Editor (seit 1.4.8) kann jeder Klasse und jedem Kurs ein Sitzplan hinzugefügt
-und dieser sowohl als PDF exportiert als auch ausgedruckt werden.
-Eine Suche, eine Liste der heute anstehenden Vorhaben und ein blattweiser
-Ausdruck ergänzen das Raster.
+Die App ist für Lehrkräfte gemacht, die ihre Planung selbst in der Hand behalten wollen. Wer möchte, führt darin auch die
+eigenen Lerngruppen — mit Mitteilungen wie Elternbriefen samt Rücklauf, vereinbarten Maßnahmen und Gesprächsterminen.
+Auf Wunsch kommt eine schlanke Web App fürs iPad hinzu, die die Planung im Unterricht anzeigt; dort wird abgehakt, was
+erledigt ist, und eine kurze Notiz zur Stunde wandert zurück an den Mac. Geplant wird in der Mac-App. Die Daten liegen auf
+dem eigenen Mac und lassen sich verschlüsseln.
 
-Seit *2.0.0* verwaltet die App auch die Lernenden – eingegeben von Hand oder
-importiert aus IServ –, Rückmeldungen auf Mitteilungen, Maßnahmen mit Frist
-und Termine, die sich in der Planung eintragen lassen; der Sitzplan übernimmt
-die Namen einer Lerngruppe. Zum Schuljahreswechsel werden die Lerngruppen
-den Zeilen des neuen Jahrs zugeordnet, die bisherige Planung geht samt ihren
-Lernendendaten in ein schreibgeschütztes Archiv.
-Lernendendaten gibt es nur mit eingeschalteter Verschlüsselung in der macOS App;
-die Web App zeigt die Lernendendaten hingegen nicht. Was in Titel oder
-Beschreibung eines Vorhabens steht, auch eines Termins, gehört zur Planung.
+<p align="center">
+  <img src="Bildschirmfotos/06-web-app-ipad.png" width="100%" alt="Die Web App auf einem iPad im Querformat: dieselbe Planung wie im Bild darüber, ab der laufenden Woche.">
+</p>
+<p align="center"><sub>Dieselbe Planung auf dem iPad: im Unterricht abhaken und kurz notieren, wie es gelaufen ist.</sub></p>
 
-Lernendendaten, Archiv und Sitzpläne aus einer Fassung vor 2.5.0 schreibt die
-App beim ersten Lesen in die neue Fassung um; die Originale bleiben, so
-geschützt wie zuvor, als `lernende-fassung1-…`, `archiv-fassung1-…` und
-`sitzplaene-fassung1-…` im Ordner der Autosicherung liegen (*Ablage → Ordner
-der Autosicherung zeigen*). Wer danach eine Person endgültig löscht, löscht sie
-nicht aus diesen Kopien; die Rückfrage beim Löschen sagt das, solange welche
-liegen.
+## Funktionen
 
-Alle Daten bleiben auf dem Mac. Die Planung lässt sich mit AES-256
-verschlüsseln — auf dem Mac über Touch ID oder das Anmeldepasswort (Secure
-Enclave), überall sonst über eine Passphrase, für den Notfall über einen
-gedruckten Wiederherstellungsschlüssel. Die App läuft im App Sandbox von macOS
-und erreicht Dateien und Ordner nur dort, wo sie ihr einmal gezeigt wurden; bei
-eingeschalteter Verschlüsselung liegen auch diese Lesezeichen versiegelt neben
-der Planung, ebenso die Sitzpläne und die Lernendendaten. Ins Netz geht die App nur für
-zwei Dinge, beide nur mit Erlaubnis: Eine freiwillige, wöchentliche Prüfung auf
-Updates gegen die Releases dieses Repositorys überträgt nur die IP-Adresse, die
-Versionsnummer der App und ein ETag und lädt oder installiert nie etwas von
-selbst; und auf Klick im Vorhaben-Dialog lädt sie die Materialliste von
-3ducation.org, um ein Material als Link zu hinterlegen (seit 1.9.0) —
-übertragen werden dabei IP-Adresse und Versionsnummer, gespeichert wird nichts.
+- **Das Schuljahr auf einen Blick** — alle Klassen und Kurse über das ganze Jahr in einer Übersicht; Ferien und freie Tage
+  sind eingetragen, jedes Fach hat seine Farbe.
+- **Stunden und Vorhaben planen** — Klassenarbeiten, Korrekturen, Hausaufgaben und Dringendes fallen sofort ins Auge.
+- **Material immer zur Hand** — Arbeitsblätter, Präsentationen, Ordner und Links einfach auf eine Stunde ziehen; ein Klick
+  öffnet sie wieder. Auf Wunsch lassen sich auch die Materialien von [3ducation.org](https://3ducation.org) direkt in der
+  App auswählen und als Link hinterlegen — zum Abrufen und Verwenden im Unterricht.
+- **Jede Klasse mit allem, was dazugehört** — Lehrplan, Notenliste und Sitzplan liegen direkt bei der Klasse.
+- **Sitzpläne** entwerfen, ausdrucken oder als PDF weitergeben.
+- **Was heute ansteht** — alles für den heutigen Tag in einer Liste zum Abhaken.
+- **Lerngruppen im Blick** — Schülerinnen und Schüler aus IServ übernehmen oder von Hand eintragen, Mitteilungen samt
+  Rücklauf, Maßnahmen und Termine verfolgen; am Schuljahresende kommt alles ins Archiv.
+- **Auf dem iPad im Unterricht** (optional) — eine schlanke Web App zeigt die Planung an; Abgehaktes und Notizen gehen an
+  den Mac zurück. Planen und Bearbeiten bleibt der Mac-App vorbehalten.
+- **Datenschutz von Anfang an** — die Daten liegen auf dem eigenen Mac und lassen sich verschlüsseln; was für die Web App
+  in die Cloudablage geht, ist stets verschlüsselt, und Schülerdaten gelangen nie aufs iPad.
 
-## Bauen, prüfen, weitergeben
+<p align="center">
+  <img src="Bildschirmfotos/02-material.png" width="100%" alt="Ausschnitt aus der Planung einer Chemie- und einer Physikklasse über drei Wochen: An den Stunden hängen Versuchsanleitungen, Arbeitsblätter und Lernkontrollen; eine Vorbereitung, eine Prüfung und Hausaufgaben sind gekennzeichnet.">
+</p>
+<p align="center"><sub>Material immer zur Hand: Arbeitsblätter, Ordner und Links hängen direkt an der Stunde.</sub></p>
 
-Die macOS-App (`macOS-App/v92/`) ist in Swift und SwiftUI geschrieben, für
-macOS 26 auf Apple Silicon und ohne fremde Bibliothek. `./bauen.sh` baut sie
-(Xcode wird gebraucht; `--dmg` schnürt zusätzlich ein Abbild),
-`PLANUNGSORDNER=$(mktemp -d) swift test` prüft sie. Dazu kommen Prüfstände am
-gebauten Paket, darunter der erste Start in einem Ablageordner, den es noch
-nicht gibt — einmal über `PLANUNGSORDNER`, einmal am voreingestellten Ort in
-einem Probepaket. **Nicht** abgedeckt ist damit die Erstinstallation des
-ausgelieferten, beglaubigten Abbilds in einem frischen Benutzerkonto: Das
-Probepaket trägt eine eigene Kennung, ist ad hoc signiert und hat kein
-Umzugsmanifest, und Gatekeeper und Quarantäne bleiben außen vor. Diese Probe
-bleibt Handarbeit. Weitergegeben wird ein mit
-Developer ID signiertes und von Apple beglaubigtes Abbild (`./beglaubigen.sh`)
-unter **Releases**. Dort liegt auch die Web App als Datei mit ihrer
-SHA-256-Prüfsumme, damit sich die Seite im Netz prüfen lässt:
-`curl -s https://3ducation.org/upapp/index.html | shasum -a 256` muss die
-Zeile im Release ergeben. Gelesen werden Planungsdateien ab Version 1.2.3;
-eine ältere öffnet man einmal mit einer früheren Fassung und sichert sie. Was
-sich je Fassung ändert, steht in [`CHANGELOG.md`](CHANGELOG.md).
+<p align="center">
+  <img src="Bildschirmfotos/04-lerngruppen-mitteilung.png" width="80%" alt="Die Lernendenverwaltung: links die Lerngruppen, rechts für die 6a der Elternbrief zum Wandertag mit dem Rücklauf jedes Kindes — 17 von 22 zurück, die meisten erledigt, einzelne abgelehnt oder noch offen. Alle Namen sind erfunden.">
+</p>
+<p align="center"><sub>Lerngruppen im Blick: Wer hat den Elternbrief schon zurückgegeben?</sub></p>
 
-**Lizenzen.** Freie Software: die macOS-App und alles Übrige unter der GNU
-General Public License, Version 3 oder neuer ([`LICENSE`](LICENSE)), die
-Web App unter der GNU Affero General Public License, Version 3 oder neuer
-([`Web-App/v92/LICENSE.txt`](Web-App/v92/LICENSE.txt)). Die Zuordnung je Datei
-steht in [`REUSE.toml`](REUSE.toml), die Lizenztexte liegen in
-[`LICENSES/`](LICENSES/). © 2026 Dominik Kluge. Erstellt mit Claude Code.
+<p align="center">
+  <img src="Bildschirmfotos/03-tagesliste.png" width="60%" alt="Die Liste der heute anstehenden Vorhaben: Stunden des Tages und der Woche, teils schon abgehakt.">
+</p>
+<p align="center"><sub>Was heute ansteht — als Liste zum Abhaken.</sub></p>
 
-**Aufbau.** Je Fassung ein eigener, für sich baubarer Ordner (`macOS-App/v92/`,
-`Web-App/v92/`; ältere Fassungen bleiben daneben stehen); die Nummer im
-Ordnernamen ist der Build der Version. Was sich je Fassung ändert, steht in
-[`CHANGELOG.md`](CHANGELOG.md). Oberfläche und
-Dokumentation sind deutsch.
+<p align="center">
+  <img src="Bildschirmfotos/05-sitzplan.png" width="80%" alt="Der Sitzplan einer Klasse mit Doppeltischen und erfundenen Namen, vorn Tafel und Lehrertisch, oben Knöpfe zum Drucken und Sichern als PDF.">
+</p>
+<p align="center"><sub>Sitzpläne entwerfen, drucken oder als PDF weitergeben.</sub></p>
+
+## Installation
+
+1. Beim [neuesten Release](https://github.com/dk-3du/unterrichtsplanung/releases/latest) die Datei
+   `Unterrichtsplanung-….dmg` laden.
+2. Die Datei öffnen und *Unterrichtsplanung* in den Ordner „Programme“ ziehen.
+3. Die App starten — sie ist von Apple auf Schadsoftware geprüft und beglaubigt; macOS fragt beim ersten Start nur einmal
+   nach, ob sie geöffnet werden soll.
+
+Beim ersten Start hilft eine kurze Einrichtung, eine Tour zeigt das Wichtigste. Auf Wunsch meldet die App neue Versionen
+selbst; für ein Update genügt es, die neue App über die alte zu ziehen — Planung und Einstellungen bleiben erhalten.
+
+**Web App fürs iPad (optional):** <https://3ducation.org/upapp/> in Safari öffnen und zum Home-Bildschirm hinzufügen. Die
+Planung kommt über eine Cloudablage aufs iPad: Auf Wunsch legt die App beim Beenden eine Sicherungsdatei dort ab — stets
+verschlüsselt —, und die Web App öffnet sie mit der Passphrase.
+
+Wer die App selbst bauen möchte, findet den Quelltext im Ordner [`macOS-App/v93/`](macOS-App/v93/).
+
+## Voraussetzungen
+
+- Ein Mac mit Apple-Chip (M1 oder neuer) und macOS 26 oder neuer.
+- Optional für die Web App: ein iPad mit Safari oder ein anderes Gerät mit aktuellem Browser.
+- Für die Lerngruppen muss die Verschlüsselung eingeschaltet sein.
+
+## Lizenz
+
+*Unterrichtsplanung* ist freie Software. Die Mac-App steht unter der GNU General Public License, die Web App unter der GNU
+Affero General Public License, jeweils Version 3 oder neuer. Die Lizenztexte liegen in [`LICENSES/`](LICENSES/); welche
+Lizenz für welche Datei gilt, steht in [`REUSE.toml`](REUSE.toml). © 2026 Dominik Kluge, erstellt mit Claude Code.
 
 ---
 
-**English.** *Unterrichtsplanung* is a year-at-a-glance planner for teachers:
-a native macOS app (Swift/SwiftUI, macOS 26 on Apple Silicon, no third-party
-code) in which lessons and other projects are planned in a week grid and the
-matching teaching and learning materials are curated — file and folder
-references and web links per item, administrative and curriculum documents per
-course —, plus a read-only web app, optimised for the iPad and usable on other
-devices, that displays an exported plan and hands check marks and comments back
-to the app. Since 2.0.0 the app also manages students – entered by hand or imported
-from IServ –, replies to notices, measures with deadlines, appointments, seating plans
-from a group, and a read-only archive of past school years; student data exists only
-with encryption switched on and never reaches the web app; whatever is written in an
-item's title or description, appointments included, belongs to the plan. All data stays on the Mac.
-Plans can be encrypted with AES-256 (Touch ID or the login password via the
-Secure Enclave, a passphrase elsewhere, a printed recovery key for
-emergencies); the app runs in the macOS App Sandbox and reaches files and
-folders only where the user has pointed it once; the app goes online for two
-things only, each only with the user's consent: an optional weekly update
-check against this repository's releases transmits only the IP address, the
-app's version number and an ETag and never downloads or installs anything by
-itself, and, on click in the item dialog, it loads the list of materials from
-3ducation.org so that a material can be attached as a link (IP address and
-version number are transmitted, nothing is stored). The user interface and all documentation are in German. Free software:
-the macOS app and everything else is licensed under the GNU GPL v3 or later,
-the web app under the GNU AGPL v3 or later (see `LICENSE`, `LICENSES/`,
-`REUSE.toml`). Signed and notarized disk images are published under
-*Releases*. Created with Claude Code.
+**English.** *Unterrichtsplanung* puts a teacher's whole school year in one overview, with the matching worksheets, folders
+and links right next to each lesson; materials from 3ducation.org can be picked directly in the app and attached as links.
+Optionally, the app also keeps track of student groups, notices such as letters to
+parents and their replies, agreed measures and appointments. An optional, slimmer web app shows the plan on the iPad in
+class: lessons are checked off there and a short note goes back to the Mac, while all planning happens in the Mac app; the
+backup file it reads from a cloud folder is always encrypted. Your data lives on your Mac and can be encrypted. To install, download the disk image from the
+[latest release](https://github.com/dk-3du/unterrichtsplanung/releases/latest) — it is checked and notarized by Apple —
+and drag the app into Applications; it needs a Mac with Apple silicon and macOS 26 or later. Free software under the
+GPL (app) and AGPL (web app), version 3 or later. The app and its documentation are in German.

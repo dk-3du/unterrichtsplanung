@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Umzug in den Container beim ersten Start dieser Fassung: Das System
+	     verschiebt (nicht kopiert) die Ablage und die Einstellungen der
+	     bisherigen, nicht im Sandbox laufenden Fassungen — einmalig, nur wenn
+	     der Container gerade angelegt wird. Liegt im Paket unter
+	     Contents/Resources (bauen.sh). -->
+	<key>Move</key>
+	<array>
+		<string>${ApplicationSupport}/Unterrichtsplanung</string>
+		<string>${Preferences}/org.3ducation.Unterrichtsplanung.plist</string>
+	</array>
+</dict>
+</plist>

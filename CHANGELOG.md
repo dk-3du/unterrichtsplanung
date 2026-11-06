@@ -16,6 +16,61 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.7.0 (93)] - 2026-11-07
+
+Eine dritte Kennzeichnung für Vorhaben, „Vorbereitung“, eine Meldung bei Angaben, die diese Fassung nicht kennt, und
+Behebungen nach einer externen Review von 2.6.1. Die Daten bleiben in Fassung 2.
+
+### Added
+
+- **Kennzeichnung „Vorbereitung“:** Ein Vorhaben lässt sich im Vorhaben-Blatt (zwischen „dringlich“ und „Korrektur“) oder
+  im Rechtsklickmenü „Als Vorbereitung kennzeichnen“; „Nicht mehr als Vorbereitung führen“ löst es wieder. Die Kachel
+  trägt einen gestrichelten blauen Rahmen und die umrandete Zeile „Vorbereitung“, im Stil der Korrektur; eine dringliche
+  Vorbereitung behält den gelben Rahmen und die blaue Zeile. Tagesliste, Druck, Kurzanleitung, VoiceOver und die Web App
+  führen die Kennzeichnung ebenso; Kopieren und das neue Schuljahr behalten sie wie die Korrektur.
+- **Angaben einer neueren Fassung:** Trägt eine Planungsdatei an Vorhaben Angaben, die diese Fassung nicht kennt, sagt es
+  die Meldung beim Öffnen und zählt die Vorhaben — etwa „Die Datei enthält Angaben einer neueren Fassung, die diese
+  Fassung nicht kennt (3 Vorhaben); die App führt sie nicht weiter.“ Bei der Autosicherung heißt es „sie gehen beim
+  nächsten Sichern verloren“, bei einer schon gesicherten Fassung „gesichert wurde sie ohne diese Angaben“. Die Web App
+  meldet es beim Öffnen ebenso, ohne Nachsatz.
+
+### Changed
+
+- **Ein Vorhaben ist entweder Prüfung, Korrektur, Vorbereitung oder Termin.** Die übrigen Schalter und Menüpunkte sind
+  dann gesperrt; die gesperrten Schalter im Vorhaben-Blatt sagen in ihrer Hilfe, warum — jetzt auch an Korrektur und
+  Prüfung.
+- **Lösen geht immer:** Korrektur, Prüfung und Termin lassen sich auch lösen, wenn eine fremde Datei sie nebeneinander
+  stellt; bisher waren Schalter und Menüpunkt dann gesperrt.
+- **Rechtsklickmenü der Kachel:** dringlich, Vorbereitung, Korrektur, Prüfung, Termin.
+
+### Fixed
+
+- **Web App, zwei Öffnungen kurz nacheinander:** Wurde eine zweite Datei geöffnet, während eine verschlüsselte Planung
+  noch entsiegelt wurde, konnte die Web App die verschlüsselte Planung ohne ihren Schlüssel übernehmen; ihr Stand
+  landete dann unverschlüsselt im Gerätespeicher. Jetzt bleiben Planung und Schlüssel ein Paar; eine Öffnung, die erst
+  fertig wird, nachdem eine jüngere übernommen ist, wird verworfen und fragt nicht mehr nach der Passphrase.
+- **Vorhaben-Blatt, Termin neben einem Merkmal:** Führte eine fremde Datei ein Vorhaben als Termin neben Prüfung oder
+  Korrektur, nahm „Übernehmen“ ihm den Termin — still oder mit der Rückfrage, ihn zu löschen. Jetzt bleibt er.
+- **Termin an der Kachel:** Haken und Titelfeld standen bei einem Termin eine Zeile zu hoch, auf der Zeile des Termins.
+- **Prüfwerkzeug `tresor_pruefen.py`:** Das Hilfsprogramm, das es übersetzt, meldet eine abgewiesene Datei mit Text und
+  fester Rückgabe, statt abzustürzen; jeder Absturz hinterließ bisher einen Absturzbericht.
+
+### Bewusst so entschieden (E1073, E1048)
+
+Eine externe Review von 2.6.1 nannte zwei Punkte, die so gewollt sind:
+
+- **Lässt sich der Ordner der Autosicherung nicht lesen, nennt die Rückfrage zum endgültigen Löschen keine älteren
+  Kopien.** Der Ordner ist der der Planung; lässt er sich nicht lesen, scheitert auch das Schreiben der Lernendendaten,
+  und die Löschung kommt nicht zustande.
+- **Nach einem Klick nehmen die Tabellen der Lernendenverwaltung alle Vormerkungen von AppKit an der Tabelle zurück.**
+  Gemessen unter macOS 26 und 27 merkt AppKit dort ab dem Klick genau eine Wahl vor; die Messung wird je neuer
+  macOS-Fassung wiederholt.
+
+### Hinweis zu älteren Versionen
+
+2.6.1 und früher kennen die Vorbereitung nicht. Eine Planung aus 2.7.0 öffnen sie ohne Meldung und lassen die
+Kennzeichnung beim nächsten Sichern fallen; die Vorhaben selbst bleiben.
+
 ## [2.6.1 (92)] - 2026-11-06
 
 Behebungen nach einer externen Review von 2.6.0. Die Daten bleiben in Fassung 2.
