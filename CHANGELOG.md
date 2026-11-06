@@ -16,6 +16,51 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.6.1 (92)] - 2026-11-06
+
+Behebungen nach einer externen Review von 2.6.0. Die Daten bleiben in Fassung 2.
+
+### Added
+
+- **Ältere Kopien beim endgültigen Löschen:** Liegen Kopien aus der Umstellung auf 2.5.0 (`…-fassung1-…`) im Ordner der
+  Autosicherung, sagt die Rückfrage beim endgültigen Löschen — einer Person, mehrerer Personen, einer Person in allen
+  archivierten Schuljahren, eines Schuljahrs im Archiv, einer Lerngruppe, eines Anliegens (auch im Archiv) oder eines
+  Sitzplans, auch mit seiner Klasse —, dass das Löschen sie nicht erreicht und wo sie liegen. Genannt werden nur Kopien,
+  die das Gelöschte enthalten können. Ohne solche Kopien bleibt die Rückfrage, wie sie war.
+
+### Changed
+
+- **Rückmeldungsliste:** Unter den Mitteilungen wählt die Zeile „Die Liste nennt“ zwischen „nur Betroffene“ und
+  „alle Mitglieder“; vorgegeben ist „nur Betroffene“ — wer von mindestens einer gewählten Mitteilung betroffen ist. Mit
+  „alle Mitglieder“ steht die ganze Lerngruppe da wie bisher, wer nicht betroffen ist, mit Strich. Die Legende nennt den
+  Strich nur, wenn er vorkommt. Steht in der Liste kein Name, gibt der Bogen nichts aus und sagt, warum.
+- **Sitzplan ab dem 51. Tisch:** Neben der Zahl der Plätze steht „Es wird empfohlen, nicht mehr als 50 Tische zu
+  platzieren.“ — auch beim Öffnen eines solchen Plans, VoiceOver sagt es an. Eine Grenze gibt es weiterhin nicht.
+- **Meldungen in schmalen Bögen** am Blatt „Lernende“ stehen auf eigener Zeile über den Knöpfen; neben den Knöpfen
+  waren sie auf zwei Wörter gekürzt.
+- **Web App:** nur die Nummer.
+
+### Fixed
+
+- **Tabellen der Lernendenverwaltung:** Ändert sich die Folge der Zeilen im Augenblick eines Klicks auf eine von
+  mehreren Gewählten, wählt die Tabelle die geklickte Person — bisher konnte die Zeilennummer eine andere treffen. Ist
+  die geklickte Person nicht mehr da, bleibt die Auswahl.
+- **Skripte unter einem deutschen Gebietsschema:** `beglaubigen.sh` und die übrigen Skripte lesen Variablen vor
+  Anführungszeichen wie „…“ richtig; die Beglaubigung brach dort bisher ab.
+
+### Bewusst so entschieden (E980, E982)
+
+Eine externe Review von 2.6.0 nannte zwei Punkte erneut, die schon bei 2.5.0 entschieden waren — Entscheidungen, keine
+Mängel:
+
+- **Ein Termin, der in der Planung steht, schreibt beim Ändern Jahresdatei und Planung nacheinander, ohne Journal.**
+  Endet die App genau zwischen beiden Schreibvorgängen, gleicht der nächste Start Titel, Tag und Uhrzeit des Termins an
+  die Planung an. Ein Journal über zwei verschlüsselte Dateien wäre für ein Fenster von Millisekunden
+  unverhältnismäßig; scheitert nur das Schreiben der Planung, warnt die App.
+- **Ein Archiv aus 2.4.0 oder früher schreibt die App beim ersten Lesen auf dem Hauptstrang in Fassung 2 um.** Das
+  geschieht einmal je Archiv und kostete in der Messung rund 90 ms je MB. Ein Umbau lohnt erst, wenn übliche Archive
+  dabei spürbar stocken.
+
 ## [2.6.0 (91)] - 2026-11-05
 
 Die Mitteilungen einer Lerngruppe erscheinen einzeln, mit wahlweiser Rückmeldefrist und wählbaren Adressaten; die
