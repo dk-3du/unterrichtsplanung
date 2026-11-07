@@ -16,6 +16,34 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.7.1 (94)] - 2026-11-07
+
+Behebungen nach einer externen Review von 2.7.0, in der Web App und in der README. Die App ändert nur ihre Nummer; die
+Daten bleiben in Fassung 2.
+
+### Added
+
+- **Prüfung im echten Browser:** `sitzung_pruefen.py` lässt den Wechsel der Planung in Headless-Chrome laufen — zehn
+  Fälle mit Blatt, Fokus, Entpreller, Wiederaufnahme, verschlüsselter Planung, Text, der während des Merkens noch
+  getippt wird, einem Blatt, das sich neu aufbaut, und ⌘S, während die neue Planung geladen wird — und gehört zum
+  Prüflauf `pruefen.sh`, der dafür Google Chrome braucht. Die Fälle liefen auch in Safari im iOS-Simulator.
+
+### Fixed
+
+- **Web App, Haken und Kommentar beim Öffnen einer anderen Datei:** Wurde bei offenem Vorhaben-Blatt eine andere
+  Planungsdatei geöffnet, etwa auf das Blatt gezogen, konnte ein eben getippter Kommentar im Status und im
+  Gerätespeicher der neuen Planung landen, von einer verschlüsselten Planung zu einer Klartextdatei sogar im Klartext;
+  in der eigenen Planung kam er nie an. Ebenso ein Haken, während die neue Planung noch geladen wurde. Ein Haken in
+  einer verschlüsselten Planung, direkt vor dem Öffnen gesetzt, konnte verloren gehen. Jetzt merkt sich die Web App vor
+  dem Wechsel auf dem Gerät, was im Blatt noch offen ist, auch was währenddessen noch getippt wird — für die bisherige
+  Planung und unter ihrem Schlüssel; was danach noch aus dem alten Blatt oder Raster kommt, schreibt nichts mehr, und
+  hätte es etwas geändert, sagt es eine Meldung. Lässt sich der Stand der bisherigen Planung auf dem Gerät nicht merken,
+  öffnet die Web App die neue Datei nicht und bittet, erst über die Diskette zu sichern. Auch ⌘S oder die Diskette,
+  genau im Augenblick des Öffnens betätigt, überschreiben einen auf dem Gerät gemerkten Stand nicht mehr.
+- **README, Datenschutz:** Der Satz „Schülerdaten gelangen nie aufs iPad“ versprach zu viel. Jetzt steht dort: Die
+  Lernendenverwaltung bleibt auf dem Mac; was in Titel, Beschreibung oder Kommentar eines Vorhabens steht — auch im
+  Titel eines Termins —, gehört zur Planung und erscheint bei Verwendung der Web App auch auf dem iPad.
+
 ## [2.7.0 (93)] - 2026-11-07
 
 Eine dritte Kennzeichnung für Vorhaben, „Vorbereitung“, eine Meldung bei Angaben, die diese Fassung nicht kennt, und

@@ -54,7 +54,9 @@ dem eigenen Mac und lassen sich verschlüsseln.
 - **Auf dem iPad im Unterricht** (optional) — eine schlanke Web App zeigt die Planung an; Abgehaktes und Notizen gehen an
   den Mac zurück. Planen und Bearbeiten bleibt der Mac-App vorbehalten.
 - **Datenschutz von Anfang an** — die Daten liegen auf dem eigenen Mac und lassen sich verschlüsseln; was für die Web App
-  in die Cloudablage geht, ist stets verschlüsselt, und Schülerdaten gelangen nie aufs iPad.
+  in die eigene, optionale Cloudablage geht, ist stets verschlüsselt. Die Lernendenverwaltung bleibt auf dem Mac; was in
+  Titel, Beschreibung oder Kommentar eines Vorhabens steht — auch im Titel eines Termins —, gehört zur Planung und
+  erscheint bei Verwendung der Web App auch auf dem iPad.
 
 <p align="center">
   <img src="Bildschirmfotos/02-material.png" width="100%" alt="Ausschnitt aus der Planung einer Chemie- und einer Physikklasse über drei Wochen: An den Stunden hängen Versuchsanleitungen, Arbeitsblätter und Lernkontrollen; eine Vorbereitung, eine Prüfung und Hausaufgaben sind gekennzeichnet.">
@@ -91,7 +93,7 @@ selbst; für ein Update genügt es, die neue App über die alte zu ziehen — Pl
 Planung kommt über eine Cloudablage aufs iPad: Auf Wunsch legt die App beim Beenden eine Sicherungsdatei dort ab — stets
 verschlüsselt —, und die Web App öffnet sie mit der Passphrase.
 
-Wer die App selbst bauen möchte, findet den Quelltext im Ordner [`macOS-App/v93/`](macOS-App/v93/).
+Wer die App selbst bauen möchte, findet den Quelltext im Ordner [`macOS-App/v94/`](macOS-App/v94/).
 
 ## Voraussetzungen
 
