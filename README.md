@@ -59,6 +59,11 @@ dem eigenen Mac und lassen sich verschlüsseln.
   erscheint bei Verwendung der Web App auch auf dem iPad.
 
 <p align="center">
+  <img src="Bildschirmfotos/07-vorhaben-blatt.png" width="100%" alt="Das Blatt eines Vorhabens der 6a in Mathematik, „Brüche als Anteile“, über dem Wochenraster: links die Leiste mit Grundlegendes, Kommentar, Prüfung, Termin, Hausaufgabe, Material und Links, rechts Titel, Beschreibung, Klasse, Woche, Wochentag, Datum und die Kennzeichen des Vorhabens.">
+</p>
+<p align="center"><sub>Jedes Vorhaben in einem Blatt: Inhalt, Prüfung, Termin, Hausaufgabe, Material und Links.</sub></p>
+
+<p align="center">
   <img src="Bildschirmfotos/02-material.png" width="100%" alt="Ausschnitt aus der Planung einer Chemie- und einer Physikklasse über drei Wochen: An den Stunden hängen Versuchsanleitungen, Arbeitsblätter und Lernkontrollen; eine Vorbereitung, eine Prüfung und Hausaufgaben sind gekennzeichnet.">
 </p>
 <p align="center"><sub>Material immer zur Hand: Arbeitsblätter, Ordner und Links hängen direkt an der Stunde.</sub></p>
@@ -93,7 +98,7 @@ selbst; für ein Update genügt es, die neue App über die alte zu ziehen — Pl
 Planung kommt über eine Cloudablage aufs iPad: Auf Wunsch legt die App beim Beenden eine Sicherungsdatei dort ab — stets
 verschlüsselt —, und die Web App öffnet sie mit der Passphrase.
 
-Wer die App selbst bauen möchte, findet den Quelltext im Ordner [`macOS-App/v94/`](macOS-App/v94/).
+Wer die App selbst bauen möchte, findet den Quelltext im Ordner [`macOS-App/v95/`](macOS-App/v95/).
 
 ## Voraussetzungen
 

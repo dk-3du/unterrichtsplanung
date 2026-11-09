@@ -16,6 +16,61 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.8.0 (95)] - 2026-11-09
+
+Das Vorhaben-Blatt, die Einstellungen und das Blatt „Lernende, Klassen/Kurse und Fächer“ (⌘K) bekommen links eine
+senkrechte Leiste; Erläuterungen stehen in der ganzen App im grauen Feld, nicht mehr darunter. Dazu Behebungen nach
+einer externen Review von 2.7.1 in der Web App und im Prüfwerkzeug `sitzung_pruefen.py`. Die Daten bleiben in Fassung 2.
+
+### Added
+
+- **Prüfung im echten Browser:** drei neue Fälle in `sitzung_pruefen.py` — Dateiwähler und Teilen-Blatt als Schranke,
+  Eingabe an der Schranke des Versiegelns; `--selbsttest` prüft den Ergebnis-Server ohne Browser mit rohen Anfragen.
+
+### Changed
+
+- **Vorhaben-Blatt mit Leiste:** Links stehen die sieben Einträge „Grundlegendes“, „Kommentar“, „Prüfung“, „Termin“,
+  „Hausaufgabe“, „Material“ und „Links“, rechts der Inhalt des gewählten. Was ein Eintrag trägt, zeigt eine Plakette am
+  Ende der Zeile. Zurück und Vorwärts (⌘[ und ⌘]) führen durch die zuletzt gewählten Einträge. Gewählt wird per Klick,
+  mit ↑ und ↓ oder durch Tippen des Namens; blau hervorgehoben ist die Wahl nur, solange die Leiste den Fokus hat. Das
+  Blatt misst 980 × 820 Punkt; „Material von 3ducation.org“ liegt als Bogen von 900 × 740 Punkt in drei Spalten darauf.
+- **Einstellungen mit Leiste:** „Zeitraum“, „Sicherungskopie“, „Verschlüsselung“, „Updates“, „3ducation.org“ und
+  „Stand“ als Einträge der Leiste; das Blatt öffnet immer mit „Zeitraum“ und misst 780 × 640 Punkt. Der Schalter für die
+  Materialliste steht jetzt unter „Einstellungen → 3ducation.org“.
+- **⌘K mit Leiste:** „Lernende“, „Klassen/Kurse“ und „Fachfarben“ als Einträge; das Blatt öffnet immer mit
+  „Klassen/Kurse“, auch nach der Rückkehr aus „Lernende“ (⌘L) oder dem Sitzplan, und ist so groß wie das
+  Vorhaben-Blatt.
+- **Kleinere Bildschirme:** Vorhaben-Blatt, Material-Bogen, Einstellungen, ⌘K und „Verschlüsselung“ werden höchstens so
+  hoch, dass sie 40 Punkt über dem Dock bzw. dem unteren Bildschirmrand enden; der Inhalt rollt, die Knöpfe unten bleiben
+  sichtbar. Ist genug Platz, bleibt es bei den genannten Maßen. Das Blatt „Prüfungen“ misst höchstens 700 statt 760 Punkt.
+- **Einheitliche Maße:** „Prüfungen“, „Ferien und unterrichtsfreie Zeiten“, „Heute anstehende Vorhaben“,
+  „Verschlüsselung“ und der Bogen „Aus IServ importieren“ am Blatt „Lernende“ sind 744 Punkt breit (bisher 860, 720,
+  760, 640 und 820) — so breit, wie die Kästen das Blatt ausfüllen, ohne breite leere Ränder. „Ferien“ misst wie
+  „Prüfungen“ und „Heute“ höchstens 700 Punkt in der Höhe, „Verschlüsselung“ 640 wie die Einstellungen. In „Prüfungen“
+  passen Termine und Sperrzeiträume in ihren Kasten; die Spalte „Bezeichnung“ der Sperrzeiträume ist breiter, „Tage“
+  schmaler — „Ende vor Beginn“ steht dort in zwei Zeilen, eine vertippte Dauer über 999 Tage wird kleiner gesetzt statt
+  abgeschnitten.
+- **Erläuterungen im grauen Feld:** Jede Erläuterung steht im Kasten, auf den sie sich bezieht — als graue Unterzeile
+  der Zeile, der sie gilt, sonst als eigene Zeile im Kasten; Warnungen in einer Form mit Warnzeichen. Die Wortlaute
+  bleiben.
+
+### Fixed
+
+- **Web App, Sichern über die Diskette bei einem Wechsel der Planung:** Wurde während des Dateiwählers oder des
+  Teilen-Blatts eine andere Planung geöffnet, konnte der Dateiwähler die für die erste Planung gewählte Datei an die
+  neue binden und mit deren Status beschreiben, und das Teilen-Blatt meldete die neue Planung als gesichert. Jetzt
+  verbindet und schreibt die Web App dann nichts, meldet nichts als gesichert und sagt: „Inzwischen ist eine andere
+  Planung offen — bitte über die Diskette erneut sichern.“ Chrome leert eine im Sichern-Dialog gewählte Datei schon beim
+  Wählen; ist sie danach leer, sagt die Meldung auch das und bittet, die vorige Planung wieder zu öffnen und erneut zu
+  sichern.
+- **Web App, Öffnen einer anderen Datei, während im Blatt noch getippt wird:** Kam das Blatt in zehn Runden nicht zur
+  Ruhe, konnte das zuletzt Getippte nur im Feld stehen und beim Wechsel verloren gehen. Jetzt öffnet die Web App die neue
+  Datei dann nicht, das Blatt bleibt offen, und die Meldung lautet: „Im Blatt wird noch geändert — bitte die Datei noch
+  einmal öffnen.“
+- **Prüfwerkzeug `sitzung_pruefen.py`:** Der Ergebnis-Server nahm für jeden Fall jedes Ergebnis an — gleich von wem, in
+  beliebiger Länge und Form —, und ein späteres ersetzte ein früheres. Jetzt nimmt er nur Ergebnisse des eigenen Laufs in
+  fester Form und begrenzter Länge an, das erste je Fall gilt; alles andere weist er mit Grund ab.
+
 ## [2.7.1 (94)] - 2026-11-07
 
 Behebungen nach einer externen Review von 2.7.0, in der Web App und in der README. Die App ändert nur ihre Nummer; die
