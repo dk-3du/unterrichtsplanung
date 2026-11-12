@@ -46,7 +46,7 @@ dem eigenen Mac und lassen sich verschlüsseln.
 - **Material immer zur Hand** — Arbeitsblätter, Präsentationen, Ordner und Links einfach auf eine Stunde ziehen; ein Klick
   öffnet sie wieder. Auf Wunsch lassen sich auch die Materialien von [3ducation.org](https://3ducation.org) direkt in der
   App auswählen und als Link hinterlegen — zum Abrufen und Verwenden im Unterricht.
-- **Jede Klasse mit allem, was dazugehört** — Lehrplan, Notenliste und Sitzplan liegen direkt bei der Klasse.
+- **Jede Klasse mit allem, was dazugehört** — Curriculum, Notenliste und Sitzplan liegen direkt bei der Klasse.
 - **Sitzpläne** entwerfen, ausdrucken oder als PDF weitergeben.
 - **Was heute ansteht** — alles für den heutigen Tag in einer Liste zum Abhaken.
 - **Lerngruppen im Blick** — Schülerinnen und Schüler aus IServ übernehmen oder von Hand eintragen, Mitteilungen samt
@@ -54,9 +54,9 @@ dem eigenen Mac und lassen sich verschlüsseln.
 - **Auf dem iPad im Unterricht** (optional) — eine schlanke Web App zeigt die Planung an; Abgehaktes und Notizen gehen an
   den Mac zurück. Planen und Bearbeiten bleibt der Mac-App vorbehalten.
 - **Datenschutz von Anfang an** — die Daten liegen auf dem eigenen Mac und lassen sich verschlüsseln; was für die Web App
-  in die eigene, optionale Cloudablage geht, ist stets verschlüsselt. Die Lernendenverwaltung bleibt auf dem Mac; was in
-  Titel, Beschreibung oder Kommentar eines Vorhabens steht — auch im Titel eines Termins —, gehört zur Planung und
-  erscheint bei Verwendung der Web App auch auf dem iPad.
+  in die eigene, optionale Cloudablage oder auf einen Wechseldatenträger (z. B. USB-Stick) geht, ist stets verschlüsselt.
+  Die Lernendenverwaltung bleibt auf dem Mac; was in Titel, Beschreibung oder Kommentar eines Vorhabens steht — auch im
+  Titel eines Termins —, gehört zur Planung und erscheint bei Verwendung der Web App auch auf dem iPad.
 
 <p align="center">
   <img src="Bildschirmfotos/07-vorhaben-blatt.png" width="100%" alt="Das Blatt eines Vorhabens der 6a in Mathematik, „Brüche als Anteile“, über dem Wochenraster: links die Leiste mit Grundlegendes, Kommentar, Prüfung, Termin, Hausaufgabe, Material und Links, rechts Titel, Beschreibung, Klasse, Woche, Wochentag, Datum und die Kennzeichen des Vorhabens.">
@@ -69,17 +69,17 @@ dem eigenen Mac und lassen sich verschlüsseln.
 <p align="center"><sub>Material immer zur Hand: Arbeitsblätter, Ordner und Links hängen direkt an der Stunde.</sub></p>
 
 <p align="center">
-  <img src="Bildschirmfotos/04-lerngruppen-mitteilung.png" width="80%" alt="Die Lernendenverwaltung: links die Lerngruppen, rechts für die 6a der Elternbrief zum Wandertag mit dem Rücklauf jedes Kindes — 17 von 22 zurück, die meisten erledigt, einzelne abgelehnt oder noch offen. Alle Namen sind erfunden.">
+  <img src="Bildschirmfotos/04-lerngruppen-mitteilung.png" width="100%" alt="Die Lernendenverwaltung: links die Lerngruppen, rechts für die 6a der Elternbrief zum Wandertag mit dem Rücklauf jedes Kindes — 17 von 22 zurück, die meisten erledigt, einzelne abgelehnt oder noch offen. Alle Namen sind erfunden.">
 </p>
 <p align="center"><sub>Lerngruppen im Blick: Wer hat den Elternbrief schon zurückgegeben?</sub></p>
 
 <p align="center">
-  <img src="Bildschirmfotos/03-tagesliste.png" width="60%" alt="Die Liste der heute anstehenden Vorhaben: Stunden des Tages und der Woche, teils schon abgehakt.">
+  <img src="Bildschirmfotos/03-tagesliste.png" width="100%" alt="Das Blatt „Heute anstehende Vorhaben“ über dem Wochenraster: das für heute eingetragene Vorhaben der 7c in Informatik und die Vorhaben der Woche ohne festen Tag, jedes mit einem Haken zum Abschließen.">
 </p>
 <p align="center"><sub>Was heute ansteht — als Liste zum Abhaken.</sub></p>
 
 <p align="center">
-  <img src="Bildschirmfotos/05-sitzplan.png" width="80%" alt="Der Sitzplan einer Klasse mit Doppeltischen und erfundenen Namen, vorn Tafel und Lehrertisch, oben Knöpfe zum Drucken und Sichern als PDF.">
+  <img src="Bildschirmfotos/05-sitzplan.png" width="100%" alt="Das Blatt „Sitzplan — 7c · Informatik“ über dem Wochenraster: Doppeltische mit erfundenen Namen, vorn Tafel und Lehrertisch, oben Knöpfe für Tische, Namen, PDF und Drucken, unten „Abbrechen“ und „Übernehmen“.">
 </p>
 <p align="center"><sub>Sitzpläne entwerfen, drucken oder als PDF weitergeben.</sub></p>
 
@@ -95,10 +95,10 @@ Beim ersten Start hilft eine kurze Einrichtung, eine Tour zeigt das Wichtigste. 
 selbst; für ein Update genügt es, die neue App über die alte zu ziehen — Planung und Einstellungen bleiben erhalten.
 
 **Web App fürs iPad (optional):** <https://3ducation.org/upapp/> in Safari öffnen und zum Home-Bildschirm hinzufügen. Die
-Planung kommt über eine Cloudablage aufs iPad: Auf Wunsch legt die App beim Beenden eine Sicherungsdatei dort ab — stets
-verschlüsselt —, und die Web App öffnet sie mit der Passphrase.
+Planung kommt über eine Cloudablage oder einen Wechseldatenträger (z. B. USB-Stick) aufs iPad: Auf Wunsch legt die App
+beim Beenden eine Sicherungsdatei dort ab — stets verschlüsselt —, und die Web App öffnet sie mit der Passphrase.
 
-Wer die App selbst bauen möchte, findet den Quelltext im Ordner [`macOS-App/v95/`](macOS-App/v95/).
+Wer die App selbst bauen möchte, findet den Quelltext im Ordner [`macOS-App/v96/`](macOS-App/v96/).
 
 ## Voraussetzungen
 
@@ -119,7 +119,7 @@ and links right next to each lesson; materials from 3ducation.org can be picked 
 Optionally, the app also keeps track of student groups, notices such as letters to
 parents and their replies, agreed measures and appointments. An optional, slimmer web app shows the plan on the iPad in
 class: lessons are checked off there and a short note goes back to the Mac, while all planning happens in the Mac app; the
-backup file it reads from a cloud folder is always encrypted. Your data lives on your Mac and can be encrypted. To install, download the disk image from the
+backup file it reads from a cloud folder or a removable drive such as a USB stick is always encrypted. Your data lives on your Mac and can be encrypted. To install, download the disk image from the
 [latest release](https://github.com/dk-3du/unterrichtsplanung/releases/latest) — it is checked and notarized by Apple —
 and drag the app into Applications; it needs a Mac with Apple silicon and macOS 26 or later. Free software under the
 GPL (app) and AGPL (web app), version 3 or later. The app and its documentation are in German.

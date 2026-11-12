@@ -16,6 +16,52 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.9.0 (96)] - 2026-11-12
+
+Die Lernendenverwaltung (⌘L) bekommt Unterblätter statt Kopf- und Eingabezeilen, der Sitzplan-Editor ein kompakteres
+Blatt mit der Bedienung hinter ⓘ. Dazu Behebungen nach einer externen Review von 2.8.0 in der Web App (Statusdatei) und
+in der Leiste der App. Die Daten bleiben in Fassung 2.
+
+### Added
+
+- **Prüfung im echten Browser:** ein Fall in `sitzung_pruefen.py` für „Neue Statusdatei anlegen …“; der Fall des offenen
+  Dateiwählers nimmt jetzt „Vorhandene Statusdatei wählen …“.
+
+### Changed
+
+- **Blatt „Lernende“ (⌘L):** Die gewählte Lerngruppe trägt in ihrer Listenzeile ein Zahnrad. Es öffnet „Einstellungen
+  der Lerngruppe“ mit Bezeichnung, Zahl der Mitglieder und verknüpften Zeilen, „Zeilen wählen …“, „Zusammenführen mit
+  …“, Archivieren oder Zurückholen und „Löschen …“; der Kopf über den Teilen entfällt. Im Teil „Mitteilungen“ legt „Neue
+  Mitteilung …“ in einem Unterblatt an (Titel, Empfänger, „Rückmeldung bis“; der Tag ist der heutige). Ein Zahnrad neben
+  der Auswahl öffnet „Einstellungen der Mitteilung“ mit Titel, Tag, „Rückmeldung bis“ und „Auch an …“ — „Fertig“ ändert
+  alles in einem Schritt. „Rückmeldungsliste …“ steht rechts unter der Tabelle und erscheint mit der ersten Mitteilung
+  der Gruppe. Das Blatt misst 980 × 820 Punkt wie ⌘K und endet auf kleinen Bildschirmen 40 Punkt über dem Dock.
+- **Sitzplan-Editor:** 820 × 700 Punkt, auf kleinen Bildschirmen wie das Vorhaben-Blatt. Die Bedienung der Fläche steht
+  hinter ⓘ neben „Namen neu eingeben …“, die Knöpfe heißen „+ Tisch“ und „+ Lehrertisch“. Das Namensfeld reicht bis kurz
+  über den Fuß, über und unter der Fläche steht gleich viel Luft. Der Knopf im Datenschutzhinweis heißt immer
+  „Verschlüsselung einrichten …“; nach einer Änderung übernimmt er sie zuerst, wie sein Tooltip sagt.
+- **Web App, Statusdatei verbinden (Chrome, Edge):** Ohne verbundene Datei fragt die Diskette beim ersten Tipp:
+  „Vorhandene Statusdatei wählen …“ (Öffnen-Dialog — die Web App liest, prüft und vereint, bevor sie schreibt) oder
+  „Neue Statusdatei anlegen …“ (Sichern-Dialog). Bei einer unverschlüsselten Planung übernimmt sie beim Verbinden nur
+  Einträge zu Vorhaben dieser Planung; trägt die Datei Einträge, aber keinen zu dieser Planung, wird sie abgewiesen und
+  bleibt unverändert.
+- **README:** „Curriculum“ statt „Lehrplan“; die Planung kommt auch über einen Wechseldatenträger (z. B. USB-Stick) aufs
+  iPad; die Bilder der Tagesliste, der Lernendenverwaltung und des Sitzplans neu, als Bildschirmfotos der App.
+
+### Fixed
+
+- **Web App, vorhandene Statusdatei:** Chrome leerte eine im Sichern-Dialog gewählte vorhandene Datei, bevor die Web App
+  sie prüfen konnte — auch eine versehentlich gewählte fremde. Eine vorhandene Datei wird jetzt über den Öffnen-Dialog
+  verbunden.
+- **Web App, Ausweich-Download:** Scheiterte das Teilen-Blatt, quittierte der Download den aktuellen Stand statt des
+  beim Tipp festgehaltenen; eine Änderung dazwischen galt dann als gesichert. Jetzt gilt der festgehaltene Stand.
+- **Leiste, vorsorglich:** Im Ablauf der Leiste konnte ein vorgemerkter älterer Stand einen sofort angewendeten neueren
+  in der Anzeige überschreiben; von Hand ließ sich das nicht herbeiführen. Jetzt gewinnt stets der neuere.
+- **Web App, Doppelklick:** Der zweite Klick eines Doppelklicks auf einen Knopf der Leiste schloss das eben geöffnete
+  Blatt gleich wieder. Jetzt bleibt es offen; ein einfacher Klick daneben schließt es wie bisher.
+- **Sitzplan-Editor:** „Verschlüsselung einrichten …“ übernimmt Änderungen zuerst — ließ sich der Sitzplan dabei nicht
+  sichern, sagt es jetzt eine Warnung wie bei „Übernehmen“.
+
 ## [2.8.0 (95)] - 2026-11-09
 
 Das Vorhaben-Blatt, die Einstellungen und das Blatt „Lernende, Klassen/Kurse und Fächer“ (⌘K) bekommen links eine
