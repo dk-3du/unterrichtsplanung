@@ -16,6 +16,38 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.9.1 (97)] - 2026-11-13
+
+Die Lernendenverwaltung bekommt einen eigenen Knopf in der Werkzeugleiste, das Blatt ⌘K heißt „Klassen/Kurse und
+Fächer“. Dazu Behebungen nach einer externen Review von 2.9.0: Keine Statusdatei wird mehr größer, als ihr Leser
+annimmt. Die Daten bleiben in Fassung 2.
+
+### Added
+
+- **Knopf „Lernende“** in der Werkzeugleiste, zwischen „Heute anstehende Vorhaben“ und „Klassen/Kurse“, mit dem
+  Personen-Symbol: Er öffnet die Lernendenverwaltung wie ⌘L. Ohne Verschlüsselung fragt er, ob sie eingerichtet werden
+  soll; ist die Verwaltung gesperrt, nennt er den Grund.
+
+### Changed
+
+- **⌘K heißt „Klassen/Kurse und Fächer“** und hat zwei Einträge, „Klassen/Kurse“ und „Fachfarben“; es öffnet wie die
+  anderen Blätter mit Leiste auf dem ersten. Der Eintrag „Lernende“ mit seinem Knopf entfällt — der Weg in die
+  Lernendenverwaltung aus einer Zeile (Personen-Symbol, Lerngruppen-Menü) bleibt.
+- **Symbole:** Knopf und Eintrag „Klassen/Kurse“ tragen den Doktorhut, die zwei Personen gehören zu „Lernende“. Das
+  Symbol der Lerngruppe an den Zeilen von ⌘K bleibt, wie es war.
+- **Tour:** Die Karte „Lernende“ hängt am neuen Knopf und kommt immer, ohne Verschlüsselung mit dem Hinweis auf die
+  Einrichtung; „Die Kurszelle“ folgt direkt auf „Das Raster“. Mit Zeilen sind es zehn Karten, ohne sechs.
+- **README:** die Bilder des Wochenrasters, der Tagesliste, der Lernendenverwaltung, des Sitzplans und des
+  Vorhaben-Blatts neu, mit der neuen Werkzeugleiste; das Bild der Web App ab der laufenden Woche.
+
+### Fixed
+
+- **Web App, Größe der Statusdatei:** Die Web App misst die fertige Statusdatei in Byte, bevor sie sie schreibt, teilt
+  oder herunterlädt. Über 8 MB — der Grenze, die auch die App beim Lesen zieht — schreibt sie nichts, meldet den Stand
+  nicht als gesichert und sagt es: auf einen Tipp auf die Diskette immer, über die Uhr einmal je verbundener Datei.
+- **App, Statusdatei beim Übergang der Verschlüsselung:** Die App versiegelt eine Statusdatei nur neu, wenn der Behälter
+  unter derselben Grenze bleibt; sonst bleibt die Datei, wie sie ist.
+
 ## [2.9.0 (96)] - 2026-11-12
 
 Die Lernendenverwaltung (⌘L) bekommt Unterblätter statt Kopf- und Eingabezeilen, der Sitzplan-Editor ein kompakteres

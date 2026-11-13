@@ -23,7 +23,7 @@ ansteht und was noch korrigiert werden muss. Und zu jeder Stunde liegt das Mater
 Arbeitsblatt ist offen.
 
 <p align="center">
-  <img src="Bildschirmfotos/01-wochenraster.png" width="100%" alt="Das Hauptfenster der App mit der Planung der Klassen 5b, 6a, 7c und 8b für die Wochen 45 bis 48: farbige Karten mit den Themen jeder Woche, daran Arbeitsblätter und Links, dazu Kennzeichen für Prüfung, Korrektur, Vorbereitung und Hausaufgabe.">
+  <img src="Bildschirmfotos/01-wochenraster.png" width="100%" alt="Das Hauptfenster der App mit der Planung der Klassen 5b, 6a, 7c und 8b für die Wochen 46 bis 49: farbige Karten mit den Themen jeder Woche, daran Arbeitsblätter und Links, dazu Kennzeichen für Prüfung, Korrektur, Vorbereitung und Hausaufgabe.">
 </p>
 <p align="center"><sub>Das Schuljahr auf einen Blick — und an jeder Stunde das passende Material.</sub></p>
 
@@ -74,7 +74,7 @@ dem eigenen Mac und lassen sich verschlüsseln.
 <p align="center"><sub>Lerngruppen im Blick: Wer hat den Elternbrief schon zurückgegeben?</sub></p>
 
 <p align="center">
-  <img src="Bildschirmfotos/03-tagesliste.png" width="100%" alt="Das Blatt „Heute anstehende Vorhaben“ über dem Wochenraster: das für heute eingetragene Vorhaben der 7c in Informatik und die Vorhaben der Woche ohne festen Tag, jedes mit einem Haken zum Abschließen.">
+  <img src="Bildschirmfotos/03-tagesliste.png" width="100%" alt="Das Blatt „Heute anstehende Vorhaben“ über dem Wochenraster: der für heute eingetragene Klassenrat der 6a (Klassenleitung) und die Vorhaben der Woche ohne festen Tag, jedes mit einem Haken zum Abschließen.">
 </p>
 <p align="center"><sub>Was heute ansteht — als Liste zum Abhaken.</sub></p>
 
@@ -98,7 +98,7 @@ selbst; für ein Update genügt es, die neue App über die alte zu ziehen — Pl
 Planung kommt über eine Cloudablage oder einen Wechseldatenträger (z. B. USB-Stick) aufs iPad: Auf Wunsch legt die App
 beim Beenden eine Sicherungsdatei dort ab — stets verschlüsselt —, und die Web App öffnet sie mit der Passphrase.
 
-Wer die App selbst bauen möchte, findet den Quelltext im Ordner [`macOS-App/v96/`](macOS-App/v96/).
+Wer die App selbst bauen möchte, findet den Quelltext im Ordner [`macOS-App/v97/`](macOS-App/v97/).
 
 ## Voraussetzungen
 
