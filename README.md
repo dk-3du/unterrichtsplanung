@@ -98,7 +98,7 @@ selbst; für ein Update genügt es, die neue App über die alte zu ziehen — Pl
 Planung kommt über eine Cloudablage oder einen Wechseldatenträger (z. B. USB-Stick) aufs iPad: Auf Wunsch legt die App
 beim Beenden eine Sicherungsdatei dort ab — stets verschlüsselt —, und die Web App öffnet sie mit der Passphrase.
 
-Wer die App selbst bauen möchte, findet den Quelltext im Ordner [`macOS-App/v97/`](macOS-App/v97/).
+Wer die App selbst bauen möchte, findet den Quelltext im Ordner [`macOS-App/v98/`](macOS-App/v98/).
 
 ## Voraussetzungen
 

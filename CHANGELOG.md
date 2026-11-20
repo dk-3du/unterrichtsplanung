@@ -16,6 +16,43 @@ ausschließlich intern entwickelt; sie sind in diesem öffentlichen Changelog
 deshalb nicht dokumentiert. Es beginnt mit der ersten Fassung, die unter der
 GNU GPL (macOS-App) und der GNU AGPL (Web App) freigegeben ist.
 
+## [2.9.2 (98)] - 2026-11-20
+
+Behebungen nach einer externen Review von 2.9.1: Nach „Passphrase ändern“ fragt die Web App bei der neuen Kopie nach
+der Passphrase und schreibt danach nur noch in der neuen Hülle; die App versiegelt eine Statusdatei aus einem noch
+offenen Tab beim Einlesen neu. Haken und Kommentare aus der Web App gehen nicht mehr still verloren. Die Daten bleiben
+in Fassung 2.
+
+### Changed
+
+- **Blatt „Verschlüsselung“:** Vor dem Einschalten, vor dem Aufheben und vor „Schlüssel erneuern“ erinnert eine Zeile
+  daran, Haken und Kommentare aus der Web App vorher zu übertragen — danach gilt ein Stand der Web App unter dem
+  anderen Schutz nicht mehr.
+- **Web App, „Bewegung reduzieren“:** Ist die Einstellung an, springt die Web App zur laufenden Woche, statt zu rollen.
+  Sie gilt ab dem nächsten Sprung, ohne Neuladen.
+
+### Fixed
+
+- **Web App, Passphrase geändert:** Eine offene Sitzung verwendet ihren Schlüssel nur noch für eine Kopie in derselben
+  Hülle. Nach „Passphrase ändern“ am Mac fragt sie bei der neuen Kopie nach der Passphrase und sagt warum; die
+  Statusdateien tragen danach die neue Hülle. Eine unveränderte Kopie öffnet weiter ohne Frage.
+- **App, Statusdatei in alter Hülle:** Kommt doch eine Statusdatei unter dem eigenen Schlüssel, aber in der Hülle von
+  vor „Passphrase ändern“ an — etwa aus einem Tab der Web App, der seit vorher offen war —, versiegelt die App sie beim
+  Einlesen gleich neu und bittet, die Web App neu zu laden. Danach öffnet die alte Passphrase sie nicht mehr. Geht das
+  Neuversiegeln nicht, sagt die App es mit dem Grund.
+- **Web App, Wechsel des Schutzes:** Gehört der gemerkte Stand auf dem Gerät zu einem anderen Schutz — unverschlüsselt
+  statt verschlüsselt, umgekehrt, oder ein erneuerter Schlüssel —, sagt die Web App beim Öffnen, dass noch nicht
+  übertragene Haken und Kommentare dabei verloren gehen. Umgeschrieben wird nichts.
+- **Web App, zweiter Tab:** Ist dieselbe Planung schon in einem anderen Tab geöffnet, sagt es der zweite Tab und bittet,
+  ihn zu schließen. Sonst bliebe nur der Stand des Tabs gemerkt, der zuletzt schreibt. Der Hinweis sperrt nichts; zwei
+  verschiedene Planungen in zwei Tabs bleiben ohne Hinweis.
+- **Prüfstände:** Ein Prüfordner darf sich nicht mit der echten Ablage im Container überschneiden — weder sie sein noch
+  über oder unter ihr liegen, auch nicht über einen Alias, in anderer Schreibung oder mit „..“. Startet die App ohne
+  Prüfstand mit einem solchen Ordner, lädt sie nichts und sichert nichts.
+- **`bauen.sh`:** Scheitert das Signieren, bricht der Bau in jedem Modus ab und startet die App nicht; bisher lief ein
+  lokaler Bau weiter und startete mit `--starten` ein Paket ohne bestätigte App Sandbox. Auch `--nur-dmg --starten`
+  startet nur ein Paket, dessen Siegel `codesign --verify --strict` besteht und die App Sandbox trägt.
+
 ## [2.9.1 (97)] - 2026-11-13
 
 Die Lernendenverwaltung bekommt einen eigenen Knopf in der Werkzeugleiste, das Blatt ⌘K heißt „Klassen/Kurse und

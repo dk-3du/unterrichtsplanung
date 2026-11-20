@@ -1,0 +1,867 @@
+{
+ "vorlage": "literale-grenzfaelle.json",
+ "sha256": "dfcb029549efda005150b3d2a40047c1dbe9b18a012becb8e8a60d560148e158",
+ "erzeugt": "2026-09-18 17:30:47",
+ "faelle": [
+  {
+   "name": "Grund-Escapes",
+   "quelle": "\"a\\nb\\t\\\"q\\\"\\\\ \\/ \\b\\f\\v\"",
+   "leser": "gleich",
+   "jsc": {
+    "wert": "a\nb\t\"q\"\\ / \b\f\u000b"
+   }
+  },
+  {
+   "name": "einfache Anf\u00fchrungszeichen",
+   "quelle": "'einfach \\'x\\' und \\\"y\\\"'",
+   "leser": "gleich",
+   "jsc": {
+    "wert": "einfach 'x' und \"y\""
+   }
+  },
+  {
+   "name": "Hex- und Unicode-Escape",
+   "quelle": "\"\\x41\u00e4\"",
+   "leser": "gleich",
+   "jsc": {
+    "wert": "A\u00e4"
+   }
+  },
+  {
+   "name": "Ersatzzeichenpaar",
+   "quelle": "\"\ud83d\ude00\"",
+   "leser": "gleich",
+   "jsc": {
+    "wert": "\ud83d\ude00"
+   }
+  },
+  {
+   "name": "Codepunkt-Escape",
+   "quelle": "\"\\u{1F600} \\u{e4} \\u{000041}\"",
+   "leser": "gleich",
+   "jsc": {
+    "wert": "\ud83d\ude00 \u00e4 A"
+   }
+  },
+  {
+   "name": "NUL allein",
+   "quelle": "\"a\\0\"",
+   "leser": "gleich",
+   "jsc": {
+    "wert": "a\u0000"
+   }
+  },
+  {
+   "name": "NUL vor Buchstabe",
+   "quelle": "\"\\0a\"",
+   "leser": "gleich",
+   "jsc": {
+    "wert": "\u0000a"
+   }
+  },
+  {
+   "name": "unbekanntes Escape ist das Zeichen",
+   "quelle": "\"\\q\\-\\a\"",
+   "leser": "gleich",
+   "jsc": {
+    "wert": "q-a"
+   }
+  },
+  {
+   "name": "Fortsetzung LF",
+   "quelle": "\"a\\\nb\"",
+   "leser": "gleich",
+   "jsc": {
+    "wert": "ab"
+   }
+  },
+  {
+   "name": "Fortsetzung CRLF",
+   "quelle": "\"a\\\r\nb\"",
+   "leser": "gleich",
+   "jsc": {
+    "wert": "ab"
+   }
+  },
+  {
+   "name": "Fortsetzung CR",
+   "quelle": "\"a\\\rb\"",
+   "leser": "gleich",
+   "jsc": {
+    "wert": "ab"
+   }
+  },
+  {
+   "name": "Fortsetzung U+2028",
+   "quelle": "\"a\\\u2028b\"",
+   "leser": "gleich",
+   "jsc": {
+    "wert": "ab"
+   }
+  },
+  {
+   "name": "Fortsetzung U+2029",
+   "quelle": "\"a\\\u2029b\"",
+   "leser": "gleich",
+   "jsc": {
+    "wert": "ab"
+   }
+  },
+  {
+   "name": "U+2028 roh in der Zeichenkette",
+   "quelle": "\"a\u2028b\"",
+   "leser": "gleich",
+   "jsc": {
+    "wert": "a\u2028b"
+   }
+  },
+  {
+   "name": "Zahlen",
+   "quelle": "[0, -0, 1.5, .5, 5., 1e3, 1E-2, 0.0, -1.25e+2, 9007199254740993]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     0,
+     0,
+     1.5,
+     0.5,
+     5,
+     1000,
+     0.01,
+     0,
+     -125,
+     9007199254740992
+    ]
+   }
+  },
+  {
+   "name": "Null vor dem Komma",
+   "quelle": "[0.5, -0.25, 0e0]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     0.5,
+     -0.25,
+     0
+    ]
+   }
+  },
+  {
+   "name": "Nachkomma im Feld",
+   "quelle": "[1, 2, ]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "name": "Nachkomma im Objekt",
+   "quelle": "{a: 1, }",
+   "leser": "gleich",
+   "jsc": {
+    "wert": {
+     "a": 1
+    }
+   }
+  },
+  {
+   "name": "Schl\u00fcssel in drei Formen",
+   "quelle": "{\"a\": 1, 'b': 2, c: 3, $d_1: 4}",
+   "leser": "gleich",
+   "jsc": {
+    "wert": {
+     "a": 1,
+     "b": 2,
+     "c": 3,
+     "$d_1": 4
+    }
+   }
+  },
+  {
+   "name": "Schl\u00fcsselw\u00f6rter als Schl\u00fcssel",
+   "quelle": "{class: 1, default: 2, null: 3, true: 4}",
+   "leser": "gleich",
+   "jsc": {
+    "wert": {
+     "class": 1,
+     "default": 2,
+     "null": 3,
+     "true": 4
+    }
+   }
+  },
+  {
+   "name": "doppelter Schl\u00fcssel: der letzte gilt",
+   "quelle": "{a: 1, a: 2}",
+   "leser": "gleich",
+   "jsc": {
+    "wert": {
+     "a": 2
+    }
+   }
+  },
+  {
+   "name": "Wahrheit und nichts",
+   "quelle": "[true, false, null]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     true,
+     false,
+     null
+    ]
+   }
+  },
+  {
+   "name": "Kommentare",
+   "quelle": "[1 /* x */, // y\n 2]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "name": "geschachtelt",
+   "quelle": "[{a: [1, {b: 'c'}]}, []]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     {
+      "a": [
+       1,
+       {
+        "b": "c"
+       }
+      ]
+     },
+     []
+    ]
+   }
+  },
+  {
+   "name": "Oktal-Escape \\141",
+   "quelle": "\"\\141.html\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": "a.html"
+   }
+  },
+  {
+   "name": "Oktal-Escape \\012",
+   "quelle": "\"\\012x\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": "\nx"
+   }
+  },
+  {
+   "name": "NUL vor Ziffer 8",
+   "quelle": "\"\\08\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": "\u00008"
+   }
+  },
+  {
+   "name": "Escape \\1",
+   "quelle": "\"\\1\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": "\u0001"
+   }
+  },
+  {
+   "name": "Escape \\7",
+   "quelle": "\"\\7\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": "\u0007"
+   }
+  },
+  {
+   "name": "Escape \\9",
+   "quelle": "\"\\9\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": "9"
+   }
+  },
+  {
+   "name": "Codepunkt zu gro\u00df",
+   "quelle": "\"\\u{110000}\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "SyntaxError"
+   }
+  },
+  {
+   "name": "Codepunkt leer",
+   "quelle": "\"\\u{}\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "SyntaxError"
+   }
+  },
+  {
+   "name": "einzelnes Ersatzzeichen",
+   "quelle": "\"\\uD800\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "einzelnesErsatzzeichen": true
+   }
+  },
+  {
+   "name": "einzelnes Ersatzzeichen als Codepunkt",
+   "quelle": "\"\\u{DC00}\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "einzelnesErsatzzeichen": true
+   }
+  },
+  {
+   "name": "unvollst\u00e4ndiges \\u",
+   "quelle": "\"\\u12\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "SyntaxError"
+   }
+  },
+  {
+   "name": "unvollst\u00e4ndiges \\x",
+   "quelle": "\"\\x4\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "SyntaxError"
+   }
+  },
+  {
+   "name": "Oktalzahl 010",
+   "quelle": "010",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": 8
+   }
+  },
+  {
+   "name": "f\u00fchrende Null 08",
+   "quelle": "08",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": 8
+   }
+  },
+  {
+   "name": "f\u00fchrende Nullen 00",
+   "quelle": "00",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": 0
+   }
+  },
+  {
+   "name": "negative Oktalzahl",
+   "quelle": "-010",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": -8
+   }
+  },
+  {
+   "name": "f\u00fchrende Null mit Komma",
+   "quelle": "01.5",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "SyntaxError"
+   }
+  },
+  {
+   "name": "Zifferntrenner",
+   "quelle": "1_000",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": 1000
+   }
+  },
+  {
+   "name": "Hexzahl",
+   "quelle": "0x10",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": 16
+   }
+  },
+  {
+   "name": "Bin\u00e4rzahl",
+   "quelle": "0b1",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": 1
+   }
+  },
+  {
+   "name": "Oktalzahl neu",
+   "quelle": "0o7",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": 7
+   }
+  },
+  {
+   "name": "BigInt",
+   "quelle": "1n",
+   "leser": "abgewiesen",
+   "jsc": {
+    "keinLiteral": true
+   }
+  },
+  {
+   "name": "zu gro\u00df f\u00fcr eine Zahl",
+   "quelle": "1e400",
+   "leser": "abgewiesen",
+   "jsc": {
+    "nichtEndlich": true
+   }
+  },
+  {
+   "name": "Schl\u00fcssel __proto__ nackt",
+   "quelle": "{__proto__: {a: 1}, b: 2}",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": {
+     "b": 2
+    }
+   }
+  },
+  {
+   "name": "Schl\u00fcssel __proto__ in Anf\u00fchrungszeichen",
+   "quelle": "{\"__proto__\": 1}",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": {}
+   }
+  },
+  {
+   "name": "Vorlagen-Zeichenkette",
+   "quelle": "`vorlage`",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": "vorlage"
+   }
+  },
+  {
+   "name": "undefined",
+   "quelle": "undefined",
+   "leser": "abgewiesen",
+   "jsc": {
+    "undefiniert": true
+   }
+  },
+  {
+   "name": "NaN",
+   "quelle": "NaN",
+   "leser": "abgewiesen",
+   "jsc": {
+    "nichtEndlich": true
+   }
+  },
+  {
+   "name": "Infinity",
+   "quelle": "-Infinity",
+   "leser": "abgewiesen",
+   "jsc": {
+    "nichtEndlich": true
+   }
+  },
+  {
+   "name": "L\u00fccke im Feld",
+   "quelle": "[1,,2]",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": [
+     1,
+     null,
+     2
+    ]
+   }
+  },
+  {
+   "name": "Vorzeichen Plus",
+   "quelle": "+1",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": 1
+   }
+  },
+  {
+   "name": "Ausdruck",
+   "quelle": "1+1",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": 2
+   }
+  },
+  {
+   "name": "Verkettung",
+   "quelle": "\"a\" + \"b\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": "ab"
+   }
+  },
+  {
+   "name": "Klammer",
+   "quelle": "(1)",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": 1
+   }
+  },
+  {
+   "name": "Aufruf",
+   "quelle": "new Date()",
+   "leser": "abgewiesen",
+   "jsc": {
+    "keinLiteral": true
+   }
+  },
+  {
+   "name": "regul\u00e4rer Ausdruck",
+   "quelle": "/x/",
+   "leser": "abgewiesen",
+   "jsc": {
+    "keinLiteral": true
+   }
+  },
+  {
+   "name": "Spread",
+   "quelle": "[...[1]]",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": [
+     1
+    ]
+   }
+  },
+  {
+   "name": "berechneter Schl\u00fcssel",
+   "quelle": "{['a']: 1}",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": {
+     "a": 1
+    }
+   }
+  },
+  {
+   "name": "Kurzschreibweise",
+   "quelle": "{a}",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "ReferenceError"
+   }
+  },
+  {
+   "name": "Methode",
+   "quelle": "{a() {}}",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": {}
+   }
+  },
+  {
+   "name": "Hexziffern in voller Breite im \\u-Escape",
+   "quelle": "\"\\u\uff21\uff21\uff21\uff21\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "SyntaxError"
+   }
+  },
+  {
+   "name": "Hexziffer in voller Breite im \\x-Escape",
+   "quelle": "\"\\x\uff141\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "SyntaxError"
+   }
+  },
+  {
+   "name": "Hexziffern in voller Breite im Codepunkt",
+   "quelle": "\"\\u{\uff14\uff11}\"",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "SyntaxError"
+   }
+  },
+  {
+   "name": "// endet an LF, im Feld",
+   "quelle": "[1, // x\n 2]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "name": "// endet an CR, im Feld",
+   "quelle": "[1, // x\r 2]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "name": "// endet an CRLF, im Feld",
+   "quelle": "[1, // x\r\n 2]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "name": "// endet an U+2028, im Feld",
+   "quelle": "[1, // x\u2028 2]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "name": "// endet an U+2029, im Feld",
+   "quelle": "[1, // x\u2029 2]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "name": "// im Objekt, zweiter Schl\u00fcssel nach U+2028 (Beispiel der Review)",
+   "quelle": "{titel: \"Comment boundary\", link: \"first.html\", // comment\u2028link: \"second.html\"\n}",
+   "leser": "gleich",
+   "jsc": {
+    "wert": {
+     "titel": "Comment boundary",
+     "link": "second.html"
+    }
+   }
+  },
+  {
+   "name": "// im Objekt, zweiter Schl\u00fcssel nach CR",
+   "quelle": "{a: 1, // x\rb: 2}",
+   "leser": "gleich",
+   "jsc": {
+    "wert": {
+     "a": 1,
+     "b": 2
+    }
+   }
+  },
+  {
+   "name": "// am Ende ohne Zeilenende",
+   "quelle": "[1] // Schluss",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     1
+    ]
+   }
+  },
+  {
+   "name": "Blockkommentar mit U+2028 und CR",
+   "quelle": "[1, /* x\u2028y\rz */ 2]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "name": "Leerraum: U+2028 und U+2029 zwischen Werten",
+   "quelle": "[1,\u2028\u2029 2]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "name": "Leerraum: CR allein zwischen Werten",
+   "quelle": "[1,\r2]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "name": "Leerraum: NBSP, U+1680, U+2000, U+202F, U+205F, U+3000",
+   "quelle": "[1,\u00a0\u1680\u2000\u202f\u205f\u30002]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "name": "Leerraum: U+FEFF mitten im Text",
+   "quelle": "[1,\ufeff 2]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "name": "Leerraum: Tabulator, VT, FF",
+   "quelle": "[1,\t\u000b\f2]",
+   "leser": "gleich",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "name": "NEL (U+0085) ist kein Leerraum",
+   "quelle": "[1,\u0085 2]",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "SyntaxError"
+   }
+  },
+  {
+   "name": "U+180E ist kein Leerraum",
+   "quelle": "[1,\u180e 2]",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "SyntaxError"
+   }
+  },
+  {
+   "name": "U+200B ist kein Leerraum",
+   "quelle": "[1,\u200b 2]",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "SyntaxError"
+   }
+  },
+  {
+   "name": "Schl\u00fcssel mit umkreistem a (U+24D0)",
+   "quelle": "{\u24d0: 1}",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "SyntaxError"
+   }
+  },
+  {
+   "name": "Schl\u00fcssel a mit umkreistem b (U+24D1)",
+   "quelle": "{a\u24d1: 1}",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "SyntaxError"
+   }
+  },
+  {
+   "name": "Schl\u00fcssel beginnt mit Vokalzeichen U+093E",
+   "quelle": "{\u093e: 1}",
+   "leser": "abgewiesen",
+   "jsc": {
+    "fehler": "SyntaxError"
+   }
+  },
+  {
+   "name": "Schl\u00fcssel \u00e4 ohne Anf\u00fchrung (nur ASCII angenommen)",
+   "quelle": "{\u00e4: 1}",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": {
+     "\u00e4": 1
+    }
+   }
+  },
+  {
+   "name": "Schl\u00fcssel a mit U+0301",
+   "quelle": "{a\u0301: 1}",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": {
+     "a\u0301": 1
+    }
+   }
+  },
+  {
+   "name": "Schl\u00fcssel a mit ZWJ",
+   "quelle": "{a\u200d: 1}",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": {
+     "a\u200d": 1
+    }
+   }
+  },
+  {
+   "name": "Schl\u00fcssel aus ASCII mit $ und _",
+   "quelle": "{$_a1: 1, _: 2, $: 3}",
+   "leser": "gleich",
+   "jsc": {
+    "wert": {
+     "$_a1": 1,
+     "_": 2,
+     "$": 3
+    }
+   }
+  },
+  {
+   "name": "--> am Zeilenanfang (in JavaScript ein Kommentar)",
+   "quelle": "[1,\n--> x\n 2]",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "name": "<!-- (in JavaScript ein Kommentar)",
+   "quelle": "[1, <!-- x\n 2]",
+   "leser": "abgewiesen",
+   "jsc": {
+    "wert": [
+     1,
+     2
+    ]
+   }
+  }
+ ]
+}

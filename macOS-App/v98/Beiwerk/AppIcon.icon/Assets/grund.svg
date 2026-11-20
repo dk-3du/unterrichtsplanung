@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <!-- SPDX-FileCopyrightText: 2026 Dominik Kluge -->
+  <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+  <!-- Drei aufeinanderfolgende Grundfarben der Palette: Magenta (310°),
+       Violett (265°), Blau (220°) — dessen dunkle Stufe gibt die Tiefe. -->
+  <defs>
+    <linearGradient id="grund" x1="103" y1="111" x2="900" y2="914" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C247AD"/>
+      <stop offset=".48" stop-color="#8353C6"/>
+      <stop offset="1" stop-color="#2F4F8E"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#grund)"/>
+  <path d="M0 209C218 77 466 56 679 133c155 56 256 164 345 301v-434H0v209z" fill="#D175C2" fill-opacity=".26"/>
+  <circle cx="865" cy="837" r="243" fill="#2F4F8E" fill-opacity=".28"/>
+</svg>

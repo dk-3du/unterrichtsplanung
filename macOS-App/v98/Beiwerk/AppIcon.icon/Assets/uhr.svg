@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <!-- SPDX-FileCopyrightText: 2026 Dominik Kluge -->
+  <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+  <circle cx="715" cy="704" r="101" fill="#FFCF57" stroke="#FFF4C3" stroke-width="15"/>
+  <path d="M715 648v61l43 28" stroke="#5D4695" stroke-width="23" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M169 220l23 52 54 23-54 23-23 54-23-54-54-23 54-23 23-52z" fill="#C8FFF1"/>
+</svg>
